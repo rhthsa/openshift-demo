@@ -4,7 +4,7 @@
 Deploy 2 version of frontend app. Each deployment and service use label **app** and **version** for select each version. 
 Initial Route will routing all traffic to v1.
 
-- Deploy frontend v1 and v2 and create route
+- Deploy frontend v1 and v2 and create route ([frontend.yaml](manifests/frontend.yaml))
   ```bash
   oc apply -f mainfests/frontend.yaml -n project1
   ```
@@ -27,8 +27,9 @@ Initial Route will routing all traffic to v1.
 - Check output from cURL that response is from frontend-v2
 - Set route back to v1
   ```bash
-  oc patch route frontend  -p '{"spec":{"to":{"name":"frontend-v2"}}}' -n project1
+  oc patch route frontend  -p '{"spec":{"to":{"name":"frontend-v1"}}}' -n project1
   ```
+- Check output from cURL that response is from frontend-v1
 ## Canary Deployment
 - Apply route for Canary deployment to v1 and v2 with 80% and 20% ratio ([route-with-alternate-backend.yaml](manifests/route-with-alternate-backend.yaml))
   ```bash
