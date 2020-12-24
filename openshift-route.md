@@ -54,19 +54,17 @@ Initial Route will routing all traffic to v1.
 - Re-run previous bash script to loop frontend. This times you will get 6 responses from v1 and 4 responses from v2
   
 ## Restrict TLS to v1.2
-- Configure ingresscontroller by run command or use OpenShift Web Admin Console
+- Check default ingresscontroller by run command or use OpenShift Web Admin Console
+
 ```bash
 oc edit ingresscontroller default -n openshift-ingress-operator
 ```
-- Configure TLS Security profile and minimum TLS version
-```yaml
-spec:
-  tlsSecurityProfile:
-    type: Custom
-    custom:
-    ciphers:
-    - ECDHE-ECDSA-AES128-GCM-SHA256
-    - ECDHE-RSA-AES128-GCM-SHA256
-    minTLSVersion: VersionTLS12
-```
+Use Web Admin Console to search for ingressscontroller and select default
+
+![](images/ingress-controller-01.png)
+
+
+- Minimum TLS version can be specified by attribute **minTLSVersion**
+
+![](images/ingress-controller-02.png)
   
