@@ -6,7 +6,7 @@ Initial Route will routing all traffic to v1.
 
 - Deploy frontend v1 and v2 and create route ([frontend.yaml](manifests/frontend.yaml))
   ```bash
-  oc apply -f mainfests/frontend.yaml -n project1
+  oc apply -f manifests/frontend.yaml -n project1
   ```
 
 ## Blue/Green Deployment
