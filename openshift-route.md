@@ -1,5 +1,13 @@
 # Deployment Strategy with OpenShift Route
+<!-- TOC -->
 
+- [Deployment Strategy with OpenShift Route](#deployment-strategy-with-openshift-route)
+  - [Application Deployment](#application-deployment)
+  - [Blue/Green Deployment](#bluegreen-deployment)
+  - [Canary Deployment](#canary-deployment)
+  - [Restrict TLS to v1.2](#restrict-tls-to-v12)
+
+<!-- /TOC -->
 ## Application Deployment
 Deploy 2 version of frontend app. Each deployment and service use label **app** and **version** for select each version. 
 Initial Route will routing all traffic to v1.
