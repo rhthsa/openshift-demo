@@ -3,3 +3,9 @@
   - Blue/Green Deployment
   - Canary Deployment
   - Configure TLS version
+- [OpenShift Service Mesh](openshift-service-mesh.md)
+  - Install and configure control plane
+  - Sidecar injection
+  - Blue/Green Deployment
+  - Canary Deployment
+  - Routing by URI with regular expression
