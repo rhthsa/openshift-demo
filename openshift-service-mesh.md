@@ -6,6 +6,7 @@
   - [Create Istio Gateway](#create-istio-gateway)
   - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
   - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
+  - [Traffic Analysis](#traffic-analysis)
 
 <!-- /TOC -->
 ## Setup Control Plane and sidecar
@@ -277,3 +278,54 @@ curl $FRONTEND_ISTIO_ROUTE
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
   curl $FRONTEND_ISTIO_ROUTE/version1
   ```
+## Traffic Analysis
+- Deploy backend application
+```bash
+oc apply -f manifests/backend.yaml -n project1
+oc apply -f manifests/backend-destination-rule.yaml -n project1
+oc apply -f manifests/backend-virtual-service.yaml -n project1
+oc get pods -n project1
+```
+- Configure frontend to request to backend
+```bash
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+```
+- Check Kiali Console
+- login to OpenShift Developer Console, select project istio-system and open Kiali console 
+
+  ![](images/istio-system-project.png)
+- Login to Kiali Console and select Graph
+  -  Namespace: select checkbox "project1"
+  -  Display: select checkbox "Requests percentage" and "Traffic animation"
+- Run following command
+  ```bash
+  oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
+  FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
+  while [ 1 ];
+  do
+          OUTPUT=$(curl -s $FRONTEND_ISTIO_ROUTE)
+          printf "%s\n" $OUTPUT
+          sleep .2
+  done
+  ```
+- Check Kiali Console
+
+  ![](images/istio-system-project.png)
+
+- Traffic analysis for frontend app. Select Application->frontend->inbound traffic and outbound traffic
+  
+  ![](images/kiali-frontend-inboud-traffic.png)
+
+- Distributed tracing with Jaeger. Select tab Tracing
+  - Overall tracing for frontend app
+
+    ![](images/frontend-app-tracing.png)
+    
+  - Login to Jaeger by select "View in Tracing"
+  
+    ![](images/jaeger-main.png)
+    
+  - Drill down to tracing information
+
+    ![](images/jaeger-transaction.png) 
