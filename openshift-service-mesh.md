@@ -7,6 +7,7 @@
   - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
   - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
   - [Traffic Analysis](#traffic-analysis)
+  - [Distributed Tracing](#distributed-tracing)
 
 <!-- /TOC -->
 ## Setup Control Plane and sidecar
@@ -317,6 +318,7 @@ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
   
   ![](images/kiali-frontend-inboud-traffic.png)
 
+## Distributed Tracing
 - Distributed tracing with Jaeger. Select tab Tracing
   - Overall tracing for frontend app
 

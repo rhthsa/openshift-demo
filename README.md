@@ -9,3 +9,5 @@
   - Blue/Green Deployment
   - Canary Deployment
   - Routing by URI with regular expression
+  - Traffic Analysis
+  - Tracing
