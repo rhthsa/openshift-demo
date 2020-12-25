@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: frontend
+spec:
+  hosts:
+  - frontend.apps.SUBDOMAIN
+  gateways:
+  - frontend-gateway.istio-system.svc.cluster.local
+  http:
+  - route:
+    - destination:
+        port:
+          number: 8080
+        host: frontend.project1.svc.cluster.local
