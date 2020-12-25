@@ -9,6 +9,7 @@
   - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
   - [Traffic Analysis](#traffic-analysis)
   - [Distributed Tracing](#distributed-tracing)
+  - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
   - [Envoy Access Log](#envoy-access-log)
 
 <!-- /TOC -->
@@ -373,7 +374,35 @@ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
   - Drill down to tracing information
 
     ![](images/jaeger-transaction.png) 
+    
+## Traffic Mirroring (Dark Launch)
+- Deploy audit app and mirror every requests that frontend call backend to audit app
+  ```bash
+  oc apply -f manifests/audit-app.yaml -n project1
+  oc get pods -n project1
+  ```
+- Update [backend virtual service](manifests/backend-virtual-service-mirror.yaml) to mirror requests to audit app.
+  ```bash
+  oc apply -f manifests/backend-virtual-service-mirror.yaml -n project1
+  ```
+- Use cURL to call frontend and check audit's pod log by CLI (with another terminal) or Web Console
+  - cURL frontend
+  ```bash
+  FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
+  curl $FRONTEND_ISTIO_ROUTE
+  ```
 
+  - View audit log 
+  ```bash
+  oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk '{print $1}') -c backend -n project1
+  ```
+  
+  ![](images/mirror-log.png)
+  
+
+
+  
+  
 ## Envoy Access Log
 - Envoy access log already enabled with [ServiceMeshControlPlane CRD](manifests/smcp.yaml)
   ```yaml

@@ -11,4 +11,5 @@
   - A/B Testing Deployment
   - Routing by URI with regular expression
   - Traffic Analysis
+  - Traffic Mirroring
   - Tracing
