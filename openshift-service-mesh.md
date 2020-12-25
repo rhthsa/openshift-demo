@@ -8,6 +8,7 @@
   - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
   - [Traffic Analysis](#traffic-analysis)
   - [Distributed Tracing](#distributed-tracing)
+  - [Envoy Access Log](#envoy-access-log)
 
 <!-- /TOC -->
 ## Setup Control Plane and sidecar
@@ -53,7 +54,7 @@
   ```bash
   oc get pods -n project1
   ```
-- Create frontend service 
+- Create [frontend service](mainfests/../manifests/frontend-service.yaml)
     ```
     oc create -f manifests/frontend-service.yaml -n project1
     ```
@@ -65,7 +66,7 @@
     SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
     echo $SUBDOMAIN
     ```
-  - Review [Gateway CRD](manifests/istio-gateway.yaml), Replaced SUBDOMAIN with cluster's sub-domain
+  - Review [Gateway CRD](manifests/frontend-gateway.yaml), Replaced SUBDOMAIN with cluster's sub-domain
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: Gateway
@@ -331,3 +332,24 @@ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
   - Drill down to tracing information
 
     ![](images/jaeger-transaction.png) 
+
+## Envoy Access Log
+- Envoy access log already enabled with [ServiceMeshControlPlane CRD](manifests/smcp.yaml)
+  ```yaml
+    proxy:
+    accessLogging:
+      envoyService:
+        enabled: false
+      file:
+        encoding: TEXT
+        name: /dev/stdout
+  ```
+- Check access log
+  ```bash
+  oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk '{print $1}') -c istio-proxy -n project1
+  ```
+- Sample output
+  ```log
+  [2020-12-25T10:33:04.848Z] "GET / HTTP/1.1" 200 - "-" "-" 0 103 5750 5749 "-" "-" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "backend:8080" "10.128.2.133:8080" outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
+  [2020-12-25T10:33:04.846Z] "GET / HTTP/1.1" 200 - "-" "-" 0 184 5756 5755 "184.22.250.124,10.131.0.4" "curl/7.64.1" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "frontend.apps.cluster-1138.1138.example.opentlc.com" "127.0.0.1:8080" inbound|8080|http|frontend-v1.project1.svc.cluster.local 127.0.0.1:56540 10.128.2.131:8080 10.131.0.4:0 outbound_.8080_.v1_.frontend.project1.svc.cluster.local default
+  ```

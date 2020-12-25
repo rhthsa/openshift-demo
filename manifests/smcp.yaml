@@ -45,7 +45,8 @@ spec:
   general:
     logging:
       componentLevels:
-        default: warn
+        default: info
+      logAsJSON: false
   policy:
     mixer:
       enableChecks: true
@@ -71,3 +72,10 @@ spec:
           enabled: false
   telemetry:
     type: Istiod
+  proxy:
+    accessLogging:
+      envoyService:
+        enabled: false
+      file:
+        encoding: TEXT
+        name: /dev/stdout
