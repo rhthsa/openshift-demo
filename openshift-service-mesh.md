@@ -6,6 +6,7 @@
   - [Create Istio Gateway](#create-istio-gateway)
   - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
   - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
+  - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
   - [Traffic Analysis](#traffic-analysis)
   - [Distributed Tracing](#distributed-tracing)
   - [Envoy Access Log](#envoy-access-log)
@@ -280,6 +281,46 @@ curl $FRONTEND_ISTIO_ROUTE
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
   curl $FRONTEND_ISTIO_ROUTE/
   ```
+## A/B with Istio Virtual Service
+- A/B testing by investigating User-Agent header with [Virtual Service](manifests/frontend-virtual-service-with-header.yaml), Replace SUBDOMAIN with cluster's sub-domain.
+  - If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2 
+  ```yaml
+  apiVersion: networking.istio.io/v1alpha3
+  kind: VirtualService
+  metadata:
+    name: frontend
+  spec:
+    hosts:
+    - frontend.apps.SUBDOMAIN
+    gateways:
+    - frontend-gateway.istio-system.svc.cluster.local
+    http:
+    - match:
+      - headers:
+          user-agent:
+            regex: (.*)Firefox(.*)
+      route:
+      - destination:
+          host: frontend
+          port:
+            number: 8080
+          subset: v2
+    - route:
+      - destination:
+          host: frontend
+          port:
+            number: 8080
+          subset: v1
+  ```
+- Apply [Virtual Service](manifests/frontend-virtual-service-with-header.yaml)
+  ```bash
+  oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
+  ```
+- Test with cURL with HTTP header User-Agent contains Firefox
+```bash
+FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
+  curl -H "User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0" $FRONTEND_ISTIO_ROUTE
+```
 ## Traffic Analysis
 - Deploy backend application
 ```bash
