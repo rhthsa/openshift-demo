@@ -277,7 +277,7 @@ curl $FRONTEND_ISTIO_ROUTE
 - Test with URI /
   ```bash
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
-  curl $FRONTEND_ISTIO_ROUTE/version1
+  curl $FRONTEND_ISTIO_ROUTE/
   ```
 ## Traffic Analysis
 - Deploy backend application
