@@ -8,6 +8,7 @@
   - Sidecar injection
   - Blue/Green Deployment
   - Canary Deployment
+  - A/B Testing Deployment
   - Routing by URI with regular expression
   - Traffic Analysis
   - Tracing
