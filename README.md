@@ -4,6 +4,7 @@
   - Canary Deployment
   - Configure TLS version
 - [Horizontal Pod Autoscaler](hpa.md)
+  - HPA by CPU
 - [OpenShift Service Mesh](openshift-service-mesh.md)
   - Install and configure control plane
   - Sidecar injection
@@ -15,3 +16,5 @@
   - Traffic Mirroring
   - Tracing
 - [Application Metrics](application-metrics.md)
+  - Setup Monitoring Stack
+  - Configure Service Monitoring
