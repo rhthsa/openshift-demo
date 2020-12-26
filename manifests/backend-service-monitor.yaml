@@ -10,6 +10,10 @@ spec:
     port: http
     path: /metrics
     scheme: http
+  - interval: 30s
+    port: http
+    path: /metrics/application
+    scheme: http
   selector:
     matchLabels:
       app: backend

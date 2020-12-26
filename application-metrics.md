@@ -1,6 +1,6 @@
 # Application Metrics
 ## Prerequisites
-- Setup monitoring stack
+- Setup [monitoring stack](manifests/cluster-monitoring.yaml)
 ```bash
 oc apply -f  manifests/cluster-monitoring.yaml
 ```
@@ -20,10 +20,16 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 ## Service Monitoring
 - Deploy application with custom metrics
   - Backend application provides metrics by /metrics and /metrics/applications
+    ```bash
+    oc apply -f metrics/frontend.yaml -n project1
+    oc apply -f metrics/backend.yaml -n project1
+    oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+    oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+    ```
   - Test backend application metrics
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics/applications
+    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics/application
     ```
   - Sample output
     ```bash
@@ -40,3 +46,15 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 ```
 oc apply -f manifests/backend-service-monitor.yaml -n project1
 ```
+- Developer Console monitoring metrics  
+  - Select application metrics
+
+    ![](images/dev-console-custom-metrics.png)
+
+  - Application metrics 
+    
+    Request counted
+    ![](images/dev-console-app-metrics-01.png)
+
+    Concurrent requests
+    ![](images/dev-console-app-metrics-02.png)
