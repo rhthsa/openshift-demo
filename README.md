@@ -3,6 +3,7 @@
   - Blue/Green Deployment
   - Canary Deployment
   - Configure TLS version
+- [Horizontal Pod Autoscaler](hpa.md)
 - [OpenShift Service Mesh](openshift-service-mesh.md)
   - Install and configure control plane
   - Sidecar injection
@@ -13,3 +14,4 @@
   - Traffic Analysis
   - Traffic Mirroring
   - Tracing
+- [Application Metrics](application-metrics.md)
