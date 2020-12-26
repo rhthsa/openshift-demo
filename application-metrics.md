@@ -1,4 +1,11 @@
 # Application Metrics
+<!-- TOC -->
+
+- [Application Metrics](#application-metrics)
+  - [Prerequisites](#prerequisites)
+  - [Service Monitoring](#service-monitoring)
+
+<!-- /TOC -->
 ## Prerequisites
 - Setup [monitoring stack](manifests/cluster-monitoring.yaml)
 ```bash
