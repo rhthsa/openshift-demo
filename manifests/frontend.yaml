@@ -23,6 +23,7 @@ spec:
       labels:
         app: frontend
         version: v1
+        maistra.io/expose-route: "true"
     spec:
       containers:
       - name: frontend
@@ -66,6 +67,7 @@ spec:
       labels:
         app: frontend
         version: v2
+        maistra.io/expose-route: "true"
     spec:
       containers:
       - name: frontend
