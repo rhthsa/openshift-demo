@@ -6,7 +6,7 @@ spec:
   hosts:
   - frontend.apps.SUBDOMAIN
   gateways:
-  - frontend-gateway.istio-system.svc.cluster.local
+  - istio-system/frontend-gateway
   http:
   - route:
     - destination:
