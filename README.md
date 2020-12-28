@@ -1,4 +1,20 @@
 # OpenShift Demo
+
+- [OpenShift Authentication Providers with AD](infrastructure-authentication-providers.md)
+  - OpenShift External Authentication Provider
+  - LDAP group sync
+  - Group Policy
+  - Access and Projects collaboration
+- [OpenShift Platform Monitoring and Alert](infrastructure-monitoring-alerts.md)
+  - Monitoring Stack
+  - AlertRules and Alert Receiver
+- [OpenShift Cluster Logging](infrastructure-cluster-logging.md)
+- [OpenShift Networking](infrastructure-networking.md)
+  - OpenShift Network Policies Based SDN
+  - Network Access Logs
+  - Egress IPs
+- [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
+
 - [OpenShift Route](openshift-route.md)
   - Blue/Green Deployment
   - Canary Deployment

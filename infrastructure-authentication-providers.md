@@ -7,7 +7,6 @@
     - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
         - [Background: LDAP Structure](#background-ldap-structure)
             - [Examine the OAuth configuration](#examine-the-oauth-configuration)
-    - [[source,yaml]](#sourceyaml)
             - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
             - [Change Group Policy](#change-group-policy)
             - [Examine cluster-reader policy](#examine-cluster-reader-policy)
@@ -116,8 +115,7 @@ existing identity management solution. For this lab we are configuring LDAP
 as our `identityProvider`. Here's an example of the OAuth configuration. Look
 for the element in `identityProviders` with `type: LDAP` like the following:
 
-[source,yaml]
-----
+```
 apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
@@ -148,7 +146,7 @@ spec:
       url: "ldaps://ldap.jumpcloud.com/ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com?uid?sub?(memberOf=cn=ose-user,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com)" <7>
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
-----
+```
 
 Some notable fields under `identityProviders:`:
 
