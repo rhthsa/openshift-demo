@@ -3,18 +3,18 @@
 <!-- TOC -->
 
 - [Authentication Providers with AD](#authentication-providers-with-ad)
-  - [Prerequisites](#prerequisites)
-  - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
-    - [Background: LDAP Structure](#background-ldap-structure)
-      - [Examine the OAuth configuration](#examine-the-oauth-configuration)
-  - [[source,yaml]](#sourceyaml)
-      - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
-      - [Change Group Policy](#change-group-policy)
-      - [Examine `cluster-reader` policy](#examine-cluster-reader-policy)
-      - [Create Projects for Collaboration](#create-projects-for-collaboration)
-      - [Map Groups to Projects](#map-groups-to-projects)
-      - [Examine Group Access](#examine-group-access)
-      - [Prometheus](#prometheus)
+    - [Prerequisites](#prerequisites)
+    - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
+        - [Background: LDAP Structure](#background-ldap-structure)
+            - [Examine the OAuth configuration](#examine-the-oauth-configuration)
+    - [[source,yaml]](#sourceyaml)
+            - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
+            - [Change Group Policy](#change-group-policy)
+            - [Examine cluster-reader policy](#examine-cluster-reader-policy)
+            - [Create Projects for Collaboration](#create-projects-for-collaboration)
+            - [Map Groups to Projects](#map-groups-to-projects)
+            - [Examine Group Access](#examine-group-access)
+            - [Prometheus](#prometheus)
 
 <!-- /TOC -->
 
