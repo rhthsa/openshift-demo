@@ -15,6 +15,6 @@
   - Traffic Analysis
   - Traffic Mirroring
   - Tracing
-- [Application Metrics](application-metrics.md)
-  - Setup Monitoring Stack
+- [User Workload Monitoring](application-metrics.md)
+  - Setup User Workload Monitoring
   - Configure Service Monitoring

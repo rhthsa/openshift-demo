@@ -1,15 +1,15 @@
-# Application Metrics
+# User Workload Metrics
 <!-- TOC -->
 
-- [Application Metrics](#application-metrics)
-  - [Prerequisites](#prerequisites)
-  - [Service Monitoring](#service-monitoring)
+- [User Workload Metrics](#user-workload-metrics)
+    - [Prerequisites](#prerequisites)
+    - [Service Monitoring](#service-monitoring)
 
 <!-- /TOC -->
 ## Prerequisites
-- Setup [monitoring stack](manifests/cluster-monitoring.yaml)
+- Setup [User Workload Monitoring](manifests/user-workload-monitoring.yaml)
 ```bash
-oc apply -f  manifests/cluster-monitoring.yaml
+oc apply -f  manifests/user-workload-monitoring.yaml
 ```
 - Verify monitoring stack
 ```bash
@@ -28,8 +28,8 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 - Deploy application with custom metrics
   - Backend application provides metrics by /metrics and /metrics/applications
     ```bash
-    oc apply -f metrics/frontend.yaml -n project1
-    oc apply -f metrics/backend.yaml -n project1
+    oc apply -f manifests/frontend.yaml -n project1
+    oc apply -f manifests/backend.yaml -n project1
     oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
     oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
     ```
