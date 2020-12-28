@@ -4,9 +4,6 @@
 
 - [Infrastructure Basic](#infrastructure-basic)
   - [Prerequisites](#prerequisites)
-  - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
-  - [OpenShift Mornitering and Alert](#openshift-mornitering-and-alert)
-  - [OpenShift Cluster Logging](#openshift-cluster-logging)
   - [Backup etcd](#backup-etcd)
     - [Backing up etcd data](#backing-up-etcd-data)
     - [Restoring to a previous cluster state](#restoring-to-a-previous-cluster-state)
@@ -20,12 +17,6 @@
   - Node subnet with DHCP pool
   - DNS
   - NTP
-
-## OpenShift RBAC with AD
-
-## OpenShift Mornitering and Alert
-
-## OpenShift Cluster Logging
 
 ## Backup etcd
 
