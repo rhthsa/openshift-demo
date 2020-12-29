@@ -355,7 +355,7 @@ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
   ```
 - Check Kiali Console
 
-  ![](images/istio-system-project.png)
+  ![](images/kiali-graph.png)
 
 - Traffic analysis for frontend app. Select Application->frontend->inbound traffic and outbound traffic
   
