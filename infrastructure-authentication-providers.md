@@ -3,27 +3,24 @@
 <!-- TOC -->
 
 - [Authentication Providers with AD](#authentication-providers-with-ad)
-    - [Prerequisites](#prerequisites)
-    - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
-        - [Background: LDAP Structure](#background-ldap-structure)
-            - [Examine the OAuth configuration](#examine-the-oauth-configuration)
-            - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
-            - [Change Group Policy](#change-group-policy)
-            - [Examine cluster-reader policy](#examine-cluster-reader-policy)
-            - [Create Projects for Collaboration](#create-projects-for-collaboration)
-            - [Map Groups to Projects](#map-groups-to-projects)
-            - [Examine Group Access](#examine-group-access)
-            - [Prometheus](#prometheus)
+  - [Prerequisites](#prerequisites)
+  - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
+    - [Background: LDAP Structure](#background-ldap-structure)
+      - [Examine the OAuth configuration](#examine-the-oauth-configuration)
+      - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
+      - [Change Group Policy](#change-group-policy)
+      - [Examine `cluster-reader` policy](#examine-cluster-reader-policy)
+      - [Create Projects for Collaboration](#create-projects-for-collaboration)
+      - [Map Groups to Projects](#map-groups-to-projects)
+      - [Examine Group Access](#examine-group-access)
+      - [Prometheus](#prometheus)
 
 <!-- /TOC -->
 
 ## Prerequisites
-- OpenShift 4.6 on VMware 6.7 U3+ or 7.0
-- VMware Cloud Native Storage to support CNS CSI
-- OpenShift installer
-  - Node subnet with DHCP pool
-  - DNS
-  - NTP
+- Microsoft AD (with LDAP protocol)
+- Users and Groups
+- Assigned Roles
 
 ## OpenShift RBAC with AD
 
@@ -42,17 +39,17 @@ membership.
 
 In this environment we are providing LDAP with the following user groups:
 
-* `ose-user`: Users with OpenShift access
+* `ocp-user`: Users with OpenShift access
   * Any users who should be able to log-in to OpenShift must be members of this
 group
   * All of the below mentioned users are in this group
-* `ose-normal-dev`: Normal OpenShift users
+* `ocp-normal-dev`: Normal OpenShift users
   * Regular users of OpenShift without special permissions
   * Contains: `normaluser1`, `teamuser1`, `teamuser2`
-* `ose-fancy-dev`: Fancy OpenShift users
+* `ocp-fancy-dev`: Fancy OpenShift users
   * Users of OpenShift that are granted some special privileges
   * Contains: `fancyuser1`, `fancyuser2`
-* `ose-teamed-app`: Teamed app users
+* `ocp-teamed-app`: Teamed app users
   * A group of users that will have access to the same OpenShift *Project*
   * Contains: `teamuser1`, `teamuser2`
 
@@ -122,28 +119,26 @@ metadata:
   name: cluster
 spec:
   identityProviders:
-  - name: ldap <1>
+  - name: ldap
     challenge: false
     login: true
-    mappingMethod: claim <2>
+    mappingMethod: claim
     type: LDAP
     ldap:
-      attributes: <3>
+      attributes:
         id:
-        - dn
+        - sAMAccountName
         email:
-        - mail
+        - userPrincipalName
         name:
-        - cn
+        - givenName
         preferredUsername:
-        - uid
-      bindDN: "uid=openshiftworkshop,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com" <4>
-      bindPassword: <5>
-        name: ldap-secret
-      ca: <6>
-        name: ca-config-map
-      insecure: false
-      url: "ldaps://ldap.jumpcloud.com/ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com?uid?sub?(memberOf=cn=ose-user,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com)" <7>
+        - sAMAccountName
+      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com"
+      bindPassword:
+        name: ldapuser-secret
+      insecure: true
+      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?uid?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 ```
@@ -156,8 +151,7 @@ able to distinguish between them.
 
 2. `mappingMethod: claim`: This section has to do with how usernames are
 assigned within an OpenShift cluster when multiple providers are configured. See
-the
-[Identity provider parameters](https://docs.openshift.com/container-platform/4.6/authentication/understanding-identity-provider.html#identity-provider-parameters-understanding-identity-provider) section for more information.
+the [Identity provider parameters](https://docs.openshift.com/container-platform/4.6/authentication/understanding-identity-provider.html#identity-provider-parameters-understanding-identity-provider) section for more information.
 
 3. `attributes`: This section defines the LDAP fields to iterate over and
 assign to the fields in the OpenShift user's "account". If any attributes are
@@ -170,10 +164,7 @@ the LDAP `cn`, and a username from the LDAP `uid`.
 
 5. `bindPassword`: Reference to the Secret that has the password to use when binding for searching.
 
-6. `ca`: Reference to the ConfigMap that contains the CA certificate to use for
-validating the SSL certificate of the LDAP server.
-
-7. `url`: Identifies the LDAP server and the search to perform.
+6. `url`: Identifies the LDAP server and the search to perform.
 
 For more information on the specific details of LDAP authentication in
 OpenShift you can refer to the
@@ -182,23 +173,49 @@ OpenShift you can refer to the
 To setup the LDAP identity provider we must:
 
 1. Create a `Secret` with the bind password.
-2. Create a `ConfigMap` with the CA certificate.
-3. Update the `cluster` `OAuth` object with the LDAP identity provider.
+2. Update the `cluster` `OAuth` object with the LDAP identity provider.
 
 As the `kubeadmin` user apply the OAuth configuration with `oc`.
 
 ```
 oc create secret generic ldap-secret --from-literal=bindPassword=b1ndP^ssword -n openshift-config
-wget https://ssl-ccp.godaddy.com/repository/gd-class2-root.crt -O {{ HOME_PATH }}/support/ca.crt
-oc create configmap ca-config-map --from-file={{ HOME_PATH }}/support/ca.crt -n openshift-config
-oc apply -f {{ HOME_PATH }}/support/oauth-cluster.yaml
+
+cat <<EOF | oc apply -f -
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+  - name: ldap
+    challenge: false
+    login: true
+    mappingMethod: claim
+    type: LDAP
+    ldap:
+      attributes:
+        id:
+        - sAMAccountName
+        email:
+        - userPrincipalName
+        name:
+        - givenName
+        preferredUsername:
+        - sAMAccountName
+      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com"
+      bindPassword:
+        name: ldapuser-secret
+      insecure: true
+      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?uid?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+  tokenConfig:
+    accessTokenMaxAgeSeconds: 86400
+EOF
 ```
 
 #### Syncing LDAP Groups to OpenShift Groups
 In OpenShift, groups can be used to manage users and control permissions for
 multiple users at once. There is a section in the documentation on how to
-link:https://docs.openshift.com/container-platform/3.11/install_config/syncing_groups_with_ldap.html[sync
-groups with LDAP^]. Syncing groups involves running a program called `groupsync`
+[sync groups with LDAP](https://docs.openshift.com/container-platform/3.11/install_config/syncing_groups_with_ldap.html). Syncing groups involves running a program called `groupsync`
 when logged into OpenShift as a user with `cluster-admin` privileges, and using
 a configuration file that tells OpenShift what to do with the users it finds in
 the various groups.
@@ -207,14 +224,34 @@ We have provided a `groupsync` configuration file for you:
 
 View configuration file
 ```
-cat {{ HOME_PATH }}/support/groupsync.yaml
+kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://ad1.dcloud.cisco.com:389
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
+bindPassword: b1ndP^ssword
+rfc2307:
+  groupsQuery:
+    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    derefAliases: never
+    filter: '(|(cn=ocp-*))'
+  groupUIDAttribute: sAMAccountName
+  groupNameAttributes:
+  - cn
+  groupMembershipAttributes:
+  - member
+  usersQuery:
+    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    derefAliases: never
+  userUIDAttribute: sAMAccountName
+  userNameAttributes:
+  - sAMAccountName
 ```
 
 Without going into too much detail (you can look at the documentation), the
 `groupsync` config file does the following:
 
 * searches LDAP using the specified bind user and password
-* queries for any LDAP groups whose name begins with `ose-`
+* queries for any LDAP groups whose name begins with `ocp-`
 * creates OpenShift groups with a name from the `cn` of the LDAP group
 * finds the members of the LDAP group and then puts them into the created
   OpenShift group
@@ -224,7 +261,30 @@ Without going into too much detail (you can look at the documentation), the
 Execute the `groupsync`:
 
 ```
-oc adm groups sync --sync-config={{ HOME_PATH }}/support/groupsync.yaml --confirm
+cat <<EOF >> groupsync.yaml
+kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://ad1.dcloud.cisco.com:389
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
+bindPassword: b1ndP^ssword
+rfc2307:
+  groupsQuery:
+    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    derefAliases: never
+    filter: '(|(cn=ocp-*))'
+  groupUIDAttribute: sAMAccountName
+  groupNameAttributes:
+  - cn
+  groupMembershipAttributes:
+  - member
+  usersQuery:
+    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    derefAliases: never
+  userUIDAttribute: sAMAccountName
+  userNameAttributes:
+  - sAMAccountName
+EOF
+oc adm groups sync --sync-config=./groupsync.yaml --confirm
 ```
 
 You will see output like the following:
