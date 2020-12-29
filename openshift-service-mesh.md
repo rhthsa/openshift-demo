@@ -73,7 +73,7 @@
     apiVersion: networking.istio.io/v1alpha3
     kind: Gateway
     metadata:
-    name: frontend
+    name: frontend-gateway
     spec:
     selector:
         istio: ingressgateway # use istio default controller
@@ -130,7 +130,7 @@
         hosts:
         - frontend.apps.SUBDOMAIN
         gateways:
-        - frontend-gateway.istio-system.svc.cluster.local
+        - istio-system/frontend-gateway
         http:
         - route:
         - destination:
@@ -181,7 +181,7 @@ curl $FRONTEND_ISTIO_ROUTE
     hosts:
     - frontend.apps.SUBDOMAIN
     gateways:
-    - frontend-gateway.istio-system.svc.cluster.local
+    - istio-system/frontend-gateway
     http:
     - route:
       - destination:
@@ -245,7 +245,7 @@ curl $FRONTEND_ISTIO_ROUTE
     hosts:
     - frontend.apps.SUBDOMAIN
     gateways:
-    - frontend-gateway.istio-system.svc.cluster.local
+    - istio-system/frontend-gateway
     http:
     - match:
         - uri:
@@ -294,7 +294,7 @@ curl $FRONTEND_ISTIO_ROUTE
     hosts:
     - frontend.apps.SUBDOMAIN
     gateways:
-    - frontend-gateway.istio-system.svc.cluster.local
+    - istio-gateway/frontend-gateway
     http:
     - match:
       - headers:
