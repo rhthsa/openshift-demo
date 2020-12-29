@@ -180,7 +180,7 @@ As the `kubeadmin` user apply the OAuth configuration with `oc`.
 ```
 oc create secret generic ldap-secret --from-literal=bindPassword=b1ndP^ssword -n openshift-config
 
-cat <<EOF | oc apply -f -
+cat <<EOF | oc create -f -
 apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
@@ -195,7 +195,7 @@ spec:
     ldap:
       attributes:
         id:
-        - sAMAccountName
+        - distinguishedName
         email:
         - userPrincipalName
         name:
@@ -206,7 +206,7 @@ spec:
       bindPassword:
         name: ldapuser-secret
       insecure: true
-      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?uid?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com???(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 EOF
@@ -227,14 +227,17 @@ View configuration file
 kind: LDAPSyncConfig
 apiVersion: v1
 url: ldap://ad1.dcloud.cisco.com:389
+insecure: true
 bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
 bindPassword: b1ndP^ssword
 rfc2307:
   groupsQuery:
     baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
     derefAliases: never
-    filter: '(|(cn=ocp-*))'
-  groupUIDAttribute: sAMAccountName
+    filter: (cn=ocp-*)
+    scope: sub
+    pageSize: 0
+  groupUIDAttribute: distinguishedName
   groupNameAttributes:
   - cn
   groupMembershipAttributes:
@@ -242,7 +245,10 @@ rfc2307:
   usersQuery:
     baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
     derefAliases: never
-  userUIDAttribute: sAMAccountName
+    filter: (objectclass=user)
+    scope: sub
+    pageSize: 0
+  userUIDAttribute: distinguishedName
   userNameAttributes:
   - sAMAccountName
 ```
@@ -261,18 +267,21 @@ Without going into too much detail (you can look at the documentation), the
 Execute the `groupsync`:
 
 ```
-cat <<EOF >> groupsync.yaml
+cat <<EOF > groupsync.yaml
 kind: LDAPSyncConfig
 apiVersion: v1
 url: ldap://ad1.dcloud.cisco.com:389
+insecure: true
 bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
 bindPassword: b1ndP^ssword
 rfc2307:
   groupsQuery:
     baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
     derefAliases: never
-    filter: '(|(cn=ocp-*))'
-  groupUIDAttribute: sAMAccountName
+    filter: (cn=ocp-*)
+    scope: sub
+    pageSize: 0
+  groupUIDAttribute: distinguishedName
   groupNameAttributes:
   - cn
   groupMembershipAttributes:
@@ -280,7 +289,10 @@ rfc2307:
   usersQuery:
     baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
     derefAliases: never
-  userUIDAttribute: sAMAccountName
+    filter: (objectclass=user)
+    scope: sub
+    pageSize: 0
+  userUIDAttribute: distinguishedName
   userNameAttributes:
   - sAMAccountName
 EOF
