@@ -127,7 +127,7 @@ spec:
     ldap:
       attributes:
         id:
-        - sAMAccountName
+        - distinguishedName
         email:
         - userPrincipalName
         name:
@@ -138,7 +138,7 @@ spec:
       bindPassword:
         name: ldapuser-secret
       insecure: true
-      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?uid?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 ```
@@ -157,8 +157,8 @@ the [Identity provider parameters](https://docs.openshift.com/container-platform
 assign to the fields in the OpenShift user's "account". If any attributes are
 not found / not populated when searching through the list, the entire
 authentication fails. In this case we are creating an identity that is
-associated with the LDAP `dn`, an email address from the LDAP `mail`, a name from
-the LDAP `cn`, and a username from the LDAP `uid`.
+associated with the AD `distinguishedName`, an email address from the LDAP `userPrincipalName`, a name from
+the LDAP `givenName`, and a username from the AD `sAMAccountName`.
 
 4. `bindDN`: When searching LDAP, bind to the server as this user.
 
@@ -206,7 +206,7 @@ spec:
       bindPassword:
         name: ldapuser-secret
       insecure: true
-      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com???(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 EOF
@@ -257,7 +257,7 @@ Without going into too much detail (you can look at the documentation), the
 `groupsync` config file does the following:
 
 * searches LDAP using the specified bind user and password
-* queries for any LDAP groups whose name begins with `ocp-`
+* queries for any LDAP groups whocp name begins with `ocp-`
 * creates OpenShift groups with a name from the `cn` of the LDAP group
 * finds the members of the LDAP group and then puts them into the created
   OpenShift group
@@ -302,10 +302,10 @@ oc adm groups sync --sync-config=./groupsync.yaml --confirm
 You will see output like the following:
 
 ```
-group/ose-fancy-dev
-group/ose-user
-group/ose-normal-dev
-group/ose-teamed-app
+group/ocp-fancy-dev
+group/ocp-user
+group/ocp-normal-dev
+group/ocp-teamed-app
 ```
 
 What you are seeing is the *Group* objects that have been created by the
@@ -322,16 +322,16 @@ You will see output like the following:
 
 ```
 NAME             USERS
-ose-fancy-dev    fancyuser1, fancyuser2
-ose-normal-dev   normaluser1, teamuser1, teamuser2
-ose-teamed-app   teamuser1, teamuser2
-ose-user         fancyuser1, fancyuser2, normaluser1, teamuser1, teamuser2
+ocp-fancy-dev    fancyuser1, fancyuser2
+ocp-normal-dev   normaluser1, teamuser1, teamuser2
+ocp-teamed-app   teamuser1, teamuser2
+ocp-user         fancyuser1, fancyuser2, normaluser1, teamuser1, teamuser2
 ```
 
 Take a look at a specific group in YAML:
 
 ```
-oc get group ose-fancy-dev -o yaml
+oc get group ocp-fancy-dev -o yaml
 ```
 
 The YAML looks like:
@@ -342,14 +342,14 @@ kind: Group
 metadata:
   annotations:
     openshift.io/ldap.sync-time: 2020-03-11T10:57:03-0400
-    openshift.io/ldap.uid: cn=ose-fancy-dev,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com
+    openshift.io/ldap.uid: cn=ocp-fancy-dev,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com
     openshift.io/ldap.url: ldap.jumpcloud.com:636
   creationTimestamp: "2020-03-11T14:57:03Z"
   labels:
     openshift.io/ldap.host: ldap.jumpcloud.com
-  name: ose-fancy-dev
+  name: ocp-fancy-dev
   resourceVersion: "48481"
-  selfLink: /apis/user.openshift.io/v1/groups/ose-fancy-dev
+  selfLink: /apis/user.openshift.io/v1/groups/ocp-fancy-dev
   uid: 630a9d2b-b577-46bd-8294-6b26e7f9a6e1
 users:
 - fancyuser1
@@ -381,26 +381,26 @@ be associated with the *Group*.
 
 #### Change Group Policy
 In your environment, there is a special group of super developers called
-_ose-fancy-dev_ who should have special `cluster-reader` privileges. This is a role
+_ocp-fancy-dev_ who should have special `cluster-reader` privileges. This is a role
 that allows a user to view administrative-level information about the cluster.
 For example, they can see the list of all *Projects* in the cluster.
 
-Change the policy for the `ose-fancy-dev` *Group*:
+Change the policy for the `ocp-fancy-dev` *Group*:
 
 ```
-oc adm policy add-cluster-role-to-group cluster-reader ose-fancy-dev
+oc adm policy add-cluster-role-to-group cluster-reader ocp-fancy-dev
 ```
 
 
 **Note:** If you are interested in the different roles that come with OpenShift, you can
 learn more about them in the
-link:https://docs.openshift.com/container-platform/4.1/authentication/using-rbac.html[role-based access control (RBAC)^] documentation.
+[role-based access control (RBAC)](https://docs.openshift.com/container-platform/4.6/authentication/using-rbac.html) documentation.
 
 #### Examine `cluster-reader` policy
 Go ahead and login as a regular user:
 
 ```
-oc login -u normaluser1 -p Op#nSh1ft
+oc login -u normaluser1 -p openshift
 ```
 
 Then, try to list *Projects*:
@@ -415,10 +415,10 @@ You will see:
 No resources found.
 ```
 
-Now, login as a member of `ose-fancy-dev`:
+Now, login as a member of `ocp-fancy-dev`:
 
 ```
-oc login -u fancyuser1 -p Op#nSh1ft
+oc login -u fancyuser1 -p openshift
 ```
 
 And then perform the same `oc get projects` and you will now see the list of all
@@ -443,7 +443,7 @@ Platform can work.
 Make sure you login as the cluster administrator:
 
 ```
-oc login -u system:serviceaccount:lab-ocp-cns:dashboard-user
+oc login -u ldapuser
 ```
 
 Then, create several *Projects* for people to collaborate:
@@ -478,24 +478,24 @@ projects.
 #### Map Groups to Projects
 As you saw earlier, there are several roles within OpenShift that are
 preconfigured. When it comes to *Projects*, you similarly can grant view, edit,
-or administrative access. Let's give our `ose-teamed-app` users access to edit the
+or administrative access. Let's give our `ocp-teamed-app` users access to edit the
 development and testing projects:
 
 ```
-oc adm policy add-role-to-group edit ose-teamed-app -n app-dev
-oc adm policy add-role-to-group edit ose-teamed-app -n app-test
+oc adm policy add-role-to-group edit ocp-teamed-app -n app-dev
+oc adm policy add-role-to-group edit ocp-teamed-app -n app-test
 ```
 
 And then give them access to view production:
 
 ```
-oc adm policy add-role-to-group view ose-teamed-app -n app-prod
+oc adm policy add-role-to-group view ocp-teamed-app -n app-prod
 ```
 
-Now, give the `ose-fancy-dev` group edit access to the production project:
+Now, give the `ocp-fancy-dev` group edit access to the production project:
 
 ```
-oc adm policy add-role-to-group edit ose-fancy-dev -n app-prod
+oc adm policy add-role-to-group edit ocp-fancy-dev -n app-prod
 ```
 
 #### Examine Group Access
@@ -512,7 +512,7 @@ You should get:
 No resources found.
 ```
 
-Then, try `teamuser1` from the `ose-teamed-app` group:
+Then, try `teamuser1` from the `ocp-teamed-app` group:
 
 ```
 oc login -u teamuser1 -p Op#nSh1ft
@@ -595,16 +595,13 @@ control+click the [Prometheus link](https://prometheus-k8s-openshift-monitoring.
 greeted with a login screen. Click the *Log in with OpenShift* button, then
 select the `ldap` auth mechanism, and use the `fancyuser1` user that you gave
 `cluster-reader` privileges to earlier. More specifically, the
-`ose-fancy-dev` group has `cluster-reader` permissions, and `fancyuser1` is a
+`ocp-fancy-dev` group has `cluster-reader` permissions, and `fancyuser1` is a
 member. Remember that the password for all of these users is `openshift`. You
 will probably get a certificate error because of the self-signed certificate.
 Make sure to accept it.
 
 After logging in, the first time you will be presented with an auth proxy
-permissions acknowledgement:
-
-.Auth Proxy Acceptance.
-image::images/prometheus-auth-proxy.png[]
+permissions acknowledgement.
 
 There is actually an OAuth proxy that sits in the flow between you and the
 Prometheus container. This proxy is used to validate your AuthenticatioN
