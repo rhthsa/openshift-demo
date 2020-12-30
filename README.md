@@ -5,14 +5,17 @@
   - LDAP group sync
   - Group Policy
   - Access and Projects collaboration
+- [OpenShift MachineSet and Infrastructure Nodes](infrastructure-infra-nodes.md)
+  - MachineSet on VMware
+  - Infrastructure Node and Moving Cluster Services to Infra Nodes
 - [OpenShift Platform Monitoring and Alert](infrastructure-monitoring-alerts.md)
   - Monitoring Stack
   - AlertRules and Alert Receiver
 - [OpenShift Cluster Logging](infrastructure-cluster-logging.md)
 - [OpenShift Networking](infrastructure-networking.md)
   - OpenShift Network Policies Based SDN
-  - Network Access Logs
   - Egress IPs
+  - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
 
 - [OpenShift Route](openshift-route.md)
