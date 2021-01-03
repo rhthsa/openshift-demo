@@ -1,0 +1,98 @@
+apiVersion: v1
+items:
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: front-green
+      app.kubernetes.io/component: front-green
+      app.kubernetes.io/instance: front-green
+      app.kubernetes.io/name: dotnet
+      app.kubernetes.io/part-of: front-green
+      app.openshift.io/runtime: dotnet
+    name: front-green
+  spec:
+    replicas: 0
+    selector:
+      deploymentconfig: front-green
+    strategy:
+      resources: {}
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          deploymentconfig: front-green
+      spec:
+        containers:
+        - env:
+          - name: ITERATION_COUNT
+            value: '1000'
+          - name: BACKEND_URL
+            value: http://back:8080/api/values/back
+          - name: ASPNETCORE_URLS
+            value: http://*:8080            
+          image: image-registry.openshift-image-registry.svc:5000/bot/front-green:latest
+          name: front-green
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 50m
+              memory: 512Mi
+            requests:
+              cpu: 25m
+              memory: 256Mi               
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - front-green
+        from:
+          kind: ImageStreamTag
+          name: front-green:latest
+          namespace: bot
+      type: ImageChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: front-green
+      app.kubernetes.io/component: front-green
+      app.kubernetes.io/instance: front-green
+    name: front-green
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      deploymentconfig: front-green
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
