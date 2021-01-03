@@ -38,3 +38,9 @@
   - Setup User Workload Monitoring
   - Configure Service Monitoring
 - [CI/CD](ci-cd.md)
+  - Azure DevOps
+  - Deploy Back App
+  - Deploy Front App
+  - Prepare Harbor On Kubernetes/OpenShift
+  - Prepare Azure DevOps Service Connection
+  - Azure pipelines
