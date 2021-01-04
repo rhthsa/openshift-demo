@@ -70,6 +70,7 @@ Procedure
 
     ```
     cat <<EOF | oc apply -f -
+    ---
     apiVersion: v1
     kind: ConfigMap
     metadata:
@@ -77,6 +78,7 @@ Procedure
       namespace: openshift-monitoring
     data:
       config.yaml: |
+        enableUserWorkload: true
         prometheusK8s: 
           retention: 7d
           externalLabels:
@@ -96,6 +98,20 @@ Procedure
               resources:
                 requests:
                   storage: 5Gi
+    ---
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: user-workload-monitoring-config
+      namespace: openshift-user-workload-monitoring
+    data:
+      config.yaml: |
+      prometheus: 
+          retention: 12h 
+          resources:
+            requests:
+              cpu: 200m 
+              memory: 4Gi
     EOF
     ```
     
@@ -153,7 +169,16 @@ Before we configure the AlertManager to send email and slack alert, we will need
    oc expose service/maildev --port=80
    ```
    From this deployment you can reach smtp via `maildev.default.svc.cluster.local:25` and webmail from route host using command `oc get route`
+
 2. Create Slack Channel webhooks token, or use prepared token you have
+   
+3. Webhook notification with line-notify-gateway
+   You will need to setup [Line Notification service](https://notify-bot.line.me/my/) to allow Line Notifications in your chat group. After you setup you will get your token to use in AlertManager webhook to `line-notify-gateway` container, which is provided as an example for receive AlertManager webhook json and send to Line Notification Service.
+
+   ```
+   oc -n default new-app --docker-image=nontster/line-notify-gateway
+   oc -n default get svc
+   ```
 
 **Configuring alert receivers**
 
@@ -161,7 +186,7 @@ Procedure
 
 1. In the Administrator perspective, navigate to Administration → Cluster Settings → Global Configuration → Alertmanager.
 
-2. You can apply Alert Receivers configuration 
+2. You can apply Alert Receivers configuration example that includes receivers for smtp to webmail, slack and line-notification-gateway.
 
     ```
     cat <<EOF | oc apply -f -

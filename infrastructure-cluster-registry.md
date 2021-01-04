@@ -5,7 +5,6 @@
 - [Cluster Metering and Cost Management](#cluster-metering-and-cost-management)
   - [Prerequisites](#prerequisites)
   - [OpenShift Internal Registry for vSphere](#openshift-internal-registry-for-vsphere)
-  - [OpenShift External Registry](#openshift-external-registry)
 
 <!-- /TOC -->
 
@@ -43,7 +42,4 @@ Procedure
     ```
     oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed","rolloutStrategy":"Recreate","storage":{"pvc":{"claim":"image-registry-storage"}}}}'
     ```
-
-## OpenShift External Registry
-
 
