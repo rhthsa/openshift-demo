@@ -3,15 +3,15 @@
 <!-- TOC -->
 
 - [Cluster Monitoring and Alerts](#cluster-monitoring-and-alerts)
-  - [Prerequisites](#prerequisites)
-  - [OpenShift Mornitering and Alert](#openshift-mornitering-and-alert)
-  - [Configuring the monitoring stack](#configuring-the-monitoring-stack)
-  - [Managing alerts](#managing-alerts)
-  - [Sending notifications to external systems](#sending-notifications-to-external-systems)
-  - [Tesing Alerts](#tesing-alerts)
-    - [Platform Alert Rules](#platform-alert-rules)
-    - [PV Alert Rules](#pv-alert-rules)
-    - [Application Errors Alert Rules](#application-errors-alert-rules)
+    - [Prerequisites](#prerequisites)
+    - [OpenShift Mornitering and Alert](#openshift-mornitering-and-alert)
+    - [Configuring the monitoring stack](#configuring-the-monitoring-stack)
+    - [Managing alerts](#managing-alerts)
+    - [Sending notifications to external systems](#sending-notifications-to-external-systems)
+    - [Tesing Alerts](#tesing-alerts)
+        - [Platform Alert Rules](#platform-alert-rules)
+        - [PV Alert Rules](#pv-alert-rules)
+        - [Application Errors Alert Rules](#application-errors-alert-rules)
 
 <!-- /TOC -->
 
@@ -111,7 +111,7 @@ Procedure
             resources:
               requests:
                 cpu: 200m 
-                memory: 4Gi
+                memory: 1Gi
     EOF
     ```
     

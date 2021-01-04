@@ -144,8 +144,6 @@ Now that we have the operators installed, along with the CRDs, we can now kick o
         logs:
           type: "fluentd"
           fluentd: {}
-          nodeSelector:
-            node-role.kubernetes.io/infra: ""
     ```
 6. Then click Create.
 
