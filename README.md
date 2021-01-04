@@ -24,6 +24,7 @@
   - Configure TLS version
 - [Horizontal Pod Autoscaler](hpa.md)
   - HPA by CPU
+  - HPA by Memory
 - [OpenShift Service Mesh](openshift-service-mesh.md)
   - Install and configure control plane
   - Sidecar injection

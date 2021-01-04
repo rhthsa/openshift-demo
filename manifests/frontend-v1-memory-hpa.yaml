@@ -1,8 +1,7 @@
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: frontend-v1-cpu
-  namespace: project1
+  name: frontend-v1-memory
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -11,12 +10,12 @@ spec:
   minReplicas: 1
   maxReplicas: 3
   metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          averageUtilization: 80
-          type: Utilization
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageValue: 50Mi
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 60
