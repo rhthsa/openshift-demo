@@ -182,10 +182,14 @@ current step in ci or pipeline
 - build
 - unit test --> publish to Azure DevOps
 - code coverage with cobertura --> publish to Azure DevOps
+- publish
+- login registry.redhat.io for pull ubi8/dotnet-21-runtime
+- build image
+- install trivy, scan image
 - harbor login, with self sign of harbor, need copy ca.crt to docker 
 (such as /etc/docker/certs.d/ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/ca.crt ) in Azure DevOps agent 
 and manual login, recommended use CA in Prod
-- build image and push to harbor 
+- push image to harbor 
 
 Releases: bot dev [botdev.json](ci-cd/botdev.json)
 
