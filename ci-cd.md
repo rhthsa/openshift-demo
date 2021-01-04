@@ -151,7 +151,7 @@ helm install harbor harbor/harbor \
 
 Service Connection: openshift
 
-select new service connection select type Openshift
+select new service connection, select type Openshift
 - Authentication method: Token Based Authentication
 - Server URL: such as https://api.cluster-b3e9.b3e9.example.opentlc.com:6443
 - accept untrusted SSL: checked
@@ -161,13 +161,24 @@ select new service connection select type Openshift
 
 Service Connection: harbor
 
-select new service connection select type docker registry
+select new service connection, select type docker registry
 - registry type: Others
 - Docker Registry: such as https://ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/
 - Docker ID: harbor user
 - Docker Password: harbor password
 - service connection name: harbor
 - grant access permission to all pipelines: checked
+
+Service Connection: fortify
+
+select new service connection, select type fortify 
+- authen mode: basic authen
+- api url: https://api.trial.fortify.com
+- portal url: https://trial.fortify.com
+- username: chatapazar@gmail.com
+- PAT: NDB3aHBsVElTeExbezlvaSdjQjVVS1JQb2dnM3JL0
+- Tenant ID: red_hat_12_FMA_104731079
+- connection name: fortify
 
 
 ## Azure pipelines
