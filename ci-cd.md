@@ -36,6 +36,13 @@
 
     `BOTDemoApplication.Back Repository` : https://chatapazar0583@dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_git/BOTDemoApplication.Back
 
+- Azure Artifact
+    
+    create new feed
+    
+    'name': my-very-private-feed
+    
+    leave all default
 
 ## Deploy Back App
 
