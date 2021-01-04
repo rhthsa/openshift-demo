@@ -79,10 +79,13 @@ get ca.crt with openssl
 openssl s_client -connect ocr.apps.cluster-b3e9.b3e9.example.opentlc.com:443 -showcerts </dev/null 2>/dev/null|openssl x509 -outform PEM > ca.crt
 ```
 or
-get cert with firefox (ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/v2 --> select PEM chain (not cert))
+get cert with firefox (ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/v2 --> select both PEM & PEM chain)
 
-create configmap and add trust ca to openshift
+create configmap and add trust ca to openshift (both PEM & PEM chain
 ```
+oc create configmap harbor-registry --from-file=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com=ca1.crt -n openshift-config
+oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"harbor-registry"}}}' --type=merge
+
 oc create configmap registry-config --from-file=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com=ca.crt -n openshift-config
 oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedCA":{"name":"registry-config"}}}' --type=merge
 ```
