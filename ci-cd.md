@@ -183,6 +183,7 @@ current step in ci or pipeline
 - unit test --> publish to Azure DevOps
 - code coverage with cobertura --> publish to Azure DevOps
 - publish
+- Option: scan code with fortify (use fortify on demand, don't have fortify scs license file)
 - login registry.redhat.io for pull ubi8/dotnet-21-runtime
 - build image
 - install trivy, scan image
