@@ -9,7 +9,6 @@
   - [Cost Management](#cost-management)
     - [Install Metering Operator](#install-metering-operator)
       - [Install Metering Stack](#install-metering-stack)
-  - [cat <<EOF | oc create -f -](#cat-eof--oc-create--f--)
       - [Cost Management Operator](#cost-management-operator)
 
 <!-- /TOC -->
@@ -96,6 +95,7 @@ For this demo, we will use Minio to provide S3 bucket for metering and cost mana
 
 #### Install Metering Stack
 
+```
 cat <<EOF | oc create -f -
 ---
 apiVersion: metering.openshift.io/v1
@@ -129,6 +129,7 @@ data:
   aws-access-key-id: "bWluaW8="
   aws-secret-access-key: "bWluaW8xMjM="
 EOF
+```
 
 Operators > Installed Operators
 Under Provided APIs > Create Instance 
