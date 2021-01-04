@@ -117,6 +117,14 @@ ASPNETCORE_URLS=http://*:8080
 
 ## Prepare Harbor On Kubernetes/OpenShift
 
+create new project 'harbor'
+```
+oc new-project harbor
+oc adm policy add-scc-to-group anyuid system:authenticated
+```
+
+install harbor with helm: https://computingforgeeks.com/install-harbor-image-registry-on-kubernetes-openshift-with-helm-chart/
+
 ```
 helm install harbor harbor/harbor \
 --set persistence.persistentVolumeClaim.registry.size=10Gi \
