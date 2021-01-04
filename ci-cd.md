@@ -40,7 +40,7 @@
     
     create new feed
     
-    'name': my-very-private-feed
+    `name`: my-very-private-feed
     
     leave all default
 
