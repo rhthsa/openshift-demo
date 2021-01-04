@@ -7,6 +7,10 @@
     - [OpenShift Infrastructure Nodes](#openshift-infrastructure-nodes)
     - [OpenShift MachineSet](#openshift-machineset)
     - [Defining a Custom MachineSet](#defining-a-custom-machineset)
+        - [Logging](#logging)
+    - [Machine Config](#machine-config)
+        - [MachineConfig overview](#machineconfig-overview)
+        - [Checking Machine Config Pool status](#checking-machine-config-pool-status)
 
 <!-- /TOC -->
 
@@ -301,6 +305,227 @@ data:
         node-role.kubernetes.io/infra: ""
 ```
 
-###Logging
+### Logging
 OpenShift’s log aggregation solution is not installed by default. There is a dedicated lab exercise that goes through the configuration and deployment of logging.
+
+## Machine Config
+
+There are times when you need to make changes to the operating systems running on OpenShift Container Platform nodes. This can include changing settings for network time service, adding kernel arguments, or configuring journaling in a specific way.
+
+### MachineConfig overview
+
+The Machine Config Operator (MCO) manages updates to systemd, CRI-O and Kubelet, the kernel, Network Manager and other system features. It also offers a MachineConfig CRD that can write configuration files onto the host. Understanding what MCO does and how it interacts with other components is critical to making advanced, system-level changes to an OpenShift Container Platform cluster. Here are some things you should know about MCO, MachineConfigs, and how they are used:
+
+- A MachineConfig can make a specific change to a file or service on the operating system of each system representing a pool of OpenShift Container Platform nodes.
+- MCO is only supported for writing to files in /etc and /var directories, although there are symbolic links to some directories that can be writeable by being symbolically linked to one of those areas. The /opt directory is an example.
+- Ignition is the configuration format used in MachineConfigs. See the [Ignition Configuration Specification v3.1.0](https://github.com/coreos/ignition/blob/master/docs/configuration-v3_1.md) for details.
+
+### Checking Machine Config Pool status
+To see the status of the Machine Config Operator, its sub-components, and the resources it manages, use the following oc commands:
+
+**Procedure**
+To see the number of MCO-managed nodes available on your cluster for each pool, type:
+
+```
+oc get machineconfigpool
+```
+
+result
+```
+NAME      CONFIG                  UPDATED  UPDATING   DEGRADED  MACHINECOUNT  READYMACHINECOUNT  UPDATEDMACHINECOUNT DEGRADEDMACHINECOUNT  AGE
+master    rendered-master-dd…     True     False      False     3             3                  3                                0                     4h42m
+worker    rendered-worker-fde…    True     False      False     3             3                  3                                0                     4h42m
+```
+
+In the previous output, there are three master and three worker nodes. All machines are updated and none are currently updating. Because all nodes are Updated and Ready and none are Degraded, you can ell that there are no issues.
+
+To see each existing machineconfig, type:
+
+```
+oc get machineconfigs
+```
+
+result
+```
+NAME                             GENERATEDBYCONTROLLER          IGNITIONVERSION  AGE
+00-master                        2c9371fbb673b97a6fe8b1c52...   3.1.0            5h18m
+00-worker                        2c9371fbb673b97a6fe8b1c52...   3.1.0            5h18m
+01-master-container-runtime      2c9371fbb673b97a6fe8b1c52...   3.1.0            5h18m
+01-master-kubelet                2c9371fbb673b97a6fe8b1c52…     3.1.0            5h18m
+...
+rendered-master-dde...           2c9371fbb673b97a6fe8b1c52...   3.1.0            5h18m
+rendered-worker-fde...           2c9371fbb673b97a6fe8b1c52...   3.1.0            5h18m
+```
+Note that the machineconfigs listed as rendered are not meant to be changed or deleted. Expect them to be hidden at some point in the future.
+
+Check the status of worker (or change to master) to see the status of that pool of nodes:
+
+``
+oc describe mcp worker
+```
+...
+  Degraded Machine Count:     0
+  Machine Count:              3
+  Observed Generation:        2
+  Ready Machine Count:        3
+  Unavailable Machine Count:  0
+  Updated Machine Count:      3
+Events:                       <none>
+```
+
+You can view the contents of a particular machineconfig (in this case, 01-master-kubelet). The trimmed output from the following oc describe command shows that this machineconfig contains both configuration files (cloud.conf and kubelet.conf) and a systemd service (Kubernetes Kubelet):
+
+```
+oc describe machineconfigs 01-master-kubelet
+```
+
+result
+```
+Name:         01-master-kubelet
+...
+Spec:
+  Config:
+    Ignition:
+      Version:  3.1.0
+    Storage:
+      Files:
+        Contents:
+          Source:   data:,
+        Mode:       420
+        Overwrite:  true
+        Path:       /etc/kubernetes/cloud.conf
+        Contents:
+          Source:   data:,kind%3A%20KubeletConfiguration%0AapiVersion%3A%20kubelet.config.k8s.io%2Fv1beta1%0Aauthentication%3A%0A%20%20x509%3A%0A%20%20%20%20clientCAFile%3A%20%2Fetc%2Fkubernetes%2Fkubelet-ca.crt%0A%20%20anonymous...
+        Mode:       420
+        Overwrite:  true
+        Path:       /etc/kubernetes/kubelet.conf
+    Systemd:
+      Units:
+        Contents:  [Unit]
+Description=Kubernetes Kubelet
+Wants=rpc-statd.service network-online.target crio.service
+After=network-online.target crio.service
+
+ExecStart=/usr/bin/hyperkube \
+    kubelet \
+      --config=/etc/kubernetes/kubelet.conf \ ...\
+```
+
+Using MachineConfigs to configure nodes
+Tasks in this section let you create MachineConfig objects to modify files, systemd unit files, and other operating system features running on OpenShift Container Platform nodes. For more ideas on working with MachineConfigs, see content related to changing MTU network settings, adding or updating SSH authorized keys, , replacing DNS nameservers, verifying image signatures, enabling SCTP, and configuring iSCSI initiatornames for OpenShift Container Platform.
+
+MachineConfigs
+
+OpenShift Container Platform version 4.6 supports Ignition specification version 3.1. All new MachineConfigs you create going forward should be based on Ignition specification version 3.1. If you are upgrading your OpenShift Container Platform cluster, any existing Ignition specification version 2.x MachineConfigs will be translated automatically to specification version 3.1.
+
+Configuring chrony time service
+You can set the time server and related settings used by the chrony time service (chronyd) by modifying the contents of the chrony.conf file and passing those contents to your nodes as a machine config.
+
+Procedure
+- Create the contents of the chrony.conf file and encode it as base64. Specify any valid, reachable time source. For example:
+
+  ```
+  cat << EOF > chrony.conf
+  pool 198.18.128.1 iburst
+  driftfile /var/lib/chrony/drift
+  rtcsync
+  makestep 1.0 3
+  logdir /var/log/chrony
+  EOF
+  ```
+
+- Create the MachineConfig object file, replacing the base64 string with the one you just created yourself. This example adds the file to master nodes. You can change it to worker or make an additional MachineConfig object for the worker role:
+
+  ```
+  cat << EOF > ./99_masters-chrony-configuration.yaml
+  apiVersion: machineconfiguration.openshift.io/v1
+  kind: MachineConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      machineconfiguration.openshift.io/role: master
+    name: 99-master-etc-chrony-conf
+  spec:
+    config:
+      ignition:
+        config: {}
+        security:
+          tls: {}
+        timeouts: {}
+        version: 3.1.0
+      networkd: {}
+      passwd: {}
+      storage:
+        files:
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,$(cat chrony.conf | base64 -w 0)
+          group:
+            name: root
+          mode: 420
+          overwrite: true
+          path: /etc/chrony.conf
+          user:
+            name: root
+    osImageURL: ""
+  EOF
+    
+  cat << EOF > ./99_workers-chrony-configuration.yaml
+  apiVersion: machineconfiguration.openshift.io/v1
+  kind: MachineConfig
+  metadata:
+    creationTimestamp: null
+    labels:
+      machineconfiguration.openshift.io/role: worker
+    name: 99-worker-etc-chrony-conf
+  spec:
+    config:
+      ignition:
+        config: {}
+        security:
+          tls: {}
+        timeouts: {}
+        version: 3.1.0
+      networkd: {}
+      passwd: {}
+      storage:
+        files:
+        - contents:
+            source: data:text/plain;charset=utf-8;base64,$(cat chrony.conf | base64 -w 0)
+          group:
+            name: root
+          mode: 420
+          overwrite: true
+          path: /etc/chrony.conf
+          user:
+            name: root
+    osImageURL: ""
+  EOF
+  ```
+
+- Make a backup copy of the configuration file.
+
+- Apply the configuration in one of two ways:
+  - If the cluster is not up yet, generate manifest files, add this file to the openshift directory, and then continue to create the cluster. Example:
+
+    generate the cluster manifests:
+    ```
+    ./openshift-install create manifests --dir install-config/ --log-level debug
+    ```
+
+    And then copy the 2 files into install_dir/manifests:
+    ```
+    cp 99_masters-chrony-configuration.yaml install-config/manifests/.
+    cp 99_workers-chrony-configuration.yaml install-config/manifests/.
+    ```
+
+    Then, deploy the cluster:
+    ```
+    ./openshift-install create cluster --dir install-config/ --log-level debug
+    ```
+
+  - If the cluster is already running, apply the file as follows:
+    ```
+    oc apply -f ./99_masters-chrony-configuration.yaml
+    oc apply -f ./99_workers-chrony-configuration.yaml
+    ```
 
