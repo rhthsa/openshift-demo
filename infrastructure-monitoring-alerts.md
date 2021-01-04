@@ -106,12 +106,12 @@ Procedure
       namespace: openshift-user-workload-monitoring
     data:
       config.yaml: |
-      prometheus: 
-          retention: 12h 
-          resources:
-            requests:
-              cpu: 200m 
-              memory: 4Gi
+        prometheus: 
+            retention: 12h 
+            resources:
+              requests:
+                cpu: 200m 
+                memory: 4Gi
     EOF
     ```
     
