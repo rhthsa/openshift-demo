@@ -229,6 +229,23 @@ stage 2: scale down previous version
 
 Test with postman script of BOT
 
+## Canary Deployment
 
+change in front route with yaml or oc patch
+```
+spec:
+  host: front-bot.apps.cluster-852b.852b.example.opentlc.com
+  to:
+    kind: Service
+    name: front-blue
+    weight: 90
+  alternateBackends:
+    - kind: Service
+      name: front-green
+      weight: 10
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
+```
 
    
