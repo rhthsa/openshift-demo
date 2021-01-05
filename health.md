@@ -161,6 +161,15 @@ For demo purpose we can set readiness and liveness by following URI
       oc exec -n project1 $POD -- curl -s http://localhost:8080/not_ready
       printf "\n%s is not ready\n" $POD
       ```
+  - Check pod status
+    ```bash
+    oc get pods -n project1
+    ## Sample output
+    NAME                           READY   STATUS    RESTARTS   AGE
+    frontend-v1-5d8c4ccc8c-j9b6d   0/1     Running   1          5m28s
+    frontend-v1-5d8c4ccc8c-lx4xb   1/1     Running   0          4m3s
+    frontend-v1-5d8c4ccc8c-qvxwp   1/1     Running   0          4m3s
+    ```
   - Check pod's events
     ```bash
     oc describe pod/$POD -n project1
@@ -181,6 +190,9 @@ For demo purpose we can set readiness and liveness by following URI
     ```bash
     oc describe svc/frontend-v1 -n project1
     ```
+- Test 
+```bash
+```
 - Check developer console
   
     ![](images/pod-not-ready-dev-console.png)
