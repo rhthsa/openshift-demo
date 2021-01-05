@@ -3,9 +3,9 @@
 <!-- TOC -->
 
 - [OpenShift Infrastructure Nodes](#openshift-infrastructure-nodes)
-  - [Prerequisites](#prerequisites)
-  - [OpenShift Cluster Logging](#openshift-cluster-logging)
-    - [Deploying OpenShift Logging](#deploying-openshift-logging)
+    - [Prerequisites](#prerequisites)
+    - [OpenShift Cluster Logging](#openshift-cluster-logging)
+        - [Deploying OpenShift Logging](#deploying-openshift-logging)
 
 <!-- /TOC -->
 

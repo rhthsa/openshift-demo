@@ -3,15 +3,12 @@
 <!-- TOC -->
 
 - [Cluster Monitoring and Alerts](#cluster-monitoring-and-alerts)
-    - [Prerequisites](#prerequisites)
-    - [OpenShift Mornitering and Alert](#openshift-mornitering-and-alert)
-    - [Configuring the monitoring stack](#configuring-the-monitoring-stack)
-    - [Managing alerts](#managing-alerts)
-    - [Sending notifications to external systems](#sending-notifications-to-external-systems)
-    - [Tesing Alerts](#tesing-alerts)
-        - [Platform Alert Rules](#platform-alert-rules)
-        - [PV Alert Rules](#pv-alert-rules)
-        - [Application Errors Alert Rules](#application-errors-alert-rules)
+  - [Prerequisites](#prerequisites)
+  - [OpenShift Mornitering and Alert](#openshift-mornitering-and-alert)
+  - [Configuring the monitoring stack](#configuring-the-monitoring-stack)
+  - [Managing alerts](#managing-alerts)
+  - [Sending notifications to external systems](#sending-notifications-to-external-systems)
+  - [Tesing Alerts](#tesing-alerts)
 
 <!-- /TOC -->
 
@@ -284,8 +281,156 @@ Procedure
 
 ## Tesing Alerts
 
-### Platform Alert Rules
+We will demontrate Alerts from Prometheus and AlertManager by using Platform and User Workload application with metrics from cpu, memory, persistent volume resource.
 
-### PV Alert Rules
+**Procedures**
 
-### Application Errors Alert Rules
+- Deploy a sample httpd pod with persistent volume 1G size mount to `/httpd-pvc` path 
+  
+  ```
+  cat << EOF | oc create -f -
+  ---
+  kind: Deployment
+  apiVersion: apps/v1
+  metadata:
+    name: httpd-24
+    namespace: user1
+    labels:
+      app: httpd-24
+      app.kubernetes.io/component: httpd-24
+      app.kubernetes.io/instance: httpd-24
+      app.kubernetes.io/part-of: httpd-24-app
+      app.openshift.io/runtime-namespace: user1
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: httpd-24
+    template:
+      metadata:
+        labels:
+          app: httpd-24
+          deploymentconfig: httpd-24
+      spec:
+        volumes:
+          - name: httpd-pvc
+            persistentVolumeClaim:
+              claimName: httpd-pvc
+        containers:
+          - name: httpd-24
+            image: registry.redhat.io/rhel8/httpd-24
+            ports:
+              - containerPort: 8080
+                protocol: TCP
+              - containerPort: 8443
+                protocol: TCP
+            volumeMounts:
+              - name: httpd-pvc
+                mountPath: /httpd-pvc
+  ---
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: httpd-pvc
+    namespace: user1
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: thin
+    volumeMode: Filesystem
+  EOF
+  ```
+
+- rsh to httpd pod to check PV size and use `fallocate` command to make PV high utilization (>95%)
+
+  ```
+  oc rsh $(oc -n user1 get pod | grep httpd | cut -d' ' -f1)
+  ```
+
+  check volume utilization
+  ```
+  df -h
+  ```
+
+  result, `/httpd-pvc`, Use 1%
+  ```
+  Filesystem                            Size  Used Avail Use% Mounted on
+  overlay                               120G   19G  102G  16% /
+  tmpfs                                  64M     0   64M   0% /dev
+  tmpfs                                 3.9G     0  3.9G   0% /sys/fs/cgroup
+  shm                                    64M     0   64M   0% /dev/shm
+  tmpfs                                 3.9G   47M  3.9G   2% /etc/passwd
+  /dev/sdd                              976M  2.6M  958M   1% /httpd-pvc
+  /dev/mapper/coreos-luks-root-nocrypt  120G   19G  102G  16% /etc/hosts
+  tmpfs                                 3.9G   28K  3.9G   1% /run/secrets/kubernetes.io/serviceaccount
+  tmpfs                                 3.9G     0  3.9G   0% /proc/acpi
+  tmpfs                                 3.9G     0  3.9G   0% /proc/scsi
+  tmpfs                                 3.9G     0  3.9G   0% /sys/firmware
+  ```
+
+  use `fallocate` to create a file with 950M size
+  ```
+  cd /httpd-pvc/
+  fallocate -l 950M file.tmp
+  ```
+
+  re-check `/httpd-pvc` again, now it is Use 100%
+  ```
+  df -h
+  ```
+
+  result
+  ```
+  Filesystem                            Size  Used Avail Use% Mounted on
+  overlay                               120G   19G  102G  16% /
+  tmpfs                                  64M     0   64M   0% /dev
+  tmpfs                                 3.9G     0  3.9G   0% /sys/fs/cgroup
+  shm                                    64M     0   64M   0% /dev/shm
+  tmpfs                                 3.9G   47M  3.9G   2% /etc/passwd
+  /dev/sdd                              976M  953M  7.4M 100% /httpd-pvc
+  /dev/mapper/coreos-luks-root-nocrypt  120G   19G  102G  16% /etc/hosts
+  tmpfs                                 3.9G   28K  3.9G   1% /run/secrets/kubernetes.io/serviceaccount
+  tmpfs                                 3.9G     0  3.9G   0% /proc/acpi
+  tmpfs                                 3.9G     0  3.9G   0% /proc/scsi
+  tmpfs                                 3.9G     0  3.9G   0% /sys/firmware
+  ```
+
+- For the User Workload Monitoring, we will need to add rolebinding to enabled permission to edit/view PrometheusRule, ServiceMonitor and PodMonitor.
+  
+  Let's add `monitoring-edit` role to user `ldapuser`
+  ```
+  oc policy add-role-to-user monitoring-edit ldapuser -n user1
+  ```
+
+- Create Prometheus Rule to alert when PV utilization is >80% in namespace `user1`
+  ```
+  cat << EOF | oc create -f -
+  apiVersion: monitoring.coreos.com/v1
+  kind: PrometheusRule
+  metadata:
+    name: pvfull-alert
+    namespace: user1
+  spec:
+    groups:
+    - name: PersistenVolumeFullAlertRule
+      rules:
+      - alert: PersistenVolumeFull
+        expr: kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} < 0.20
+      for: 5m
+      labels:
+        secerity: critical
+      annotations:
+        message: The PersistentVolume claimed is under 20 percent free.
+  EOF
+  ```
+
+- Now we can go back to OpenShift Console Developer View, go to `user1` project > Monitoring > Alerts
+- We will see our user defined alert rule and alert that trigger
+  ![](images/alertrules-01.png)
+- You can click on Alert and see the details
+  ![](images/alertrules-02.png)
+- When alert is Firing, firing alerts will also route to external notifications defined by AlertManager
+  ![](images/alertrules-03.png)
