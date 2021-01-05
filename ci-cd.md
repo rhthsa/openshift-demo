@@ -215,11 +215,13 @@ Releases: bot dev [botdev.json](ci-cd/botdev.json)
 url: https://dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_release?view=mine&_a=releases&definitionId=1
 
 trigger from ci/pipeline or manual
+
 stage 1: switch to new version
 - setup oc command
 - check current deployment and destination deployment
 - switch from blue to green or green to blue
 - switch route to new version
+
 stage 2: scale down previous version
 - can add approval for confirm 
 - setup oc command
