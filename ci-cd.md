@@ -231,7 +231,7 @@ Test with postman script of BOT
 
 ## Canary Deployment
 
-change in front route with yaml or oc patch
+change in front route with yaml 
 ```
 spec:
   host: front-bot.apps.cluster-852b.852b.example.opentlc.com
@@ -246,6 +246,12 @@ spec:
   port:
     targetPort: 8080-tcp
   wildcardPolicy: None
+```
+
+or oc pathc
+```
+oc patch route frontend  -p '{"spec":{"to":{"weight":60}}}' -n project1 
+oc patch route frontend --type='json' -p='[{"op":"replace","path":"/spec/alternateBackends/0/weight","value":40}]' -n project1 
 ```
 
    
