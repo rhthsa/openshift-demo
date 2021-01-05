@@ -190,9 +190,21 @@ For demo purpose we can set readiness and liveness by following URI
     ```bash
     oc describe svc/frontend-v1 -n project1
     ```
-- Test 
-```bash
-```
+- Test readiness probe. Notice that all responses will not come from not ready pod.
+    ```bash
+    while [  1  ];
+    do
+        curl -k https://$(oc get route/frontend -n project1 -o jsonpath='{.spec.host}')
+        printf "\n"
+        sleep 10
+    done
+    ```
+- Use another terminal to set not ready pod back to ready. Notice that response now including all 3 pods.
+    ```bash
+    POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk '{print $1}')
+    oc exec -n project1 $POD -- curl -s http://localhost:8080/ready
+    printf "\n%s is ready\n" $POD
+    ```
 - Check developer console
   
     ![](images/pod-not-ready-dev-console.png)
