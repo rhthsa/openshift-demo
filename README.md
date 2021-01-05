@@ -25,6 +25,10 @@
 - [Horizontal Pod Autoscaler](hpa.md)
   - HPA by CPU
   - HPA by Memory
+- [Health Check](health.md)
+  - Readiness Probe
+  - Liveness Probe
+  - Startup Probe
 - [OpenShift Service Mesh](openshift-service-mesh.md)
   - Install and configure control plane
   - Sidecar injection
