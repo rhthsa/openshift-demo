@@ -294,4 +294,4 @@ oc patch route frontend --type='json' -p='[{"op":"replace","path":"/spec/alterna
 - scan image in pipeline , change show image from red hat , run with red hat image
 - blue green / deploy
 - canary --> example --> see again in service mesh , network deploy section
-- detail of openshift route deployment streategy openshift-route.md   
+- detail of [openshift route deployment streategy](openshift-route.md)   
