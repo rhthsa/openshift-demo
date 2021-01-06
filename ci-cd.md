@@ -254,4 +254,14 @@ oc patch route frontend  -p '{"spec":{"to":{"weight":60}}}' -n project1
 oc patch route frontend --type='json' -p='[{"op":"replace","path":"/spec/alternateBackends/0/weight","value":40}]' -n project1 
 ```
 
+## Step Demo
+
+- preset architecture prod vs demo
+- preset ocp console / usage / login / user management
+- preset harbor / usage / project / user management / scan manual/auto / set cve block pull / set cve whitelist / set auto scan on push
+- present pipeline / release
+- scan code with fortify
+- scan image in pipeline , change show image from red hat , run with red hat image
+- blue green / deploy
+- canary --> example --> see again in service mesh , network deploy section
    
