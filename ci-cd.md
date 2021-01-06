@@ -125,6 +125,36 @@ BACKEND_URL=http://back:8080/api/values/back
 ASPNETCORE_URLS=http://*:8080
 ```
 
+## Canary Deployment
+
+create imagestream for canary
+```
+oc import-image bot/front-main:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:20210105.5 --confirm
+oc import-image bot/front-sub:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:20210105.5 --confirm
+```
+
+create front-main dc
+```
+oc project bot
+oc create -f front-main.yaml
+```
+
+create front-sub dc
+```
+oc create -f front-sub.yaml
+```
+
+create route canary
+```
+oc create -f canary.yaml
+```
+
+test canary
+manual run release canary in azure devops
+```
+curl http://canary-bot.apps.cluster-852b.852b.example.opentlc.com/api/values/information
+```
+
 ## Prepare Harbor On Kubernetes/OpenShift
 
 create new project 'harbor'
