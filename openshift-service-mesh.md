@@ -324,17 +324,28 @@ FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath=
 ```
 ## Traffic Analysis
 - Deploy backend application
-```bash
-oc apply -f manifests/backend.yaml -n project1
-oc apply -f manifests/backend-destination-rule.yaml -n project1
-oc apply -f manifests/backend-virtual-service.yaml -n project1
-oc get pods -n project1
-```
+  
+  ```bash
+  oc apply -f manifests/backend.yaml -n project1
+  oc apply -f manifests/backend-destination-rule.yaml -n project1
+  oc apply -f manifests/backend-virtual-service.yaml -n project1
+  oc get pods -n project1
+  ```
+  
+- **Optional**: Draw connetion from frontend to backend in Developer Console
+
+  ```bash
+  oc annotate deployment frontend-v1 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+  oc annotate deployment frontend-v2 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+  ```
+  
 - Configure frontend to request to backend
-```bash
-oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-```
+  
+  ```bash
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+  ```
+  
 - Check Kiali Console
 - login to OpenShift Developer Console, select project istio-system and open Kiali console 
 
