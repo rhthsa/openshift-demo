@@ -3,17 +3,17 @@
 <!-- TOC -->
 
 - [Authentication Providers with AD](#authentication-providers-with-ad)
-  - [Prerequisites](#prerequisites)
-  - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
-    - [Background: LDAP Structure](#background-ldap-structure)
-      - [Examine the OAuth configuration](#examine-the-oauth-configuration)
-      - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
-      - [Change Group Policy](#change-group-policy)
-      - [Examine `cluster-reader` policy](#examine-cluster-reader-policy)
-      - [Create Projects for Collaboration](#create-projects-for-collaboration)
-      - [Map Groups to Projects](#map-groups-to-projects)
-      - [Examine Group Access](#examine-group-access)
-      - [Prometheus](#prometheus)
+    - [Prerequisites](#prerequisites)
+    - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
+        - [Background: LDAP Structure](#background-ldap-structure)
+            - [Examine the OAuth configuration](#examine-the-oauth-configuration)
+            - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
+            - [Change Group Policy](#change-group-policy)
+            - [Examine cluster-reader policy](#examine-cluster-reader-policy)
+            - [Create Projects for Collaboration](#create-projects-for-collaboration)
+            - [Map Groups to Projects](#map-groups-to-projects)
+            - [Examine Group Access](#examine-group-access)
+            - [Prometheus](#prometheus)
 
 <!-- /TOC -->
 
@@ -502,7 +502,7 @@ oc adm policy add-role-to-group edit ocp-fancy-dev -n app-prod
 Log in as `normaluser1` and see what *Projects* you can see:
 
 ```
-oc login -u normaluser1 -p Op#nSh1ft
+oc login -u normaluser1 -p openshift
 oc get projects
 ```
 
@@ -515,7 +515,7 @@ No resources found.
 Then, try `teamuser1` from the `ocp-teamed-app` group:
 
 ```
-oc login -u teamuser1 -p Op#nSh1ft
+oc login -u teamuser1 -p openshift
 oc get projects
 ```
 
@@ -568,7 +568,7 @@ attempt to log-in to it.
 Login as a the user with `cluster-reader` privileges:
 
 ```
-oc login -u fancyuser1 -p Op#nSh1ft
+oc login -u fancyuser1 -p openshift
 ```
 
 Find the `prometheus` `Route` with the following command:

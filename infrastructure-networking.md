@@ -3,20 +3,23 @@
 <!-- TOC -->
 
 - [Infrastructure Networking](#infrastructure-networking)
-  - [Prerequisites](#prerequisites)
-  - [OpenShift Network Policy Based SDN](#openshift-network-policy-based-sdn)
-    - [Switch Your Project](#switch-your-project)
-    - [Execute the Creation Script](#execute-the-creation-script)
-    - [Examine the created infrastructure](#examine-the-created-infrastructure)
-    - [Test Connectivity (should work)](#test-connectivity-should-work)
-    - [Restricting Access](#restricting-access)
-    - [Test Connectivity #2 (should fail)](#test-connectivity-2-should-fail)
-    - [Allow Access](#allow-access)
-    - [Test Connectivity #3 (should work again)](#test-connectivity-3-should-work-again)
-    - [Test Connectivity #4 while chaning NetworkPolicy](#test-connectivity-4-while-chaning-networkpolicy)
-  - [Egress IP address assignment for project egress traffic](#egress-ip-address-assignment-for-project-egress-traffic)
-    - [Configuring automatically assigned egress IP addresses for a namespace](#configuring-automatically-assigned-egress-ip-addresses-for-a-namespace)
-  - [Network Logging](#network-logging)
+    - [Prerequisites](#prerequisites)
+    - [OpenShift Network Policy Based SDN](#openshift-network-policy-based-sdn)
+        - [Switch Your Project](#switch-your-project)
+        - [Execute the Creation Script](#execute-the-creation-script)
+        - [Examine the created infrastructure](#examine-the-created-infrastructure)
+        - [Test Connectivity should work](#test-connectivity-should-work)
+        - [Restricting Access](#restricting-access)
+        - [Test Connectivity #2 should fail](#test-connectivity-2-should-fail)
+        - [Allow Access](#allow-access)
+        - [Test Connectivity #3 should work again](#test-connectivity-3-should-work-again)
+        - [Test Connectivity #4 while chaning NetworkPolicy](#test-connectivity-4-while-chaning-networkpolicy)
+    - [Egress IP address assignment for project egress traffic](#egress-ip-address-assignment-for-project-egress-traffic)
+        - [Configuring automatically assigned egress IP addresses for a namespace](#configuring-automatically-assigned-egress-ip-addresses-for-a-namespace)
+    - [Network Logging](#network-logging)
+    - [Container Platform Network Segmentation](#container-platform-network-segmentation)
+        - [Multi-Cluster Level](#multi-cluster-level)
+        - [Cluster Namespace separation level](#cluster-namespace-separation-level)
 
 <!-- /TOC -->
 
@@ -531,3 +534,39 @@ In OpenShift Container Platform you can enable automatic assignment of an egress
 
 The network access logging will be done with envoy sidecar proxy, the details will be in OpenShift Service Mesh section.
 
+## Container Platform Network Segmentation
+
+For the network segregation requirement on Container Platform, we can consider multiple choices of strategy for the network segregation levels supported in OpenShift design architectures. The following are the options that we could do to helps network segmentations are enforced at each level
+
+### Multi-Cluster Level
+
+The highest level of separation is to dedicate one cluster per environment per network zone, e.g. 1 Cluster for Private Zone(Internal Only), 1 Cluster for Extranet Zone and 1 Cluster for DMZ Zone (Internet facing). By seprating clusters per network zone, you can ensure that everything is separated from each environemnt. The deployment can be done in a Pipeline to deploy to each cluster in each stage.
+
+Pros:
+- Highest level of separation. Resources, RBAC, NetworkPolicy, Storage, etc. are per cluster. You can also dedicate a cluster per enduser team as well
+- Least scope of security breach will be limited within a cluster
+
+Cons:
+- Consume more resources for Control Plane, Storage, Networking, Monitoring, Logging, etc. per cluster
+- High maintenance and operations for Multi-Cluster Management, if you don't prepare Multi-Cluster Management tools. Example ArgoCD, Red Hat Advanced Cluster Management
+
+### Cluster Namespace separation level
+In the Container Platform, many technology and components are supporting separation of resources within a cluster. The components that can be used for separation are
+
+- Container Runtime, CGroups, SELinux:
+  Container Host level for Application resource segration on container host
+- Project/Namespace:
+  We can do the resource seprating by RBAC, Resource Quotas
+- Node Seletor:
+  To select node for sepecific resources
+- Router/Ingress Sharding:
+  We can dedicate Router/Ingress Controller to be the ingestion point in each network zone
+
+Pros:
+- Resource efficientcy: by using the same cluster to shared control plane and infrastructure components
+- Less management: less number of clusters to manage and upgrade
+- Focused on Environment: by reducing overall resources, you can focused to have an identical, but smaller, OpenShift Cluster for Testing and Development environment. This can help you to have a test bed for testing integration, operation, BCP or upgrade.
+
+Cons:
+- More Router/Ingress Infra nodes
+- End user can't get full cluster-admin control when compare with dedicated cluster per team approach, but OpenShift can somehow compensate by having Operators with multi tenants support, such as OpenShift Service Mesh, the user can create their own service mesh control plane
