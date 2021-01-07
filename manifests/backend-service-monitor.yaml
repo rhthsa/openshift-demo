@@ -5,6 +5,9 @@ metadata:
     k8s-app: backend-monitor
   name: backend-monitor
 spec:
+  # namespaceSelector:
+  #   matchNames:
+  #     - project1
   endpoints:
   - interval: 30s
     port: http

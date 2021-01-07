@@ -2,8 +2,9 @@
 <!-- TOC -->
 
 - [User Workload Metrics](#user-workload-metrics)
-    - [Prerequisites](#prerequisites)
-    - [Service Monitoring](#service-monitoring)
+  - [Prerequisites](#prerequisites)
+  - [Service Monitoring](#service-monitoring)
+  - [Custom Grafana Dashboard](#custom-grafana-dashboard)
 
 <!-- /TOC -->
 ## Prerequisites
@@ -49,10 +50,12 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
     # TYPE vendor_memory_usedNonHeap_bytes gauge
     vendor_memory_usedNonHeap_bytes 3.1780976E7
     ```
-- Create [Service Monitoring](manifests/backend-service-monitor.yaml) for backend service
-```
-oc apply -f manifests/backend-service-monitor.yaml -n project1
-```
+- Create [Service Monitoring](manifests/backend-service-monitor.yaml) to monitor backend service
+    
+    ```bash
+    oc apply -f manifests/backend-service-monitor.yaml -n project1
+    ```
+    
 - Developer Console monitoring metrics  
   - Select application metrics
 
@@ -60,8 +63,75 @@ oc apply -f manifests/backend-service-monitor.yaml -n project1
 
   - Application metrics 
     
-    Request counted
-    ![](images/dev-console-app-metrics-01.png)
+    - Request counted
 
-    Concurrent requests
-    ![](images/dev-console-app-metrics-02.png)
+      ![](images/dev-console-app-metrics-01.png)
+
+    - Concurrent requests
+    
+      ![](images/dev-console-app-metrics-02.png)
+
+## Custom Grafana Dashboard
+<!-- https://access.redhat.com/solutions/5335491 -->
+Use Grafana Operator (Community Edition) to deploy Grafana and configure datasource to Thanos Querier
+- Create project
+  ```bash
+  oc new-project application-monitor --display-name="Custom Grafana" --description="Custom Grafana"
+  ```
+- Install Grafana Operator to project application-monitor
+  - Install Grafana Operator from OperatorHub
+
+  ![](images/grafana-operator-01.png)
+
+  - Install to application-monitor project
+  
+  ![](images/grafana-operator-02.png)
+  
+- Create Grafana instance
+  
+  ```bash
+  oc create -f manifests/grafana.yaml -n application-monitor
+  oc get pods -n application-monitor
+  #Sample Output
+  NAME                                 READY   STATUS    RESTARTS   AGE
+  grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
+  grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
+  ```
+  
+- Add role cluster-monitoring-view to Grafana ServiceAccount
+
+  ```bash
+  oc adm policy add-cluster-role-to-user cluster-monitoring-view \
+  -z grafana-serviceaccount -n application-monitor
+  ```
+- Create [Grafana DataSource](manifests/grafana-datasource.yaml) to thanos-querier with grafana-serviceaccount token
+
+```bash
+  TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
+  cat manifests/grafana-datasource.yaml|sed 's/Bearer .*/Bearer '"$TOKEN""'"'/'|oc apply -n application-monitor -f -
+  ```  
+- Create [Grafana Dashboard](manifests/grafana-dashboard.yaml)
+
+  ```bash
+  oc apply -f manifests/grafana-dashboard.yaml -n application-monitor 
+  ```
+
+- Login to Grafana Dashboard with following URL
+  
+  ```bash
+  echo "Grafana URL => https://$(oc get route grafana-route -o jsonpath='{.spec.host}' -n application-monitor)"
+  ```
+- Generate workload
+  
+  ```bash
+  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+  while [ 1 ];
+  do
+    curl $FRONTEND_URL
+    printf "\n"
+    sleep .2
+  done
+  ```
+- Grafana Dashboard
+  
+  ![](images/grafana-dashboard.png)
