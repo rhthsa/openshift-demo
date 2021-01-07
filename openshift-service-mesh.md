@@ -48,18 +48,25 @@
     oc describe smmr/default -n istio-system | grep -A2 Spec:
     ```
 - Deploy sidecar to frontend app in project1
+  
   ```bash
+  oc apply -f manifests/frontend.yaml -n project1
   oc patch deployment/frontend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
   oc patch deployment/frontend-v2 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
   ```
+  
+  ![](images/dev-console-topology.png)
+  
 - Check for sidecar in frontend-v1 and frontend-v2 pods
+  
   ```bash
   oc get pods -n project1
   ```
 - Create [frontend service](mainfests/../manifests/frontend-service.yaml)
-    ```
-    oc create -f manifests/frontend-service.yaml -n project1
-    ```
+  
+  ```bash
+  oc create -f manifests/frontend-service.yaml -n project1
+  ```
 
 ## Create Istio Gateway
 - Create Gateway for frontend app
