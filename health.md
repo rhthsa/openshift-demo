@@ -32,7 +32,6 @@ Frontend application provides health check with following URI
 | ------------- |:-------------|
 |/health/live|Livenness probe URL|
 |/health/ready|Readiness probe URL|
-|/version|Return application version|
 
 
 For demo purpose we can set readiness and liveness by following URI
