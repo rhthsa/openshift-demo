@@ -57,7 +57,7 @@ You can configure the monitoring stack by creating and updating monitoring confi
 Procedure
 
 1.  Check whether the cluster-monitoring-config ConfigMap object exists:
-    ```
+    ```bash
     oc -n openshift-monitoring get configmap cluster-monitoring-config
     ```
 
@@ -65,7 +65,7 @@ Procedure
 
     Create and apply the following YAML manifest. In this example the file is called cluster-monitoring-config.yaml:
 
-    ```
+    ```yaml
     cat <<EOF | oc apply -f -
     ---
     apiVersion: v1
@@ -160,7 +160,7 @@ Routing alerts to receivers enables you to send timely notifications to the appr
 Before we configure the AlertManager to send email and slack alert, we will need to run a webmail with smtp and slack channel for testing
 
 1. Deploy the maildev in default namespace and expose webmail
-   ```
+   ```bash
    oc project default
    oc new-app --docker-image=maildev/maildev --name='maildev'
    oc expose service/maildev --port=80
@@ -172,7 +172,7 @@ Before we configure the AlertManager to send email and slack alert, we will need
 3. Webhook notification with line-notify-gateway
    You will need to setup [Line Notification service](https://notify-bot.line.me/my/) to allow Line Notifications in your chat group. After you setup you will get your token to use in AlertManager webhook to `line-notify-gateway` container, which is provided as an example for receive AlertManager webhook json and send to Line Notification Service.
 
-   ```
+   ```bash
    oc -n default new-app --docker-image=nontster/line-notify-gateway
    oc -n default get svc
    ```
@@ -185,7 +185,7 @@ Procedure
 
 2. You can apply Alert Receivers configuration example that includes receivers for smtp to webmail, slack and line-notification-gateway.
 
-    ```
+    ```yaml
     cat <<EOF | oc apply -f -
     kind: Secret
     apiVersion: v1
@@ -200,7 +200,7 @@ Procedure
     ```
 
     Configuration content in plain-text
-    ```
+    ```yaml
     global:
       resolve_timeout: 5m
       smtp_from: ocp@example.com
@@ -288,7 +288,7 @@ We will demontrate Alerts from Prometheus and AlertManager by using Platform and
 
 - Deploy a sample httpd pod with persistent volume 1G size mount to `/httpd-pvc` path 
   
-  ```
+  ```yaml
   oc new-project user1
   cat << EOF | oc create -f -
   ---
@@ -348,17 +348,17 @@ We will demontrate Alerts from Prometheus and AlertManager by using Platform and
 
 - rsh to httpd pod to check PV size and use `fallocate` command to make PV high utilization (>95%)
 
-  ```
+  ```bash
   oc rsh $(oc -n user1 get pod | grep httpd | cut -d' ' -f1)
   ```
 
   check volume utilization
-  ```
+  ```bash
   df -h
   ```
 
   result, `/httpd-pvc`, Use 1%
-  ```
+  ```bash
   Filesystem                            Size  Used Avail Use% Mounted on
   overlay                               120G   19G  102G  16% /
   tmpfs                                  64M     0   64M   0% /dev
@@ -374,18 +374,18 @@ We will demontrate Alerts from Prometheus and AlertManager by using Platform and
   ```
 
   use `fallocate` to create a file with 950M size
-  ```
+  ```bash
   cd /httpd-pvc/
   fallocate -l 950M file.tmp
   ```
 
   re-check `/httpd-pvc` again, now it is Use 100%
-  ```
+  ```bash
   df -h
   ```
 
   result
-  ```
+  ```bash
   Filesystem                            Size  Used Avail Use% Mounted on
   overlay                               120G   19G  102G  16% /
   tmpfs                                  64M     0   64M   0% /dev
@@ -403,12 +403,12 @@ We will demontrate Alerts from Prometheus and AlertManager by using Platform and
 - For the User Workload Monitoring, we will need to add rolebinding to enabled permission to edit/view PrometheusRule, ServiceMonitor and PodMonitor.
   
   Let's add `monitoring-edit` role to user `ldapuser`
-  ```
+  ```bash
   oc policy add-role-to-user monitoring-edit ldapuser -n user1
   ```
 
 - Create Prometheus Rule to alert when PV utilization is >80% in namespace `user1`
-  ```
+  ```yaml
   cat << EOF | oc create -f -
   apiVersion: monitoring.coreos.com/v1
   kind: PrometheusRule

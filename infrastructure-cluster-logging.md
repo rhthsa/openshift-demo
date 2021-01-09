@@ -35,7 +35,7 @@ If you want to customize your deployment, make changes to the sample CR as neede
 **Create the openshift-logging namespace**
 OpenShift Logging will be run from within its own namespace openshift-logging. This namespace does not exist by default, and needs to be created before logging may be installed. The namespace is represented in yaml format as:
 
-```
+```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -49,7 +49,7 @@ metadata:
 
 To create the namespace, run the following command:
 
-```
+```yaml
 cat <<EOF | oc create -f -
 apiVersion: v1
 kind: Namespace
@@ -107,7 +107,7 @@ Now that we have the operators installed, along with the CRDs, we can now kick o
 4. On the Cluster Loggings page, click Create Cluster Logging.
 5. In the YAML editor, replace the code with the following:
     **Note: you need to change storageclass that available in your environment**
-    ```
+    ```yaml
     apiVersion: "logging.openshift.io/v1"
     kind: "ClusterLogging"
     metadata:
@@ -158,13 +158,13 @@ You should see pods for cluster logging (the operator itself), Elasticsearch, an
 
 Alternatively, you can verify from the command line by using the following command:
 
-```
+```bash
 oc get pods -n openshift-logging
 ```
 
 You should eventually see something like:
 
-```
+```bash
 NAME                                            READY   STATUS    RESTARTS   AGE
 cluster-logging-operator-cb795f8dc-xkckc        1/1     Running   0          32m
 elasticsearch-cdm-b3nqzchd-1-5c6797-67kfz       2/2     Running   0          14m
@@ -181,13 +181,13 @@ kibana-7fb4fd4cc9-bvt4p                         2/2     Running   0          14m
 
 The Fluentd Pods are deployed as part of a DaemonSet, which is a mechanism to ensure that specific Pods run on specific Nodes in the cluster at all times:
 
-```
+```bash
 oc get daemonset -n openshift-logging
 ```
 
 You will see something like:
 
-```
+```bash
 NAME      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
 fluentd   9         9         9       9            9           kubernetes.io/os=linux   94s
 ```
@@ -196,13 +196,13 @@ You should expect 1 fluentd Pod for every Node in your cluster. Remember that Ma
 
 You will also see the storage for ElasticSearch has been automatically provisioned. If you query the PersistentVolumeClaim objects in this project you will see the new storage.
 
-```
+```bash
 oc get pvc -n openshift-logging
 ```
 
 You will see something like:
 
-```
+```bash
 NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS
 MODES   STORAGECLASS                  AGE
 elasticsearch-elasticsearch-cdm-ggzilasv-1   Bound    pvc-f3239564-389c-11ea-bab2-06ca7918708a   100Gi      RWO
@@ -229,13 +229,13 @@ To find and access the Kibana route:
 
 Alternatively, this can be obtained from the command line:
 
-```
+```bash
 oc get route -n openshift-logging
 ```
 
 You will see something like:
 
-```
+```bash
 NAME     HOST/PORT                                                           PATH   SERVICES   PORT    TERMINATION          WILDCARD
 kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     <all>   reencrypt/Redirect   None
 ```

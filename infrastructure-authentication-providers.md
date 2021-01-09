@@ -9,6 +9,7 @@
             - [Examine the OAuth configuration](#examine-the-oauth-configuration)
             - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
             - [Change Group Policy](#change-group-policy)
+            - [Examine cluster-admin policy](#examine-cluster-admin-policy)
             - [Examine cluster-reader policy](#examine-cluster-reader-policy)
             - [Create Projects for Collaboration](#create-projects-for-collaboration)
             - [Map Groups to Projects](#map-groups-to-projects)
@@ -56,7 +57,7 @@ group
 #### Examine the OAuth configuration
 Since this is a pure, vanilla OpenShift 4 installation, it has the default OAuth resource. You can examine that OAuth configuration with the following:
 
-```
+```bash
 oc get oauth cluster -o yaml
 ```
 
@@ -82,7 +83,7 @@ How does the `kubeadmin` user work, then? The OpenShift OAuth system knows to
 look for a `kubeadmin` *Secret* in the `kube-system` *Namespace*. You can
 examine it with the following:
 
-```
+```bash
 oc get secret -n kube-system kubeadmin -o yaml
 ```
 
@@ -112,7 +113,7 @@ existing identity management solution. For this lab we are configuring LDAP
 as our `identityProvider`. Here's an example of the OAuth configuration. Look
 for the element in `identityProviders` with `type: LDAP` like the following:
 
-```
+```bash
 apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
@@ -177,10 +178,10 @@ To setup the LDAP identity provider we must:
 
 As the `kubeadmin` user apply the OAuth configuration with `oc`.
 
-```
-oc create secret generic ldap-secret --from-literal=bindPassword=b1ndP^ssword -n openshift-config
+```yaml
+oc create secret generic ldapuser-secret --from-literal=bindPassword=b1ndP^ssword -n openshift-config
 
-cat <<EOF | oc create -f -
+cat <<EOF | oc apply -f -
 apiVersion: config.openshift.io/v1
 kind: OAuth
 metadata:
@@ -223,7 +224,7 @@ the various groups.
 We have provided a `groupsync` configuration file for you:
 
 View configuration file
-```
+```yaml
 kind: LDAPSyncConfig
 apiVersion: v1
 url: ldap://ad1.dcloud.cisco.com:389
@@ -266,7 +267,7 @@ Without going into too much detail (you can look at the documentation), the
 
 Execute the `groupsync`:
 
-```
+```yaml
 cat <<EOF > groupsync.yaml
 kind: LDAPSyncConfig
 apiVersion: v1
@@ -301,7 +302,7 @@ oc adm groups sync --sync-config=./groupsync.yaml --confirm
 
 You will see output like the following:
 
-```
+```bash
 group/ocp-fancy-dev
 group/ocp-user
 group/ocp-normal-dev
@@ -314,14 +315,15 @@ output of the help with `oc adm groups sync -h`.
 
 If you want to see the *Groups* that were created, execute the following:
 
-```
+```bash
 oc get groups
 ```
 
 You will see output like the following:
 
-```
+```bash
 NAME             USERS
+ocp-admin        ldapuser
 ocp-fancy-dev    fancyuser1, fancyuser2
 ocp-normal-dev   normaluser1, teamuser1, teamuser2
 ocp-teamed-app   teamuser1, teamuser2
@@ -330,13 +332,13 @@ ocp-user         fancyuser1, fancyuser2, normaluser1, teamuser1, teamuser2
 
 Take a look at a specific group in YAML:
 
-```
+```bash
 oc get group ocp-fancy-dev -o yaml
 ```
 
 The YAML looks like:
 
-```
+```yaml
 apiVersion: user.openshift.io/v1
 kind: Group
 metadata:
@@ -361,13 +363,13 @@ has listed the users who are in the group.
 
 What happens if you list the *Users*?
 
-```
+```bash
 oc get user
 ```
 
 You will get:
 
-```
+```bash
 No resources found.
 ```
 
@@ -380,6 +382,14 @@ OpenShift that, if it encounters a *User* with that specific ID, that it should
 be associated with the *Group*.
 
 #### Change Group Policy
+We will grant a cluster role `cluster-admin` to ldap group `ocp-admin`
+
+Change the policy for the `ocp-admin` *Group*:
+
+```bash
+oc adm policy add-cluster-role-to-group cluster-admin ocp-admin
+```
+
 In your environment, there is a special group of super developers called
 _ocp-fancy-dev_ who should have special `cluster-reader` privileges. This is a role
 that allows a user to view administrative-level information about the cluster.
@@ -387,7 +397,7 @@ For example, they can see the list of all *Projects* in the cluster.
 
 Change the policy for the `ocp-fancy-dev` *Group*:
 
-```
+```bash
 oc adm policy add-cluster-role-to-group cluster-reader ocp-fancy-dev
 ```
 
@@ -396,35 +406,49 @@ oc adm policy add-cluster-role-to-group cluster-reader ocp-fancy-dev
 learn more about them in the
 [role-based access control (RBAC)](https://docs.openshift.com/container-platform/4.6/authentication/using-rbac.html) documentation.
 
+#### Examine `cluster-admin` policy
+login as a `ldapuser`
+```bash
+oc login -u ldapuser -p b1ndP^ssword
+```
+
+Then, try to list *Projects*:
+
+```bash
+oc get projects
+```
+
+You will see a full list of projects.
+
 #### Examine `cluster-reader` policy
 Go ahead and login as a regular user:
 
-```
+```bash
 oc login -u normaluser1 -p openshift
 ```
 
 Then, try to list *Projects*:
 
-```
+```bash
 oc get projects
 ```
 
 You will see:
 
-```
+```bash
 No resources found.
 ```
 
 Now, login as a member of `ocp-fancy-dev`:
 
-```
+```bash
 oc login -u fancyuser1 -p openshift
 ```
 
 And then perform the same `oc get projects` and you will now see the list of all
 of the projects in the cluster:
 
-```
+```bash
 NAME                                                    DISPLAY NAME                        STATUS
     app-management
   * default
@@ -442,13 +466,13 @@ Platform can work.
 #### Create Projects for Collaboration
 Make sure you login as the cluster administrator:
 
-```
+```bash
 oc login -u ldapuser
 ```
 
 Then, create several *Projects* for people to collaborate:
 
-```
+```bash
 oc adm new-project app-dev --display-name="Application Development"
 oc adm new-project app-test --display-name="Application Testing"
 oc adm new-project app-prod --display-name="Application Production"
@@ -481,47 +505,47 @@ preconfigured. When it comes to *Projects*, you similarly can grant view, edit,
 or administrative access. Let's give our `ocp-teamed-app` users access to edit the
 development and testing projects:
 
-```
+```bash
 oc adm policy add-role-to-group edit ocp-teamed-app -n app-dev
 oc adm policy add-role-to-group edit ocp-teamed-app -n app-test
 ```
 
 And then give them access to view production:
 
-```
+```bash
 oc adm policy add-role-to-group view ocp-teamed-app -n app-prod
 ```
 
 Now, give the `ocp-fancy-dev` group edit access to the production project:
 
-```
+```bash
 oc adm policy add-role-to-group edit ocp-fancy-dev -n app-prod
 ```
 
 #### Examine Group Access
 Log in as `normaluser1` and see what *Projects* you can see:
 
-```
+```bash
 oc login -u normaluser1 -p openshift
 oc get projects
 ```
 
 You should get:
 
-```
+```bash
 No resources found.
 ```
 
 Then, try `teamuser1` from the `ocp-teamed-app` group:
 
-```
+```bash
 oc login -u teamuser1 -p openshift
 oc get projects
 ```
 
 You should get:
 
-```
+```bash
 NAME       DISPLAY NAME              STATUS
 app-dev    Application Development   Active
 app-prod   Application Production    Active
@@ -531,14 +555,14 @@ app-test   Application Testing       Active
 You did not grant the team users edit access to the production project. Go ahead
 and try to create something in the production project as `teamuser1`:
 
-```
+```bash
 oc project app-prod
 oc new-app docker.io/siamaksade/mapit
 ```
 
 You will see that it will not work:
 
-```
+```bash
 error: can't lookup images: imagestreamimports.image.openshift.io is forbidden: User "teamuser1" cannot create resource "imagestreamimports" in API group "image.openshift.io" in the namespace "app-prod"
 error:  local file access failed with: stat docker.io/siamaksade/mapit: no such file or directory
 error: unable to locate any images in image streams, templates loaded in accessible projects, template files, local docker images with name "docker.io/siamaksade/mapit"
@@ -567,19 +591,19 @@ attempt to log-in to it.
 
 Login as a the user with `cluster-reader` privileges:
 
-```
+```bash
 oc login -u fancyuser1 -p openshift
 ```
 
 Find the `prometheus` `Route` with the following command:
 
-```
+```bash
 oc get route prometheus-k8s -n openshift-monitoring
 ```
 
 You will see something like the following:
 
-```
+```bash
 NAME             HOST/PORT                                                                      PATH   SERVICES         PORT   TERMINATION          WILDCARD
 prometheus-k8s   prometheus-k8s-openshift-monitoring.{{ ROUTE_SUBDOMAIN }}          prometheus-k8s   web    reencrypt/Redirect   None
 ```

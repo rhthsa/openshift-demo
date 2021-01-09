@@ -42,20 +42,20 @@ For this demo, we will use Minio to provide S3 bucket for metering and cost mana
 **Procedures**
 
 - Download and install `helm` binary
-  ```
+  ```bash
   curl -L https://mirror.openshift.com/pub/openshift-v4/clients/helm/latest/helm-linux-amd64 -o /usr/local/bin/helm
   chmod +x /usr/local/bin/helm
   helm version
   ```
 - Install Minio via Helm 3
-  ```
+  ```bash
   oc new-project minio-tenant-1
   helm repo add minio https://helm.min.io/
   helm install --namespace minio-tenant-1 --generate-name minio/minio --set accessKey=minio,secretKey=minio123
   ```
 
 - Expose the Minio via OpenShift Route
-  ```
+  ```bash
   export MINIO_SVC=$(oc -n minio-tenant-1 get svc | grep minio | cut -d' ' -f 1)
   oc expose svc/$MINIO_SVC
 
@@ -65,26 +65,26 @@ For this demo, we will use Minio to provide S3 bucket for metering and cost mana
 
 - Install Minio Client to interact with Minio deployment
   On Linux
-  ```
+  ```bash
   wget https://dl.min.io/client/mc/release/linux-amd64/mc
   chmod +x mc
   mv mc /usr/local/bin/
   ./mc --help
   ```
 - Set Minio endpoint and username and password
-  ```
+  ```bash
   export MINIOUSR=minio
   export MINIOPWD=minio123
   mc alias set minio http://$MINIO_ROUTE "$ACCESS_KEY" "$SECRET_KEY" --api s3v4
   ```
 
 - Create a bucket name `ocp-metering`
-  ```
+  ```bash
   mc mb minio/ocp-metering
   ```
 
 - List newly create bucket
-  ```
+  ```bash
   mc ls minio
   ```
 
@@ -117,7 +117,7 @@ To add OCP as source from Cost Management Oprator
 
 We will create a Metering Stack that including Hive and Presto that Query cluster metrics and create a report for metering usage. The data is stored in Minio bucket created in previous step. Note: we will reduce Deployment/Statefulset resource request for lab purpose.
 
-```
+```yaml
 cat <<EOF | oc -n openshift-metering create -f -
 ---
 apiVersion: metering.openshift.io/v1
@@ -204,7 +204,7 @@ We will deploy Cost Management instance and then go back to check the Cost Manag
 
 - Create the authentication secret that contain Pull-secret for cost management operator to use
 
-  ```
+  ```yaml
   cat <<EOF | oc apply -n openshift-metering -f -
   ---
   kind: Secret
@@ -222,7 +222,7 @@ We will deploy Cost Management instance and then go back to check the Cost Manag
 
 - Create a CostManagement instance that includes Cluster ID, Reporting Operator token and Authentication secret
 
-  ```
+  ```yaml
   cat <<EOF | oc create -f -
   apiVersion: cost-mgmt.openshift.io/v1alpha1
   kind: CostManagement

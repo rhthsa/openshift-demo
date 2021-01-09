@@ -64,7 +64,7 @@ networks.
 Then, execute a script that we have prepared for you. It will create two
 *Projects* and then deploy a *DeploymentConfig* with a *Pod* for you:
 
-```
+```yaml
 oc new-project netproj-a
 oc label namespace netproj-a app=iperf3-client
 oc new-project netproj-b
@@ -148,26 +148,26 @@ EOF
 Two *Projects* were created for you, `netproj-a` and `netproj-b`. Execute the
 following command to see the created resources:
 
-```
+```bash
 oc get pods -n netproj-a
 ```
 
 After a while you will see something like the following:
 
-```
+```bash
 NAME                             READY   STATUS    RESTARTS   AGE
 iperf3-clients-7c566cfdc-7dtn5   1/1     Running   0          14m
 ```
 
 Similarly:
 
-```
+```bash
 oc get pods -n netproj-b
 ```
 
 After a while you will see something like the following:
 
-```
+```bash
 NAME                                      READY   STATUS    RESTARTS   AGE
 iperf3-server-deployment-79c44f8b-6bkrn   1/1     Running   0          14m
 ```
@@ -181,7 +181,7 @@ the pod in the `netproj-a` *Project* and the pod in the `netproj-b` *Project*.
 
 To test connectivity between the two pods, run:
 
-```
+```bash
 export client=$(oc get pod -n netproj-a | grep iperf3-clients | cut -d' ' -f1)
 
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G'
@@ -189,7 +189,7 @@ oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.sv
 
 You will see something like the following:
 
-```
+```bash
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 [  5] local 10.131.0.55 port 58320 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
@@ -226,14 +226,16 @@ For example, the following restricts all access to all pods in a *Project*
 where this `NetworkPolicy` CR is applied. This is the equivalent of a `DenyAll`
 default rule on a firewall:
 
-```
+```yaml
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: deny-by-default
 spec:
-  podSelector:
-  ingress: []
+  podSelector: null
+  ingress:
+    - from:
+        - podSelector: {}
 ```
 
 Note that the `podSelector` is empty, which means that this will apply to all
@@ -244,15 +246,17 @@ means that there are no allowed `ingress` rules defined by this
 To restrict access to the pod in the `netproj-b` *Project* simply apply the
 above NetworkPolicy CR with:
 
-```
+```yaml
 cat <<EOF | oc create -n netproj-b -f -
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
   name: deny-by-default
 spec:
-  podSelector:
-  ingress: []
+  podSelector: null
+  ingress:
+    - from:
+        - podSelector: {}
 EOF
 ```
 
@@ -263,13 +267,13 @@ connectivity between the pod in the `netproj-a` *Project* and the pod in the
 
 Test by running:
 
-```
+```bash
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G'
 ```
 
 You will see something like the following:
 
-```
+```bash
 iperf3: error - unable to connect to server: Connection timed out
 command terminated with exit code 1
 ```
@@ -289,7 +293,7 @@ with the label `app: iperf3-server`. The pod in the `netproj-b` project has this
 The ingress section specifically allows this access from all projects that
 have the label `app: iperf3-client`.
 
-```
+```bash
 # allow access to TCP port 5201 for pods with the label "run: ose" specifically
 # from projects with the label "name: netproj-a".
 cat <<EOF | oc create -n netproj-b -f -
@@ -327,13 +331,13 @@ connectivity between the pod in the `netproj-a` *Project* and the pod in the
 
 Test by running:
 
-```
+```bash
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G'
 ```
 
 You will see something like the following:
 
-```
+```bash
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 [  5] local 10.131.0.55 port 34702 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
@@ -353,7 +357,6 @@ Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 [  5]   0.00-10.03  sec  1.16 GBytes   997 Mbits/sec                  receiver
 
 iperf Done.
-
 ```
 
 Note the last line that says `worked`. This means that the pod in the
@@ -366,13 +369,13 @@ To show NetworkPolicy is non-disruptive to the application connections while upd
 
 Verify that UDP 5201 is still closed by running:
 
-```
+```bash
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G'
 ```
 
 The UDP connection should be failed
 
-```
+```bash
 iperf3: error - unable to read from stream socket: Resource temporarily unavailable
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 command terminated with exit code 1
@@ -380,13 +383,13 @@ command terminated with exit code 1
 
 Run the test again as TCP 5201 for 30 seconds.
 
-```
+```bash
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 30 -b 1G'
 ```
 
 And update network policy while the test is still running eg. also add UDP port 5201 in OpenShift console
 
-```
+```bash
 spec:
   podSelector:
     matchLabels:
@@ -407,7 +410,7 @@ spec:
 
 TCP test result should be able to complete without connection reset or disconnect.
 
-```
+```bash
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 [  5] local 10.131.0.55 port 56720 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
@@ -451,13 +454,13 @@ iperf Done.
 
 Re-run UDP test again to confirm UDP 5201 has been allowed.
 
-```
+```bash
 oc exec $client -n netproj-a -- /bin/sh -c 'iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G'
 ```
 
 iperf3 UDP test is now working
 
-```
+```bash
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 [  5] local 10.131.0.55 port 39507 connected to 172.30.4.76 port 5201
 [ ID] Interval           Transfer     Bitrate         Total Datagrams
@@ -494,7 +497,7 @@ High availability of nodes is automatic. If a node that hosts an egress IP addre
 In OpenShift Container Platform you can enable automatic assignment of an egress IP address for a specific namespace across one or more nodes.
 
 1. Test ping from pod in netproj-a to VM outside OpenShift, the source IP Address is the Node IP Address
-    ```
+    ```bash
     [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
@@ -504,14 +507,14 @@ In OpenShift Container Platform you can enable automatic assignment of an egress
     08:37:19.758014 IP tools1.dcloud.cisco.com > 198.18.1.18: ICMP echo reply, id 3, seq 2, length 64
     ```
 2. Update the NetNamespace object with the egress IP address using the following JSON:
-    ```
+    ```bash
     oc patch netnamespace netproj-a --type=merge -p \
     '{"egressIPs": ["198.18.1.241"]}'
     ```
     You can set egressIPs to two or more IP addresses on different nodes to provide high availability. If multiple egress IP addresses are set, pods use the first IP in the list for egress, but if the node hosting that IP address fails, pods switch to using the next IP in the list after a short delay.
 3. Manually assign the egress IP to the node hosts. Set the egressIPs parameter on the HostSubnet object on the node host. Using the following JSON, include as many IPs as you want to assign to that node host:
     
-    ```
+    ```bash
     for node in $(oc get nodes | grep '\-worker' | cut -d' ' -f1); do
     oc patch hostsubnet $node --type=merge -p '{"egressCIDRs": ["198.18.1.0/24"]}'
     done
@@ -519,7 +522,7 @@ In OpenShift Container Platform you can enable automatic assignment of an egress
     
     In the previous example, all egress traffic for project1 will be routed to the node hosting the specified egress IP, and then connected (using NAT) to that IP address.
 4. Test ping from the same POD in netproj-a again, now the source IP Address is now egressIP assigned to netproj-a
-    ```
+    ```bash
     [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
