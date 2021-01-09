@@ -317,3 +317,45 @@ oc tag bot/demoapp:xxx bot/demoapp:latest
 - canary --> example --> see again in service mesh , network deploy section
 - detail of [openshift route deployment streategy](openshift-route.md)   
 
+## openshift internal registry
+
+- add permission to user for internal registry
+```
+oc adm policy add-role-to-user system:registry <intended_user> -n <namespace/project>
+oc adm policy add-role-to-user system:image-builder <intended_user> -n <namespace/project>
+## or for cluster-wide access...
+oc adm policy add-cluster-role-to-user system:registry <intended_user>
+oc adm policy add-cluster-role-to-user system:image-builder <intended_user>
+```
+example
+```
+oc login (with user1)
+oc new-project user1
+oc login (with user2)
+oc new-project user2
+oc login (with admin)
+oc adm policy add-role-to-user system:registry user1 -n user1
+oc adm policy add-role-to-user system:image-builder user2 -n user2
+```
+- test rbac internal registry
+```
+oc login (with user1)
+docker login -u user1 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull hello-world
+docker tag  hello-world:latest default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view imagestream in openshift project user1
+docker rmi -f $(docker images -a -q)
+docker images
+docker logout default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+oc login (with user2)
+docker login -u user2 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view result error
+docker logout default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+oc login (with user1)
+docker login -u user1 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view result success
+```
+- prune image https://docs.openshift.com/container-platform/4.4/applications/pruning-objects.html#pruning-images_pruning-objects
