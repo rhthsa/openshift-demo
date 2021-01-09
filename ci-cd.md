@@ -284,6 +284,27 @@ oc patch route frontend  -p '{"spec":{"to":{"weight":60}}}' -n project1
 oc patch route frontend --type='json' -p='[{"op":"replace","path":"/spec/alternateBackends/0/weight","value":40}]' -n project1 
 ```
 
+## Use Openshift Internal Registry
+
+```
+oc create imagestream demofront -n bot
+oc create imagestream demoapp -n bot
+
+oc login with plugin
+docker login -u opentlc-mgr -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/bot/demofront:xxx
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/bot/demoapp:xxx
+
+oc tag bot/demofront:xxx bot/demofront:latest
+oc tag bot/demoapp:xxx bot/demoapp:latest
+```
+- create imagestream
+- login openshift
+- login docker to openshift internal registry with token
+- push image
+- tag image stream
+
+
 ## Step Demo
 
 - preset architecture prod vs demo

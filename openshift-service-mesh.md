@@ -14,22 +14,28 @@
 
 <!-- /TOC -->
 ## Setup Control Plane and sidecar
+
 - Install following Operators from OperatorHub
   - ElasticSearch
   - Jaeger
   - Kiali
   - OpenShift Service Mesh
 - Create control plane by create ServiceMeshControlPlane CRD
+  
   ```bash
   oc new-project istio-system
   oc create -f manifests/smcp.yaml -n istio-system
   ```
+  
 - Check for control plane([get-smcp-status.sh](bin/get-smcp-status.sh))
+
   ```bash
   bin/get-smcp-status.sh istio-system
   ```
+  
 - Join project1 into control plane
   - Review [ServiceMeshMemberRoll CRD](manifests/smcp.yaml)
+  
     ```yaml
     apiVersion: maistra.io/v1
     kind: ServiceMeshMemberRoll
@@ -39,27 +45,48 @@
       members:
       - project1
     ```
+    
   - Apply ServiceMeshMemberRoll
+    
     ```bash
     oc create -f manifests/smmr.yaml -n istio-system
     ```
   - Check for ServiceMeshMemberRoll status
+
     ```bash
     oc describe smmr/default -n istio-system | grep -A2 Spec:
     ```
 - Deploy sidecar to frontend app in project1
+  
   ```bash
+  oc apply -f manifests/frontend.yaml -n project1
   oc patch deployment/frontend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
   oc patch deployment/frontend-v2 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
   ```
+  
+  ![](images/dev-console-frontend.png)
+  
+  
 - Check for sidecar in frontend-v1 and frontend-v2 pods
+  
   ```bash
   oc get pods -n project1
+  #Sample output
+  NAME                           READY   STATUS        RESTARTS   AGE
+  frontend-v1-577b98f48c-6j5zg   2/2     Running       0          15s
+  frontend-v1-c5d4648f9-7jfk2    1/1     Terminating   0          13m
+  frontend-v2-5cd968bc59-cwsd8   2/2     Running       0          14s
+  frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
   ```
-- Create [frontend service](mainfests/../manifests/frontend-service.yaml)
-    ```
-    oc create -f manifests/frontend-service.yaml -n project1
-    ```
+
+  ![](images/pod-with-sidecar.png)
+
+
+- Create [frontend service](manifests/frontend-service.yaml)
+  
+  ```bash
+  oc create -f manifests/frontend-service.yaml -n project1
+  ```
 
 ## Create Istio Gateway
 - Create Gateway for frontend app
@@ -116,11 +143,14 @@
             simple: ROUND_ROBIN
     ```
   - Create destination rule
+  
     ```bash
     oc apply -f manifests/frontend-destination-rule.yaml -n project1
     ```
+    
 - Create Virtual Service for frontend app
   - Review [Virtual Service CRD](manifests/frontend-virtual-service.yaml), Replace SUBDOMAIN with cluster's sub-domain.
+  
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
@@ -138,10 +168,13 @@
                 number: 8080
             host: frontend.project1.svc.cluster.local
     ```
+    
   - Create virtual service
+  
     ```bash
     oc apply -f manifests/frontend-virtual-service.yaml -n project1
     ```
+  
 - Create Route (configured with Istio Gateway) for frontend app
   - Review [Route](manifests/frontend-route-istio.yaml), Replace SUBDOMAIN with cluster's subdomain
     ```yaml
@@ -324,17 +357,30 @@ FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath=
 ```
 ## Traffic Analysis
 - Deploy backend application
-```bash
-oc apply -f manifests/backend.yaml -n project1
-oc apply -f manifests/backend-destination-rule.yaml -n project1
-oc apply -f manifests/backend-virtual-service.yaml -n project1
-oc get pods -n project1
-```
+  
+  ```bash
+  oc apply -f manifests/backend.yaml -n project1
+  oc apply -f manifests/backend-destination-rule.yaml -n project1
+  oc apply -f manifests/backend-virtual-service.yaml -n project1
+  oc get pods -n project1
+  ```
+  
+- **Optional**: Draw connetion from frontend to backend in Developer Console
+
+  ```bash
+  oc annotate deployment frontend-v1 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+  oc annotate deployment frontend-v2 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+  ```
+  
+  ![](images/dev-console-topology.png)
+
 - Configure frontend to request to backend
-```bash
-oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-```
+  
+  ```bash
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+  ```
+  
 - Check Kiali Console
 - login to OpenShift Developer Console, select project istio-system and open Kiali console 
 
