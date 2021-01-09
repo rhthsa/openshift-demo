@@ -78,7 +78,7 @@ Procedures:
   ```bash
   sftp_target=198.18.134.150
   sftp_user="root"
-  sftp_pass="C1sco12345"
+  sftp_pass="b1ndP^ssword"
   ```
 
 - Create a backup script
