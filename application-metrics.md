@@ -9,37 +9,53 @@
 <!-- /TOC -->
 ## Prerequisites
 - Setup [User Workload Monitoring](manifests/user-workload-monitoring.yaml)
-```bash
-oc apply -f  manifests/user-workload-monitoring.yaml
-```
+  
+  ```bash
+  oc apply -f  manifests/user-workload-monitoring.yaml
+  ```
+
+  Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change storageClassName based on your cluster configuration
+
+  ```bash
+  oc apply -f  manifests/cluster-monitoring-config.yaml
+  ```
 - Verify monitoring stack
-```bash
-oc  get pod -n openshift-user-workload-monitoring
-```
-Sample output
-```bash
-NAME                                   READY   STATUS    RESTARTS   AGE
-prometheus-operator-5fc7d894dc-9nlhc   2/2     Running   0          9m3s
-prometheus-user-workload-0             4/4     Running   1          5m45s
-prometheus-user-workload-1             4/4     Running   1          6m1s
-thanos-ruler-user-workload-0           3/3     Running   5          8m55s
-thanos-ruler-user-workload-1           3/3     Running   0          11s
-```
+  
+  ```bash
+  oc  get pod -n openshift-user-workload-monitoring
+  ```
+
+  Sample output
+  
+  ```bash
+  NAME                                   READY   STATUS    RESTARTS   AGE
+  prometheus-operator-5fc7d894dc-9nlhc   2/2     Running   0          9m3s
+  prometheus-user-workload-0             4/4     Running   1          5m45s
+  prometheus-user-workload-1             4/4     Running   1          6m1s
+  thanos-ruler-user-workload-0           3/3     Running   5          8m55s
+  thanos-ruler-user-workload-1           3/3     Running   0          11s
+  ```
+  
 ## Service Monitoring
 - Deploy application with custom metrics
   - Backend application provides metrics by /metrics and /metrics/applications
+  
     ```bash
     oc apply -f manifests/frontend.yaml -n project1
     oc apply -f manifests/backend.yaml -n project1
     oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
     oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
     ```
+
   - Test backend application metrics
+  
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics/application
     ```
+    
   - Sample output
+  
     ```bash
     # TYPE vendor_memory_committedNonHeap_bytes gauge
     vendor_memory_committedNonHeap_bytes 3.1780976E7
@@ -50,6 +66,7 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
     # TYPE vendor_memory_usedNonHeap_bytes gauge
     vendor_memory_usedNonHeap_bytes 3.1780976E7
     ```
+    
 - Create [Service Monitoring](manifests/backend-service-monitor.yaml) to monitor backend service
     
     ```bash
@@ -75,9 +92,11 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 <!-- https://access.redhat.com/solutions/5335491 -->
 Use Grafana Operator (Community Edition) to deploy Grafana and configure datasource to Thanos Querier
 - Create project
+  
   ```bash
   oc new-project application-monitor --display-name="Custom Grafana" --description="Custom Grafana"
   ```
+  
 - Install Grafana Operator to project application-monitor
   - Install Grafana Operator from OperatorHub
 
@@ -87,7 +106,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   
   ![](images/grafana-operator-02.png)
   
-- Create Grafana instance
+- Create [Grafana instance](manifests/grafana.yaml)
   
   ```bash
   oc create -f manifests/grafana.yaml -n application-monitor
@@ -104,12 +123,14 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   oc adm policy add-cluster-role-to-user cluster-monitoring-view \
   -z grafana-serviceaccount -n application-monitor
   ```
-- Create [Grafana DataSource](manifests/grafana-datasource.yaml) to thanos-querier with grafana-serviceaccount token
 
-```bash
+- Create [Grafana DataSource](manifests/grafana-datasource.yaml) with serviceaccount grafana-serviceaccount's token and connect to thanos-querier
+
+  ```bash
   TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
   cat manifests/grafana-datasource.yaml|sed 's/Bearer .*/Bearer '"$TOKEN""'"'/'|oc apply -n application-monitor -f -
   ```  
+
 - Create [Grafana Dashboard](manifests/grafana-dashboard.yaml)
 
   ```bash
@@ -132,6 +153,13 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
     sleep .2
   done
   ```
+  Remark: You need to configure frontend app to connect to backend app
+
+  ```bash
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+  ```
+  
 - Grafana Dashboard
   
   ![](images/grafana-dashboard.png)
