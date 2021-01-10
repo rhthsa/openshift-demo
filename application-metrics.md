@@ -73,6 +73,12 @@
     oc apply -f manifests/backend-service-monitor.yaml -n project1
     ```
     
+    Remark: Role **monitor-edit** is required for create **ServiceMonitor** and **PodMonitor** resources. Following example is granting role montior-edit to user1 for project1
+
+    ```bash
+    oc adm policy add-role-to-user  monitoring-edit user1 -n project1
+    ```
+    
 - Developer Console monitoring metrics  
   - Select application metrics
 
