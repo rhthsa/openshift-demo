@@ -82,6 +82,13 @@
   ![](images/pod-with-sidecar.png)
 
 
+- Check [frontend service](manifests/frontend-service.yaml) which set slector to both v1 and v2
+  
+  ```yaml
+  selector:
+    app: frontend
+  ```
+
 - Create [frontend service](manifests/frontend-service.yaml)
   
   ```bash
@@ -113,12 +120,21 @@
         - '*.apps.SUBDOMAIN'
         
     ```
-  - Create gateway
+  - Replace SUBDOMAIN with your clsuter sub-domain and Create [gateway](manifests/frontend-gateway.yaml)
+  
     ```bash
     oc apply -f manifests/frontend-gateway.yaml -n istio-system
     ```
+    or use following bash command 
+
+    ```bash
+    SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+    cat manifests/frontend-gateway.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+    ```
+    
 - Create Destination Rule for frontend v1 and frontend v2
   - Review [Destination Rule CRD](manifests/frontend-destination-rule.yaml)
+  
     ```yaml
     apiVersion: networking.istio.io/v1alpha3
     kind: DestinationRule
@@ -169,10 +185,16 @@
             host: frontend.project1.svc.cluster.local
     ```
     
-  - Create virtual service
+  - Replace SUBDOMAIN with cluster subdomain and create [virtual service](manifests/frontend-virtual-service.yaml)
   
     ```bash
     oc apply -f manifests/frontend-virtual-service.yaml -n project1
+    ```
+    or use following bash command 
+
+    ```bash
+    SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+    cat manifests/frontend-virtual-service.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
     ```
   
 - Create Route (configured with Istio Gateway) for frontend app
@@ -193,15 +215,25 @@
         wildcardPolicy: None
 
     ```
-  - Create Route
-    ```
+  - Replace SUBDOMAIN with cluster subdomain then create Route
+  
+    ```bash
     oc apply -f manifests/frontend-route-istio.yaml -n istio-system
     ```
+    or use following bash command 
+
+    ```bash
+    SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+    cat manifests/frontend-route-istio.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+    ```
+
 - Test with cURL
+  
 ```bash
 FRONTEND_ISTIO_ROUTE=$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
 curl $FRONTEND_ISTIO_ROUTE
 ```
+
 ## Weight-Routing with Istio Virtual Service
 - Set weight routing between 2 services with virtual service
   - Check for [virtual service with weight routing](manifests/frontend-virtual-service-with-weight-routing.yaml), Replace SUBDOMAIN with cluster's subdomain.
@@ -230,20 +262,33 @@ curl $FRONTEND_ISTIO_ROUTE
           subset: v2
         weight: 0
   ```
-    - Apply [virtual service](manifests/frontend-virtual-service-with-weight-routing.yaml) for Blue/Green deployment with route all traffic to v1
-    ```bash
-    oc apply -f manifests/frontend-virtual-service-with-weight-routing.yaml -n project1
-    ```
+  or use following bash command 
+
+  ```bash
+  SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests//frontend-virtual-service-with-weight-routing.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+  ```
+  
+   - Apply [virtual service](manifests/frontend-virtual-service-with-weight-routing.yaml) for Blue/Green deployment with route all traffic to v1
+    
+   ```bash
+   oc apply -f manifests/frontend-virtual-service-with-weight-routing.yaml -n project1
+   ```
+    
   - Test with cURL to verify that all requests are routed to v1
   - Blue/Green deployment by route all requests to v2
+   
     ```bash
     oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":0},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":100}]}}]' -n project1
     ```
+
   - Test with cURL to verify that all requests are routed to v2
   - Canary deployment by weight requests between v1 and v2 with 70% and 30%
+    
     ```bash
     oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
     ```
+    
 - Test canary deployment
   - Run 100 requests
     ```bash
