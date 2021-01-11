@@ -148,6 +148,10 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```bash
   echo "Grafana URL => https://$(oc get route grafana-route -o jsonpath='{.spec.host}' -n application-monitor)"
   ```
+  or use link provided by Developer Console
+
+  ![](images/custom-grafana-route.png)
+  
 - Generate workload
   
   ```bash
