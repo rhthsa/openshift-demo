@@ -264,3 +264,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   - Check for alert in Developer Console 
     
     ![](images/alert-high-latency.png)
+
+  - Console overview status
+
+    ![](images/console-overview-status.png)
