@@ -291,6 +291,7 @@ curl $FRONTEND_ISTIO_ROUTE
     
 - Test canary deployment
   - Run 100 requests
+  
     ```bash
     FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
     COUNT=0
@@ -304,12 +305,15 @@ curl $FRONTEND_ISTIO_ROUTE
         COUNT=$(expr $COUNT + 1)
     done
     ```
-  - Check result
+
+  - Check result for comparing percentage of requests to v1 and v2
+    
     ```bash
     printf "Version 1: %s\n" $(cat result.txt | grep "1.0.0" | wc -l)
     printf "Version 2: %s\n" $(cat result.txt | grep "2.0.0" | wc -l)
     rm -f result.txt
     ```
+    
 ## Routing by condition based on URI
 - Set conditional routing between 2 services with virtual service
   - Check for [virtual service by URI](manifests/frontend-virtual-service-with-uri.yaml), Replace SUBDOMAIN with cluster's subdomain. Condition with regular expression
@@ -345,24 +349,38 @@ curl $FRONTEND_ISTIO_ROUTE
             subset: v2
     ```
 - Apply virtual service
+  
   ```bash
   oc apply -f manifests/frontend-virtual-service-with-uri.yaml -n project1
   ```
+  
+  or use following bash command 
+
+  ```bash
+  SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests/frontend-virtual-service-with-uri.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+  ```
+
 - Test with URI /version1 and /ver1
+  
   ```bash
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
   curl $FRONTEND_ISTIO_ROUTE/version1
   curl $FRONTEND_ISTIO_ROUTE/vers1
   curl $FRONTEND_ISTIO_ROUTE/ver1
   ```
+  
 - Test with URI /
+  
   ```bash
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
   curl $FRONTEND_ISTIO_ROUTE/
   ```
+  
 ## A/B with Istio Virtual Service
 - A/B testing by investigating User-Agent header with [Virtual Service](manifests/frontend-virtual-service-with-header.yaml), Replace SUBDOMAIN with cluster's sub-domain.
-  - If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2 
+  - If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2
+   
   ```yaml
   apiVersion: networking.istio.io/v1alpha3
   kind: VirtualService
@@ -391,10 +409,20 @@ curl $FRONTEND_ISTIO_ROUTE
             number: 8080
           subset: v1
   ```
+  
 - Apply [Virtual Service](manifests/frontend-virtual-service-with-header.yaml)
+  
   ```bash
   oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
   ```
+  
+  or use following bash command 
+
+  ```bash
+  SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests/frontend-virtual-service-with-header.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+  ```
+  
 - Test with cURL with HTTP header User-Agent contains Firefox
 ```bash
 FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
@@ -468,30 +496,33 @@ FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath=
     
 ## Traffic Mirroring (Dark Launch)
 - Deploy audit app and mirror every requests that frontend call backend to audit app
+  
   ```bash
   oc apply -f manifests/audit-app.yaml -n project1
   oc get pods -n project1
   ```
+
 - Update [backend virtual service](manifests/backend-virtual-service-mirror.yaml) to mirror requests to audit app.
+  
   ```bash
   oc apply -f manifests/backend-virtual-service-mirror.yaml -n project1
   ```
+  
 - Use cURL to call frontend and check audit's pod log by CLI (with another terminal) or Web Console
   - cURL frontend
+  
   ```bash
   FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath='{.spec.host}')
   curl $FRONTEND_ISTIO_ROUTE
   ```
 
   - View audit log 
+  
   ```bash
   oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk '{print $1}') -c backend -n project1
   ```
   
   ![](images/mirror-log.png)
-  
-
-
   
   
 ## Envoy Access Log
