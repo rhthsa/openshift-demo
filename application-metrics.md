@@ -5,6 +5,7 @@
   - [Prerequisites](#prerequisites)
   - [Service Monitoring](#service-monitoring)
   - [Custom Grafana Dashboard](#custom-grafana-dashboard)
+  - [Custom Alert](#custom-alert)
 
 <!-- /TOC -->
 ## Prerequisites
@@ -178,3 +179,88 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
 - Grafana Dashboard
   
   ![](images/grafana-dashboard.png)
+
+## Custom Alert
+
+- Check `PrometheusRule` [backend-app-alert](manifests/backend-custom-alert.yaml) 
+
+  ```yaml
+  apiVersion: monitoring.coreos.com/v1
+  kind: PrometheusRule
+  metadata:
+    name: backend-app-alert
+    namespace: project1
+    labels:
+      openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+  spec:
+    groups:
+    - name: backend-app
+      rules:
+      - alert: ConcurrentBackend
+        expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
+        for: 1m
+        labels:
+          severity: 'warning'
+        annotations:
+          message: 'Total concurrent request is {{ $value }} request/sec'
+      - alert: HighLatency
+        expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds>5
+        labels:
+          severity: 'critical'
+        annotations:
+          message: 'Backend response time is {{ $value }} sec'
+  ```
+
+  [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
+  - ConcurrentBackend
+    severity warning when total concurrent reqeusts is greater than 15
+  - HighLatency
+    servierity critical when response time is greateer than 5 sec  
+
+
+- Create [backend-app-alert](manifests/backend-custom-alert.yaml) 
+
+  ```bash
+  oc apply -f manifests/custom-alert.yaml
+  ```
+  
+- For simplified our test, set backend app to 2 pod
+  
+  ```bash
+  oc delete deployment backend-v2 -n project1
+  oc scale deployment backend-v1 --replicas=2 -n project1
+  ```
+  
+- Test `ConcurrentBackend` alert with 20 concurrent requests
+
+  ```bash
+  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+  siege -c 25 $FRONTEND_URL
+  ```
+
+  Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
+
+  ![](images/alert-concurrent-backend.png)
+
+- Test `HighLatency` alert
+  - Set backend with 6 sec response tim
+    - By CLI
+      ```bash
+      oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
+      ```
+    - By Developer Console
+      - Select `Topology` then select backend-v1 and select dropdown menu `Edit Deployment`
+        
+        ![](images/dev-console-edit-deployment.png)
+        
+      - Select `Environment` and set APP_BACKEND to https://httpbin.org/delay/6
+
+        ![](images/dev-console-edit-environment.png)
+  - Request to frontend app
+    
+    ```bash
+    curl $FRONTEND_URL
+    ```
+  - Check for alert in Developer Console 
+    
+    ![](images/alert-high-latency.png)
