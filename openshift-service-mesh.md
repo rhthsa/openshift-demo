@@ -266,7 +266,7 @@ curl $FRONTEND_ISTIO_ROUTE
 
   ```bash
   SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
-  cat manifests//frontend-virtual-service-with-weight-routing.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
+  cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
   ```
   
    - Apply [virtual service](manifests/frontend-virtual-service-with-weight-routing.yaml) for Blue/Green deployment with route all traffic to v1
