@@ -493,7 +493,9 @@ FRONTEND_ISTIO_ROUTE=http://$(oc get route frontend -n istio-system -o jsonpath=
   - Drill down to tracing information
 
     ![](images/jaeger-transaction.png) 
-    
+  
+  - Show feature config on the fly in service --> frontend v2 --> action
+  
 ## Traffic Mirroring (Dark Launch)
 - Deploy audit app and mirror every requests that frontend call backend to audit app
   
