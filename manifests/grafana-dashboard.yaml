@@ -8,34 +8,139 @@ spec:
   json: |
     {
       "annotations": {
-        "list": [{
-          "builtIn": 1,
-          "datasource": "-- Grafana --",
-          "enable": true,
-          "hide": true,
-          "iconColor": "rgba(0, 211, 255, 1)",
-          "name": "Annotations & Alerts",
-          "type": "dashboard"
-        }]
+        "list": [
+          {
+            "builtIn": 1,
+            "datasource": "-- Grafana --",
+            "enable": true,
+            "hide": true,
+            "iconColor": "rgba(0, 211, 255, 1)",
+            "name": "Annotations & Alerts",
+            "type": "dashboard"
+          }
+        ]
       },
+      "description": "Backend Application Metrics",
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
       "id": 2,
       "links": [],
-      "panels": [{
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 7,
+            "w": 24,
+            "x": 0,
+            "y": 0
+          },
+          "hiddenSeries": false,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "percentage": false,
+          "pluginVersion": "7.1.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "application_com_example_quarkus_BackendResource_concurrentBackend_current",
+              "instant": false,
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Request/sec",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
           "aliasColors": {},
           "bars": true,
           "dashLength": 10,
           "dashes": false,
           "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          },
           "fill": 1,
+          "fillGradient": 0,
           "gridPos": {
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 0
+            "y": 7
           },
+          "hiddenSeries": false,
           "hideTimeOverride": false,
           "id": 2,
           "interval": "",
@@ -52,8 +157,8 @@ spec:
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
-          "options": {},
           "percentage": false,
+          "pluginVersion": "7.1.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -61,13 +166,15 @@ spec:
           "spaceLength": 10,
           "stack": true,
           "steppedLine": false,
-          "targets": [{
-            "expr": "application_com_example_quarkus_BackendResource_countBackend_total",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }],
+          "targets": [
+            {
+              "expr": "application_com_example_quarkus_BackendResource_countBackend_total",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
           "thresholds": [],
           "timeFrom": "5m",
           "timeRegions": [],
@@ -87,7 +194,8 @@ spec:
             "show": true,
             "values": []
           },
-          "yaxes": [{
+          "yaxes": [
+            {
               "format": "short",
               "label": null,
               "logBase": 1,
@@ -115,13 +223,22 @@ spec:
           "cacheTimeout": null,
           "dashLength": 10,
           "dashes": false,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          },
           "fill": 1,
+          "fillGradient": 0,
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 8
+            "y": 15
           },
+          "hiddenSeries": false,
           "id": 6,
           "legend": {
             "avg": false,
@@ -136,9 +253,8 @@ spec:
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
-          "options": {},
           "percentage": false,
-          "pluginVersion": "6.2.4",
+          "pluginVersion": "7.1.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -146,13 +262,15 @@ spec:
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
-          "targets": [{
-            "expr": "base_memory_usedHeap_bytes",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "legendFormat": "",
-            "refId": "A"
-          }],
+          "targets": [
+            {
+              "expr": "base_memory_usedHeap_bytes",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
           "thresholds": [],
           "timeFrom": "5m",
           "timeRegions": [],
@@ -171,7 +289,8 @@ spec:
             "show": true,
             "values": []
           },
-          "yaxes": [{
+          "yaxes": [
+            {
               "decimals": null,
               "format": "short",
               "label": "Bytes",
@@ -199,13 +318,22 @@ spec:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {}
+            },
+            "overrides": []
+          },
           "fill": 1,
+          "fillGradient": 0,
           "gridPos": {
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 8
+            "y": 15
           },
+          "hiddenSeries": false,
           "id": 4,
           "legend": {
             "avg": false,
@@ -220,8 +348,8 @@ spec:
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
-          "options": {},
           "percentage": false,
+          "pluginVersion": "7.1.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -229,12 +357,14 @@ spec:
           "spaceLength": 10,
           "stack": false,
           "steppedLine": false,
-          "targets": [{
-            "expr": "application_com_example_quarkus_BackendResource_timeBackend_max_seconds",
-            "format": "time_series",
-            "intervalFactor": 1,
-            "refId": "A"
-          }],
+          "targets": [
+            {
+              "expr": "application_com_example_quarkus_BackendResource_timeBackend_max_seconds",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "refId": "A"
+            }
+          ],
           "thresholds": [],
           "timeFrom": "5m",
           "timeRegions": [],
@@ -253,7 +383,8 @@ spec:
             "show": true,
             "values": []
           },
-          "yaxes": [{
+          "yaxes": [
+            {
               "format": "short",
               "label": "ms",
               "logBase": 1,
@@ -276,7 +407,8 @@ spec:
           }
         }
       ],
-      "schemaVersion": 18,
+      "refresh": "10s",
+      "schemaVersion": 26,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -288,7 +420,6 @@ spec:
       },
       "timepicker": {
         "refresh_intervals": [
-          "5s",
           "10s",
           "30s",
           "1m",
@@ -314,6 +445,6 @@ spec:
       "timezone": "GMT+7",
       "title": "Backend App",
       "uid": "8-N9ccCZz",
-      "version": 11
+      "version": 2
     }
   name: backend-dashboard.json
