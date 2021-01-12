@@ -212,6 +212,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```
 
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
+  
   - ConcurrentBackend
     severity warning when total concurrent reqeusts is greater than 15
   - HighLatency
@@ -221,8 +222,17 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
 - Create [backend-app-alert](manifests/backend-custom-alert.yaml) 
 
   ```bash
-  oc apply -f manifests/custom-alert.yaml
+  oc apply -f manifests/backend-custom-alert.yaml
   ```
+
+  Remark: Role `monitoring-rules-view` is required for view `PrometheusRule` resource and role `monitoring-rules-edit` is required to  create, modify, and deleting `PrometheusRule` 
+  
+  Following example is granting role monitoring-rules-view and monitoring-rules-edit to user1 for project1
+
+  ```bash
+  oc adm policy add-role-to-user  monitoring-rules-view user1 -n project1
+  oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
+  ``` 
   
 - For simplified our test, set backend app to 2 pod
   
