@@ -43,6 +43,7 @@
   - Setup User Workload Monitoring
   - Configure Service Monitoring
   - Custom Grafana Dashboard
+  - Custom Alert
 - [CI/CD](ci-cd.md)
   - Azure DevOps
   - Deploy Back App
