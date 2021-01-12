@@ -124,7 +124,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
   ```
   
-- Add role cluster-monitoring-view to Grafana ServiceAccount
+- Add cluster role `cluster-monitoring-view` to Grafana ServiceAccount
 
   ```bash
   oc adm policy add-cluster-role-to-user cluster-monitoring-view \
@@ -233,6 +233,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```bash
   oc adm policy add-role-to-user  monitoring-rules-view user1 -n project1
   oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
+
   ``` 
   
 - For simplified our test, set backend app to 2 pod
@@ -242,11 +243,24 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   oc scale deployment backend-v1 --replicas=2 -n project1
   ```
   
-- Test `ConcurrentBackend` alert with 20 concurrent requests
+- Test `ConcurrentBackend` alert with 25 concurrent requests
 
   ```bash
   FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
   siege -c 25 $FRONTEND_URL
+  ```
+  If you don't have siege, run k6 as pod on OpenShift
+  - 25 threads
+  - Duration 2 minutes
+  - Ramp up 30 sec
+  - Ramp down 30 sec
+  
+  ```bash
+  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+  oc run load-test -n project1 -i \
+  --image=loadimpact/k6 --rm=true --restart=Never \
+  --  run -  < manifests/load-test-k6.js \
+  -e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
   ```
 
   Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
