@@ -11,6 +11,7 @@ spec:
     rules:
     - alert: ConcurrentBackend
       expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
+      # wait just 1 minute for demo purpose
       for: 1m
       labels:
         severity: 'warning'
@@ -21,4 +22,4 @@ spec:
       labels:
         severity: 'critical'
       annotations:
-        message: 'Backend response time is {{ $value }} sec'
+        message: '{{ $labels.instance }} response time is {{ $value }} sec'

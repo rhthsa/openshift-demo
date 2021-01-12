@@ -182,8 +182,8 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
 
 ## Custom Alert
 
-- Check `PrometheusRule` [backend-app-alert](manifests/backend-custom-alert.yaml) 
-
+- Check `PrometheusRule` [backend-app-alert](manifests/backend-custom-alert.yaml)
+ 
   ```yaml
   apiVersion: monitoring.coreos.com/v1
   kind: PrometheusRule
@@ -198,6 +198,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
       rules:
       - alert: ConcurrentBackend
         expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
+        # wait just 1 minute for demo purpose
         for: 1m
         labels:
           severity: 'warning'
@@ -208,7 +209,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
         labels:
           severity: 'critical'
         annotations:
-          message: 'Backend response time is {{ $value }} sec'
+          message: '{{ $labels.instance }} response time is {{ $value }} sec'
   ```
 
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
