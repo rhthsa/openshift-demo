@@ -66,6 +66,26 @@ watch oc get horizontalpodautoscaler/frontend-v1-cpu -n project1
 FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
 siege -c 40 $FRONTEND_URL
 ```
+
+If you don't have siege, run k6 as pod on OpenShift
+  - 40 threads
+  - Duration 3 minutes
+  - Ramp up 30 sec
+  - Ramp down 30 sec
+  
+```bash
+FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+oc run load-test -n project1 -i \
+--image=loadimpact/k6 --rm=true --restart=Never \
+--  run -  < manifests/load-test-k6.js \
+-e URL=$FRONTEND_URL -e THREADS=40 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+```
+Remark: k6 will run as pod name `load-test` for 4 minutes if you want to force stop before 4 minutes just delete `load-test` pod
+
+```bash
+oc delete pod load-test -n project1
+```
+
 - Wait for HPA to trigger
   
   ![](images/hpa-cpu-status.png)
