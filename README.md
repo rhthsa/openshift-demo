@@ -1,5 +1,8 @@
 # OpenShift Demo
 
+![](images/OpenShiftContainerPlatform.png)
+
+## Table of Contents
 - [OpenShift Authentication Providers with AD](infrastructure-authentication-providers.md)
   - OpenShift External Authentication Provider
   - LDAP group sync
