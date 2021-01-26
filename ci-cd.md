@@ -213,8 +213,8 @@ select new service connection, select type fortify
 - api url: https://api.trial.fortify.com
 - portal url: https://trial.fortify.com
 - username: chatapazar@gmail.com
-- PAT: NDB3aHBsVElTeExbezlvaSdjQjVVS1JQb2dnM3JL0
-- Tenant ID: red_hat_12_FMA_104731079
+- PAT: xxx
+- Tenant ID: xxx
 - connection name: fortify
 
 
@@ -222,7 +222,7 @@ select new service connection, select type fortify
 
 Pipelines: TestDemoApplication.Front
 
-URL: https://dev.azure.com/chatapazar0583/_git/TestDemoApplication.Front?path=%2Fazure-pipelines-1.yml
+URL: https://dev.azure.com/xxx/_git/TestDemoApplication.Front?path=%2Fazure-pipelines-1.yml
 
 current step in ci or pipeline
 - install .ned sdk 2.2 for test project (app use 2.1, test use 2.2 ???)
@@ -242,7 +242,7 @@ and manual login, recommended use CA in Prod
 
 Releases: test dev [testdev.json](ci-cd/testdev.json)
 
-url: https://dev.azure.com/chatapazar0583/TestDemoApplication.Front/_release?view=mine&_a=releases&definitionId=1
+url: https://dev.azure.com/xxx/TestDemoApplication.Front/_release?view=mine&_a=releases&definitionId=1
 
 trigger from ci/pipeline or manual
 
