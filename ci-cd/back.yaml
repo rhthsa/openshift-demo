@@ -50,9 +50,9 @@ items:
     postCommit: {}
     resources: {}
     source:
-      contextDir: BOTDemoApplication.Back
+      contextDir: TestDemoApplication.Back
       git:
-        uri: https://chatapazar0583@dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_git/BOTDemoApplication.Back
+        uri: https://chatapazar0583@dev.azure.com/xxx/TestDemoApplication.Front/_git/TestDemoApplication.Back
       sourceSecret:
         name: azure-repo
       type: Git
