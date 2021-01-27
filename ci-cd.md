@@ -220,29 +220,25 @@ select new service connection, select type fortify
 
 ## Azure pipelines
 
-Pipelines: TestDemoApplication.Front
-
-URL: https://dev.azure.com/xxx/_git/TestDemoApplication.Front?path=%2Fazure-pipelines-1.yml
+Pipelines: [sample-pipeline.yml](ci-cd/sample-pipeline.yml), [sample-pipeline-redhat-image.yml](ci-cd/sample-pipeline-redhat-image.yml)
 
 current step in ci or pipeline
-- install .ned sdk 2.2 for test project (app use 2.1, test use 2.2 ???)
+- install .net sdk 2.2 for test project (app use 2.1, test use 2.2 ???)
 - restore package/library with azure artifacts
 - build
 - unit test --> publish to Azure DevOps
 - code coverage with cobertura --> publish to Azure DevOps
 - publish
 - Option: scan code with fortify (use fortify on demand, don't have fortify scs license file)
-- login registry.redhat.io for pull ubi8/dotnet-21-runtime
+- Option: login registry.redhat.io for pull ubi8/dotnet-21-runtime --> sample-pipeline-redhat-image.yml
 - build image
-- install trivy, scan image
+- install trivy, scan image with trivy, publish resutl to Azure DevOps (test)
 - harbor login, with self sign of harbor, need copy ca.crt to docker 
 (such as /etc/docker/certs.d/ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/ca.crt ) in Azure DevOps agent 
 and manual login, recommended use CA in Prod
 - push image to harbor 
 
-Releases: test dev [testdev.json](ci-cd/testdev.json)
-
-url: https://dev.azure.com/xxx/TestDemoApplication.Front/_release?view=mine&_a=releases&definitionId=1
+Releases: [blue-green.json](ci-cd/blue-green.json), [canary.json](ci-cd/canary.json)
 
 trigger from ci/pipeline or manual
 
