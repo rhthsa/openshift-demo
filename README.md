@@ -47,7 +47,7 @@
   - Configure Service Monitoring
   - Custom Grafana Dashboard
   - Custom Alert
-- [CI/CD](ci-cd.md)
+- [CI/CD with Azure DevOps](ci-cd.md)
   - Azure DevOps
   - Deploy Back App
   - Deploy Front App
