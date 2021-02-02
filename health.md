@@ -84,7 +84,7 @@ For demo purpose we can set readiness and liveness by following URI
   ```bash
   curl http://localhost:8080/
   ```
-  - Test readiness probe
+  - Test liveness probe
   ```bash
   curl http://localhost:8080/health/live
   ```
@@ -92,7 +92,7 @@ For demo purpose we can set readiness and liveness by following URI
   ```bash
   curl http://localhost:8080/stop
   ```
-  - Test frontend readiness probe and test app again. You will get 503 Service Unavailable response code.
+  - Test frontend liveness probe and test app again. You will get 503 Service Unavailable response code.
   ```bash
   curl -v http://localhost:8080/health/live
   curl -v http://localhost:8080/ 
