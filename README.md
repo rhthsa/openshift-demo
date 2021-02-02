@@ -42,6 +42,7 @@
   - Traffic Analysis
   - Traffic Mirroring
   - Tracing
+  - Circuit Breaker
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
   - Configure Service Monitoring
