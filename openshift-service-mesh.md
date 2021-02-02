@@ -772,3 +772,7 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   Host:backend-v1-f4dbf777f-vjhcl=> Status:200
   Host:backend-v1-f4dbf777f-tgssd=> Status:200 
   ```
+
+- Check Kiali Console. Remark that there is lightning icon at backend service. This is represent for circuit breaker.
+  
+  ![](images/kiali-graph-cb.gif)
