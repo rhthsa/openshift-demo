@@ -36,7 +36,7 @@ items:
             value: http://back:8080/api/values/back
           - name: ASPNETCORE_URLS
             value: http://*:8080            
-          image: image-registry.openshift-image-registry.svc:5000/bot/front-green:latest
+          image: image-registry.openshift-image-registry.svc:5000/test/front-green:latest
           name: front-green
           ports:
           - containerPort: 8080
@@ -60,7 +60,7 @@ items:
         from:
           kind: ImageStreamTag
           name: front-green:latest
-          namespace: bot
+          namespace: test
       type: ImageChange
   status:
     availableReplicas: 0
