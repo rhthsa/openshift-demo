@@ -4,6 +4,9 @@ kind: ServiceMeshControlPlane
 metadata:
   name: basic-install
 spec:
+  meshConfig:
+    localityLbSetting:
+      enabled: false
   security:
     controlPlane:
       mtls: true
