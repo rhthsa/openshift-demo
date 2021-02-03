@@ -43,6 +43,7 @@
   - Traffic Mirroring
   - Tracing
   - Circuit Breaker
+  - Secure with mTLS
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
   - Configure Service Monitoring

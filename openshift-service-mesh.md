@@ -12,6 +12,7 @@
   - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
   - [Envoy Access Log](#envoy-access-log)
   - [Circuit Breaker](#circuit-breaker)
+  - [Secure with mTLS](#secure-with-mtls)
 
 <!-- /TOC -->
 ## Setup Control Plane and sidecar
@@ -776,3 +777,14 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 - Check Kiali Console. Remark that there is lightning icon at backend service. This is represent for circuit breaker.
   
   ![](images/kiali-graph-cb.gif)
+
+- Set backend pod to normal status
+
+  ```bash
+  oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/start
+  ```
+## Secure with mTLS
+Check following Git for setup mTLS between service and ingress service
+
+[Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
+
