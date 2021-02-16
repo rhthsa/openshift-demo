@@ -22,13 +22,26 @@
 Sample application
 
 ```mermaid
-graph LR;
-    Client--> OpenShift_Route
-    OpenShift_Route-->Istio_Ingress
-    Istio_Ingress-->Frontend;
-    Frontend-->Backend;
-    Backend-->|External App|https://httpbin.org/status/200
-```
+graph LR
+
+    client-->router
+    subgraph openshift-ingress
+    router
+    end
+    subgraph control-plane
+    istio-ingress
+    end
+    router-->istio-ingress
+    subgraph data-plane
+    istio-ingress-->frontend
+    frontend-->backend
+    end
+    subgraph "external system"
+    httpbin.org
+    end
+    backend-->httpbin.org
+    
+``` 
 
 ## Setup Control Plane and sidecar
 
