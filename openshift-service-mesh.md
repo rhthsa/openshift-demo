@@ -2,6 +2,7 @@
 <!-- TOC -->
 
 - [OpenShift Service Mesh](#openshift-service-mesh)
+  - [Overview](#overview)
   - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
   - [Create Istio Gateway](#create-istio-gateway)
   - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
@@ -15,6 +16,20 @@
   - [Secure with mTLS](#secure-with-mtls)
 
 <!-- /TOC -->
+
+## Overview
+
+Sample application
+
+```mermaid
+graph LR;
+    Client--> OpenShift_Route
+    OpenShift_Route-->Istio_Ingress
+    Istio_Ingress-->Frontend;
+    Frontend-->Backend;
+    Backend-->|External App|https://httpbin.org/status/200
+```
+
 ## Setup Control Plane and sidecar
 
 - Install following Operators from OperatorHub
