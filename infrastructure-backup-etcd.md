@@ -191,7 +191,7 @@ Procedures:
                 terminationMessagePolicy: File
                 tty: true
                 image: >-
-                quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:091cd1158444af8382312b71150d26e6550c5d52023b993fec6afd2253d2e425
+                  quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:091cd1158444af8382312b71150d26e6550c5d52023b993fec6afd2253d2e425
             serviceAccount: default
             volumes:
               - name: host
