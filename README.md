@@ -1,5 +1,8 @@
 # OpenShift Demo
 
+![](images/OpenShiftContainerPlatform.png)
+
+## Table of Contents
 - [OpenShift Authentication Providers with AD](infrastructure-authentication-providers.md)
   - OpenShift External Authentication Provider
   - LDAP group sync
@@ -17,7 +20,8 @@
   - Egress IPs
   - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
-
+- Application Deployment
+  - [Helm](helm.md) 
 - [OpenShift Route](openshift-route.md)
   - Blue/Green Deployment
   - Canary Deployment
@@ -39,12 +43,14 @@
   - Traffic Analysis
   - Traffic Mirroring
   - Tracing
+  - Circuit Breaker
+  - Secure with mTLS
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
   - Configure Service Monitoring
   - Custom Grafana Dashboard
   - Custom Alert
-- [CI/CD](ci-cd.md)
+- [CI/CD with Azure DevOps](ci-cd.md)
   - Azure DevOps
   - Deploy Back App
   - Deploy Front App

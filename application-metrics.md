@@ -51,8 +51,8 @@
   - Test backend application metrics
   
     ```bash
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl http://localhost:8080/metrics/application
+    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl -L  http://localhost:8080/metrics
+    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl -L http://localhost:8080/metrics/application
     ```
     
   - Sample output

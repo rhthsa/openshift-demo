@@ -1,4 +1,4 @@
-# CI/CD
+# CI/CD with Azure DevOps
 
 <!-- TOC -->
 
@@ -24,17 +24,17 @@
 
 - Azure Devops Project
 
-  https://dev.azure.com/chatapazar0583/BOTDemoApplication.Front
+  https://dev.azure.com/user/project
 
 - Azure Repo
 
     `user`: chatapazar
 
-    `PAT`: stpkr4cpnprrgxmx66zg7qlgqycjlmzwv5w4d2go7uvq3xdc5tea
+    `PAT`: xxx
 
-    `BOTDemoApplication.Front Repository`: https://chatapazar0583@dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_git/BOTDemoApplication.Front
+    `demo.Front Repository`: https://user@dev.azure.com/user/demo.Front/_git/demo.Front
 
-    `BOTDemoApplication.Back Repository` : https://chatapazar0583@dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_git/BOTDemoApplication.Back
+    `demo.Back Repository` : https://user@dev.azure.com/user/demo.Front/_git/demo.Back
 
 - Azure Artifact
     
@@ -48,15 +48,15 @@
 
 deploy source code from azure repo with openshift s2i
 
-login, new project call 'bot'
+login, new project call 'test'
 ```
 oc login
-oc new-project bot
+oc new-project test
 ```
 
 prepare secret for azure repo
 ```
-oc create secret generic azure-repo --from-literal=username=chatapazar --from-literal=password=stpkr4cpnprrgxmx66zg7qlgqycjlmzwv5w4d2go7uvq3xdc5tea --type=kubernetes.io/basic-auth
+oc create secret generic azure-repo --from-literal=username=chatapazar --from-literal=password=xxx --type=kubernetes.io/basic-auth
 oc secrets link builder azure-repo
 ```
 
@@ -68,15 +68,15 @@ oc expose svc/back
 
 ## Deploy Front App
 
-set current project to bot
+set current project to test
 ```
-oc project bot
+oc project test
 ```
 
 create secret for harbor
 ```
-oc create secret docker-registry myharbor --docker-username=chatapazar --docker-server=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com --docker-password=Optimus9a
-oc secrets link default myharbor --for=pull --namespace=bot
+oc create secret docker-registry myharbor --docker-username=chatapazar --docker-server=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com --docker-password=xxx
+oc secrets link default myharbor --for=pull --namespace=test
 ```
 
 For private Container Registry and Self Sign Cert, if use CA go to create imagestream
@@ -99,21 +99,21 @@ oc patch image.config.openshift.io/cluster --patch '{"spec":{"additionalTrustedC
 
 create imagestream
 ```
-oc import-image bot/front-blue:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/bot/botdemoapp.front:20201230.32 --confirm
-oc import-image bot/front-green:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/bot/botdemoapp.front:20201230.32 --confirm
+oc import-image test/front-blue:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 --confirm
+oc import-image test/front-green:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 --confirm
 ```
 
 update imagestream, if you need change version of image in openshift
 ```
-oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/bot/botdemoapp.front:20201230.32 bot/front-blue:latest
-oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/bot/botdemoapp.front:20201230.32 bot/front-green:latest
+oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 test/front-blue:latest
+oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 test/front-green:latest
 ```
 
 deploy front-blue, front-green and expose route to front-blue [front-blue.yaml](ci-cd/front-blue.yaml), [front-green.yaml](ci-cd/front-green.yaml)
 ```
 oc create -f front-blue.yaml
 oc create -f front-green.yaml
-oc patch dc front-green -p "{\"spec\":{\"replicas\":0}}" -n bot
+oc patch dc front-green -p "{\"spec\":{\"replicas\":0}}" -n test
 
 oc expose service front-blue -l name=front --name=front
 ```
@@ -129,13 +129,13 @@ ASPNETCORE_URLS=http://*:8080
 
 create imagestream for canary
 ```
-oc import-image bot/front-main:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:20210105.5 --confirm
-oc import-image bot/front-sub:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:20210105.5 --confirm
+oc import-image test/front-main:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/test/testdemoapp.front:20210105.5 --confirm
+oc import-image test/front-sub:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/test/testdemoapp.front:20210105.5 --confirm
 ```
 
 create front-main dc
 ```
-oc project bot
+oc project test
 oc create -f front-main.yaml
 ```
 
@@ -152,7 +152,7 @@ oc create -f canary.yaml
 test canary
 manual run release canary in azure devops
 ```
-curl http://canary-bot.apps.cluster-852b.852b.example.opentlc.com/api/values/information
+curl http://canary-test.apps.cluster-852b.852b.example.opentlc.com/api/values/information
 ```
 
 ## Prepare Harbor On Kubernetes/OpenShift
@@ -180,7 +180,7 @@ helm install harbor harbor/harbor \
 - change externalURL to https://ocr.{openshift-clustername}
 - change expose.ingress.hosts.core to ocr.{openshift-clustername}
 - change expose.ingress.hosts.notary to notary.{openshift-clustername}
-- create project bot
+- create project test
 - create user for access harbor
 
 
@@ -213,36 +213,32 @@ select new service connection, select type fortify
 - api url: https://api.trial.fortify.com
 - portal url: https://trial.fortify.com
 - username: chatapazar@gmail.com
-- PAT: NDB3aHBsVElTeExbezlvaSdjQjVVS1JQb2dnM3JL0
-- Tenant ID: red_hat_12_FMA_104731079
+- PAT: xxx
+- Tenant ID: xxx
 - connection name: fortify
 
 
 ## Azure pipelines
 
-Pipelines: BOTDemoApplication.Front
-
-URL: https://dev.azure.com/chatapazar0583/_git/BOTDemoApplication.Front?path=%2Fazure-pipelines-1.yml
+Pipelines: [sample-pipeline.yml](ci-cd/sample-pipeline.yml), [sample-pipeline-redhat-image.yml](ci-cd/sample-pipeline-redhat-image.yml)
 
 current step in ci or pipeline
-- install .ned sdk 2.2 for test project (app use 2.1, test use 2.2 ???)
+- install .net sdk 2.2 for test project (app use 2.1, test use 2.2 ???)
 - restore package/library with azure artifacts
 - build
 - unit test --> publish to Azure DevOps
 - code coverage with cobertura --> publish to Azure DevOps
 - publish
 - Option: scan code with fortify (use fortify on demand, don't have fortify scs license file)
-- login registry.redhat.io for pull ubi8/dotnet-21-runtime
+- Option: login registry.redhat.io for pull ubi8/dotnet-21-runtime --> sample-pipeline-redhat-image.yml
 - build image
-- install trivy, scan image
+- install trivy, scan image with trivy, publish resutl to Azure DevOps (test)
 - harbor login, with self sign of harbor, need copy ca.crt to docker 
 (such as /etc/docker/certs.d/ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/ca.crt ) in Azure DevOps agent 
 and manual login, recommended use CA in Prod
 - push image to harbor 
 
-Releases: bot dev [botdev.json](ci-cd/botdev.json)
-
-url: https://dev.azure.com/chatapazar0583/BOTDemoApplication.Front/_release?view=mine&_a=releases&definitionId=1
+Releases: [blue-green.json](ci-cd/blue-green.json), [canary.json](ci-cd/canary.json)
 
 trigger from ci/pipeline or manual
 
@@ -257,14 +253,14 @@ stage 2: scale down previous version
 - setup oc command
 - scale down previous version
 
-Test with postman script of BOT
+Test with postman script of Test
 
 ## Canary Deployment
 
 change in front route with yaml 
 ```
 spec:
-  host: front-bot.apps.cluster-852b.852b.example.opentlc.com
+  host: front-test.apps.cluster-852b.852b.example.opentlc.com
   to:
     kind: Service
     name: front-blue
@@ -287,16 +283,16 @@ oc patch route frontend --type='json' -p='[{"op":"replace","path":"/spec/alterna
 ## Use Openshift Internal Registry
 
 ```
-oc create imagestream demofront -n bot
-oc create imagestream demoapp -n bot
+oc create imagestream demofront -n test
+oc create imagestream demoapp -n test
 
 oc login with plugin
 docker login -u opentlc-mgr -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
-docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/bot/demofront:xxx
-docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/bot/demoapp:xxx
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/test/demofront:xxx
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/test/demoapp:xxx
 
-oc tag bot/demofront:xxx bot/demofront:latest
-oc tag bot/demoapp:xxx bot/demoapp:latest
+oc tag test/demofront:xxx test/demofront:latest
+oc tag test/demoapp:xxx test/demoapp:latest
 ```
 - create imagestream
 - login openshift

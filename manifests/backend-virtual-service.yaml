@@ -4,14 +4,10 @@ metadata:
   name: backend
 spec:
   hosts:
-  - backend
+  - backend.project1.svc.cluster.local
   http:
   - route:
     - destination:
-        host: backend
-        subset: v1
-      weight: 50
-    - destination:
-        host: backend
-        subset: v2
-      weight: 50
+        port:
+          number: 8080
+        host: backend.project1.svc.cluster.local

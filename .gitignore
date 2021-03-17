@@ -1,7 +1,7 @@
 .DS_Store
 # Created by https://www.toptal.com/developers/gitignore/api/osx,java,dotnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=osx,java,dotnetcore
-
+*.bak
 ### DotnetCore ###
 # .NET Core build folders
 bin/
