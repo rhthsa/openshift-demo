@@ -3,18 +3,18 @@
 <!-- TOC -->
 
 - [Authentication Providers with AD](#authentication-providers-with-ad)
-    - [Prerequisites](#prerequisites)
-    - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
-        - [Background: LDAP Structure](#background-ldap-structure)
-            - [Examine the OAuth configuration](#examine-the-oauth-configuration)
-            - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
-            - [Change Group Policy](#change-group-policy)
-            - [Examine cluster-admin policy](#examine-cluster-admin-policy)
-            - [Examine cluster-reader policy](#examine-cluster-reader-policy)
-            - [Create Projects for Collaboration](#create-projects-for-collaboration)
-            - [Map Groups to Projects](#map-groups-to-projects)
-            - [Examine Group Access](#examine-group-access)
-            - [Prometheus](#prometheus)
+  - [Prerequisites](#prerequisites)
+  - [OpenShift RBAC with AD](#openshift-rbac-with-ad)
+    - [Background: LDAP Structure](#background-ldap-structure)
+      - [Examine the OAuth configuration](#examine-the-oauth-configuration)
+      - [Syncing LDAP Groups to OpenShift Groups](#syncing-ldap-groups-to-openshift-groups)
+      - [Change Group Policy](#change-group-policy)
+      - [Examine `cluster-admin` policy](#examine-cluster-admin-policy)
+      - [Examine `cluster-reader` policy](#examine-cluster-reader-policy)
+      - [Create Projects for Collaboration](#create-projects-for-collaboration)
+      - [Map Groups to Projects](#map-groups-to-projects)
+      - [Examine Group Access](#examine-group-access)
+      - [Prometheus](#prometheus)
 
 <!-- /TOC -->
 
@@ -135,11 +135,11 @@ spec:
         - givenName
         preferredUsername:
         - sAMAccountName
-      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com"
+      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com"
       bindPassword:
         name: ldapuser-secret
       insecure: true
-      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+      url: "ldap://ad1.dcloud.demo.com:389/cn=Users,dc=dcloud,dc=demo,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=demo,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 ```
@@ -203,11 +203,11 @@ spec:
         - givenName
         preferredUsername:
         - sAMAccountName
-      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com"
+      bindDN: "cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com"
       bindPassword:
         name: ldapuser-secret
       insecure: true
-      url: "ldap://ad1.dcloud.cisco.com:389/cn=Users,dc=dcloud,dc=cisco,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=cisco,dc=com)"
+      url: "ldap://ad1.dcloud.demo.com:389/cn=Users,dc=dcloud,dc=demo,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=demo,dc=com)"
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 EOF
@@ -227,13 +227,13 @@ View configuration file
 ```yaml
 kind: LDAPSyncConfig
 apiVersion: v1
-url: ldap://ad1.dcloud.cisco.com:389
+url: ldap://ad1.dcloud.demo.com:389
 insecure: true
-bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
 bindPassword: b1ndP^ssword
 rfc2307:
   groupsQuery:
-    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
     derefAliases: never
     filter: (cn=ocp-*)
     scope: sub
@@ -244,7 +244,7 @@ rfc2307:
   groupMembershipAttributes:
   - member
   usersQuery:
-    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
     derefAliases: never
     filter: (objectclass=user)
     scope: sub
@@ -271,13 +271,13 @@ Execute the `groupsync`:
 cat <<EOF > groupsync.yaml
 kind: LDAPSyncConfig
 apiVersion: v1
-url: ldap://ad1.dcloud.cisco.com:389
+url: ldap://ad1.dcloud.demo.com:389
 insecure: true
-bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=cisco,dc=com
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
 bindPassword: b1ndP^ssword
 rfc2307:
   groupsQuery:
-    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
     derefAliases: never
     filter: (cn=ocp-*)
     scope: sub
@@ -288,7 +288,7 @@ rfc2307:
   groupMembershipAttributes:
   - member
   usersQuery:
-    baseDN: cn=Users,dc=dcloud,dc=cisco,dc=com
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
     derefAliases: never
     filter: (objectclass=user)
     scope: sub
