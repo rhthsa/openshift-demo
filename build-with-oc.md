@@ -29,7 +29,7 @@
   --docker-email=unused \
   ```
   
-  - From dockersecert
+  - From dockercfg file
 
   ```yaml
   apiVersion: v1
