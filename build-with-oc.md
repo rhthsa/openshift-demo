@@ -13,6 +13,8 @@
 - [Build Container Image with OC CLI](#build-container-image-with-oc-cli)
   - [Configure OpenShift with external registry (optional)](#configure-openshift-with-external-registry-optional)
   - [Source build](#source-build)
+    - [All-in-One](#all-in-one)
+    - [Build and Deploy](#build-and-deploy)
   - [Binary build with Dockerfile](#binary-build-with-dockerfile)
 
 ## Configure OpenShift with external registry (optional)
@@ -74,8 +76,31 @@
 
 ## Source build
 
-*WIP*
+### All-in-One
+- Use source-to-image from git this will create
+  - image stream
+  - build config
+  - deployment
+  - service
+  
+  ```bash
+  oc new-app https://gitlab.com/ocp-demo/frontend-js \
+  --name=frontend
+  ```
 
+### Build and Deploy
+- Create build config
+  
+  ```bash
+  oc new-build --name=frontend-v1 -l app=frontend-v1 \
+  https://gitlab.com/ocp-demo/frontend-js
+  ```
+
+- Create deployment and service
+  
+  ```bash
+  oc new-app frontend-v1
+  ```
 
 ## Binary build with Dockerfile
 
