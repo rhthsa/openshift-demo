@@ -87,6 +87,11 @@
   oc new-app https://gitlab.com/ocp-demo/frontend-js \
   --name=frontend
   ```
+  Check build log
+
+  ```bash
+  oc logs bc/frontend --follow
+  ```
 
 ### Build and Deploy
 - Create build config
