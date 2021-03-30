@@ -21,11 +21,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - uses: oleksiyrudenko/gha-git-credentials@v2-latest
+      with:
+        token: '${{ secrets.GITHUB_TOKEN }}'
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-        repo-token: ${{ secrets.GITBOOK_TOKEN }}
     - run: npm install -g gitbook-cli gitbook-plugin-copy-code-button
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
