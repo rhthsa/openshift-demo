@@ -8,7 +8,9 @@
         "-search",
         "-highlight",
         "-livereload",
-        "mermaid-cli",
-        "copy-code-button"
+        "copy-code-button",
+        { "name": "mermaid",
+          "version": "git+https://github.com/hypc/gitbook-plugin-mermaid.git"
+        }
     ]
 }
