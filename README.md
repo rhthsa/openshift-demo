@@ -50,6 +50,8 @@
   - Configure Service Monitoring
   - Custom Grafana Dashboard
   - Custom Alert
+- [Build Container with OC command](build-with-oc.md)
+- [Build Container with OpenShift DO (odo)](build-with-odo.md)
 - [CI/CD with Azure DevOps](ci-cd.md)
   - Azure DevOps
   - Deploy Back App
