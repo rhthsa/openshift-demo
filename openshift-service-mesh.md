@@ -31,22 +31,22 @@ graph TD;
 
 ```mermaid
 graph LR;
-  client-->router;
-  subgraph openshift-ingress;
-  router;
-  end;
-  subgraph control-plane;
-  istio-ingress;
-  end;
-  router-->istio-ingress;
-  subgraph data-plane;
-  istio-ingress-->frontend;
-  frontend-->backend;
-  end;
-  subgraph "external system";
-  httpbin.org;
-  end;
-  backend-->httpbin.org;
+    client-->router;
+    subgraph openshift-ingress;
+    router;
+    end;
+    subgraph control-plane;
+    istio-ingress;
+    end;
+    router-->istio-ingress;
+    subgraph data-plane;
+    istio-ingress-->frontend;
+    frontend-->backend;
+    end;
+    subgraph "external system";
+    httpbin.org;
+    end;
+    backend-->httpbin.org;
 ```
 
 ## Setup Control Plane and sidecar
