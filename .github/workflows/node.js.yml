@@ -32,6 +32,7 @@ jobs:
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
     - run: git pull origin gh-pages --rebase
+    - run: git rm -rf .
     - run: cp -R _book/* .
     - run: git clean -fx node_modules
     - run: git clean -fx _book
