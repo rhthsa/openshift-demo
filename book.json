@@ -8,6 +8,7 @@
         "-search",
         "-highlight",
         "-livereload",
-        "mermaid-newface"
+        "mermaid",
+        "copy-code-button"
     ]
 }
