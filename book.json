@@ -1,0 +1,14 @@
+{
+    "title": "OpenShift Demo",
+    "author": "Red Hat Thailand SA",
+    "gitbook": "3.2.3",
+    "root": "./",
+    "plugins": [
+        "-lunr",
+        "-search",
+        "-highlight",
+        "-livereload",
+        "mermaid-gb3",
+        "copy-code-button"
+    ]
+}
