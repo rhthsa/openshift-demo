@@ -31,7 +31,6 @@ jobs:
     - run: npm install -g gitbook-cli gitbook-plugin-copy-code-button
     - run: gitbook install && gitbook build
     - run: git checkout -B gh-pages
-    - run: git pull origin gh-pages --rebase
     - run: git rm -rf .
     - run: cp -R _book/* .
     - run: git clean -fx node_modules
