@@ -25,7 +25,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ secrets.GITBOOK_TOKEN }}
     - run: npm install -g gitbook-cli gitbook-plugin-copy-code-button
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
