@@ -1,0 +1,21 @@
+{
+  "title": "OpenShift Demo",
+  "author": "Red Hat Thailand SA",
+  "gitbook": "3.2.3",
+  "root": "./",
+  "plugins": [
+    "-lunr",
+    "-search",
+    "-highlight",
+    "-livereload",
+    "copy-code-button",
+    { "name": "mermaid",
+      "version": "git+https://github.com/hypc/gitbook-plugin-mermaid.git"
+    }
+  ],
+  "pluginsConfig": {
+    "mermaid": {
+      "theme": "forest"
+    }
+  }
+}
