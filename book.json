@@ -8,6 +8,6 @@
         "-search",
         "-highlight",
         "-livereload",
-        "gitbook-plugin-mermaid-newface"
+        "mermaid-newface"
     ]
 }
