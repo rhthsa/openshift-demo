@@ -15,7 +15,8 @@
     ],
     "pluginsConfig": {
       "mermaid": {
-         "theme": "forest"
+         "theme": "neutral",
+         "fontFamily": "Sans-Serif"
       }
     }
 }
