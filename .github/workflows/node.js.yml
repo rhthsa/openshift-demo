@@ -30,7 +30,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g gitbook-cli gitbook-plugin-copy-code-button
     - run: gitbook install && gitbook build
-    - run: git checkout -b gh-pages
+    - run: git checkout gh-pages
     - run: git pull origin gh-pages --rebase
     - run: git rm -rf .
     - run: cp -R _book/* .
