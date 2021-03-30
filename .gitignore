@@ -66,3 +66,13 @@ Temporary Items
 .apdisk
 
 # End of https://www.toptal.com/developers/gitignore/api/osx,java,dotnetcore
+
+# gitbook gitignore
+
+/_book/
+/node_modules/
+/book.pdf
+/book.mobi
+/book.epub
+
+# End
