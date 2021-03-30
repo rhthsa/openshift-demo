@@ -1,0 +1,89 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app:  {{ include "backend-chart.name" . }}
+    app.kubernetes.io/component:  {{ include "backend-chart.name" . }}
+    app.kubernetes.io/instance:  {{ include "backend-chart.name" . }}
+    app.kubernetes.io/part-of: poc
+    app.kubernetes.io/name: java
+  name:  {{ include "backend-chart.name" . }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: 3
+  selector:
+    app:  {{ include "backend-chart.name" . }}
+    deploymentconfig:  {{ include "backend-chart.name" . }}
+    version: {{  .Chart.AppVersion }}
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "{{ .Values.sidecar }}"
+      labels:
+        app:  {{ include "backend-chart.name" . }} 
+        deploymentconfig:  {{ include "backend-chart.name" . }}
+        version: {{  .Chart.AppVersion }}
+    spec:
+      containers:
+      - image: {{ .Values.image.repository }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name:  {{ include "backend-chart.name" . }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        env:
+          - name: APP_BACKEND
+            value: {{ .Values.env.appBackend }}
+          - name: APP_VERSION
+            value: {{  .Chart.AppVersion }}
+          - name: quarkus.log.console.color
+            value: 'false'
+        livenessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /health/live
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 60
+          successThreshold: 1
+        readinessProbe:
+          failureThreshold: 2
+          httpGet:
+            path: /health/ready
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 2
+          periodSeconds: 50
+          successThreshold: 1
+          timeoutSeconds: 5
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+  - type: ConfigChange
+status:
+  availableReplicas: 0
+  latestVersion: 0
+  observedGeneration: 0
+  replicas: 0
+  unavailableReplicas: 0
+  updatedReplicas: 0
