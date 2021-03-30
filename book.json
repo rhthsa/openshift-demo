@@ -15,7 +15,7 @@
   ],
   "pluginsConfig": {
     "mermaid": {
-      "theme": "dark"
+      "theme": "forest"
     }
   }
 }
