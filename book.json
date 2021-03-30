@@ -8,7 +8,7 @@
         "-search",
         "-highlight",
         "-livereload",
-        "mermaid-flow",
+        "mermaid-cli",
         "copy-code-button"
     ]
 }
