@@ -22,31 +22,31 @@
 Sample application
 
 ```mermaid
-graph LR
-    A-->B
-    A-->C
-    B-->D
-    C-->D
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
 ```
 
 ```mermaid
-graph LR
-  client-->router
-  subgraph openshift-ingress
-    router
-  end
-  router-->istio-ingress
-  subgraph control-plane
-    istio-ingress
-  end
-  subgraph data-plane
-    istio-ingress-->frontend
-    frontend-->backend
-  end
-  backend-->httpbin.org
-  subgraph "external system"
-    httpbin.org
-  end
+graph LR;
+    client-->router;
+    subgraph openshift-ingress;
+        router;
+    end;
+    router-->istio-ingress;
+    subgraph control-plane;
+        istio-ingress;
+    end;
+    subgraph data-plane;
+        istio-ingress-->frontend;
+        frontend-->backend;
+    end;
+    backend-->httpbin.org;
+    subgraph "external system";
+        httpbin.org;
+    end;
 ```
 
 ## Setup Control Plane and sidecar
