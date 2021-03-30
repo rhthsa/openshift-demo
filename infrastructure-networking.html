@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift Networking · GitBook</title>
+        <title>OpenShift Networking · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="infrastructure-networking">Infrastructure Networking</h1>
@@ -422,83 +407,11 @@ oc label namespace netproj-a app=iperf3-client
 oc new-project netproj-b
 oc label namespace netproj-b app=iperf3-server
 
-cat &lt;&lt;EOF | oc create -f -
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> apps/v1
-<span class="hljs-attr">kind:</span> Deployment
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> iperf3-server-deployment
-<span class="hljs-attr">  namespace:</span> netproj-b
-<span class="hljs-attr">  labels:</span>
-<span class="hljs-attr">    app:</span> iperf3-server
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  replicas:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">  selector:</span>
-<span class="hljs-attr">    matchLabels:</span>
-<span class="hljs-attr">      app:</span> iperf3-server
-<span class="hljs-attr">  template:</span>
-<span class="hljs-attr">    metadata:</span>
-<span class="hljs-attr">      labels:</span>
-<span class="hljs-attr">        app:</span> iperf3-server
-<span class="hljs-attr">    spec:</span>
-<span class="hljs-attr">      containers:</span>
-<span class="hljs-attr">      - name:</span> iperf3-server
-<span class="hljs-attr">        image:</span> networkstatic/iperf3
-<span class="hljs-attr">        args:</span> [<span class="hljs-string">&apos;-s&apos;</span>]
-<span class="hljs-attr">        ports:</span>
-<span class="hljs-attr">          - name:</span> server
-<span class="hljs-attr">            containerPort:</span> <span class="hljs-number">5201</span>
-<span class="hljs-attr">            protocol:</span> TCP
-<span class="hljs-attr">          - name:</span> server-udp
-<span class="hljs-attr">            containerPort:</span> <span class="hljs-number">5201</span>
-<span class="hljs-attr">            protocol:</span> UDP
-<span class="hljs-attr">      terminationGracePeriodSeconds:</span> <span class="hljs-number">0</span>
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> Service
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> iperf3-server
-<span class="hljs-attr">  namespace:</span> netproj-b
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  selector:</span>
-<span class="hljs-attr">    app:</span> iperf3-server
-<span class="hljs-attr">  ports:</span>
-<span class="hljs-attr">  - protocol:</span> TCP
-<span class="hljs-attr">    port:</span> <span class="hljs-number">5201</span>
-<span class="hljs-attr">    targetPort:</span> server
-<span class="hljs-attr">    name:</span> server
-<span class="hljs-attr">  - protocol:</span> UDP
-<span class="hljs-attr">    port:</span> <span class="hljs-number">5201</span>
-<span class="hljs-attr">    targetPort:</span> server-udp
-<span class="hljs-attr">    name:</span> server-udp
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> apps/v1
-<span class="hljs-attr">kind:</span> Deployment
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> iperf3-clients
-<span class="hljs-attr">  namespace:</span> netproj-a
-<span class="hljs-attr">  labels:</span>
-<span class="hljs-attr">    app:</span> iperf3-client
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  selector:</span>
-<span class="hljs-attr">    matchLabels:</span>
-<span class="hljs-attr">      app:</span> iperf3-client
-<span class="hljs-attr">  template:</span>
-<span class="hljs-attr">    metadata:</span>
-<span class="hljs-attr">      labels:</span>
-<span class="hljs-attr">        app:</span> iperf3-client
-<span class="hljs-attr">    spec:</span>
-<span class="hljs-attr">      containers:</span>
-<span class="hljs-attr">      - name:</span> iperf3-client
-<span class="hljs-attr">        image:</span> networkstatic/iperf3
-<span class="hljs-attr">        command:</span> [<span class="hljs-string">&apos;/bin/sh&apos;</span>, <span class="hljs-string">&apos;-c&apos;</span>, <span class="hljs-string">&apos;sleep infinity&apos;</span>]
-<span class="hljs-attr">      terminationGracePeriodSeconds:</span> <span class="hljs-number">0</span>
-EOF
-</code></pre>
+cat &lt;</code></pre>
 <h3 id="examine-the-created-infrastructure">Examine the created infrastructure</h3>
 <p>Two <em>Projects</em> were created for you, <code>netproj-a</code> and <code>netproj-b</code>. Execute the
 following command to see the created resources:</p>
-<pre><code class="lang-bash">oc get pods -n netproj<span class="hljs-_">-a</span>
+<pre><code class="lang-bash">oc get pods -n netproj-a
 </code></pre>
 <p>After a while you will see something like the following:</p>
 <pre><code class="lang-bash">NAME                             READY   STATUS    RESTARTS   AGE
@@ -517,13 +430,13 @@ connect to TCP port 5201 of the pod in the <code>netproj-b</code> <em>Project</e
 <p>Now that you have some projects and pods, let&apos;s test the connectivity between
 the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the <code>netproj-b</code> <em>Project</em>.</p>
 <p>To test connectivity between the two pods, run:</p>
-<pre><code class="lang-bash"><span class="hljs-built_in">export</span> client=$(oc get pod -n netproj<span class="hljs-_">-a</span> | grep iperf3-clients | cut <span class="hljs-_">-d</span><span class="hljs-string">&apos; &apos;</span> <span class="hljs-_">-f</span>1)
+<pre><code class="lang-bash">export client=$(oc get pod -n netproj-a | grep iperf3-clients | cut -d&apos; &apos; -f1)
 
-oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;</span>
+oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
 </code></pre>
 <p>You will see something like the following:</p>
 <pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
-[  5] <span class="hljs-built_in">local</span> 10.131.0.55 port 58320 connected to 172.30.101.62 port 5201
+[  5] local 10.131.0.55 port 58320 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
 [  5]   0.00-1.00   sec   119 MBytes   997 Mbits/sec    0    491 KBytes
 [  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    1    691 KBytes
@@ -553,15 +466,15 @@ project by creating a <code>NetworkPolicy</code> custom resource (CR).</p>
 <p>For example, the following restricts all access to all pods in a <em>Project</em>
 where this <code>NetworkPolicy</code> CR is applied. This is the equivalent of a <code>DenyAll</code>
 default rule on a firewall:</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">kind:</span> NetworkPolicy
-<span class="hljs-attr">apiVersion:</span> networking.k8s.io/v1
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> deny-by-default
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  podSelector:</span> <span class="hljs-literal">null</span>
-<span class="hljs-attr">  ingress:</span>
-<span class="hljs-attr">    - from:</span>
-<span class="hljs-attr">        - podSelector:</span> {}
+<pre><code class="lang-yaml">kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-by-default
+spec:
+  podSelector: null
+  ingress:
+    - from:
+        - podSelector: {}
 </code></pre>
 <p>Note that the <code>podSelector</code> is empty, which means that this will apply to all
 pods in this <em>Project</em>. Also note that the <code>ingress</code> list is empty, which
@@ -569,28 +482,17 @@ means that there are no allowed <code>ingress</code> rules defined by this
 <code>NetworkPolicy</code> CR.</p>
 <p>To restrict access to the pod in the <code>netproj-b</code> <em>Project</em> simply apply the
 above NetworkPolicy CR with:</p>
-<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -n netproj-b -f -
-<span class="hljs-attr">kind:</span> NetworkPolicy
-<span class="hljs-attr">apiVersion:</span> networking.k8s.io/v1
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> deny-by-default
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  podSelector:</span> <span class="hljs-literal">null</span>
-<span class="hljs-attr">  ingress:</span>
-<span class="hljs-attr">    - from:</span>
-<span class="hljs-attr">        - podSelector:</span> {}
-EOF
-</code></pre>
+<pre><code class="lang-yaml">cat &lt;</code></pre>
 <h3 id="test-connectivity-2-should-fail">Test Connectivity #2 (should fail)</h3>
 <p>Since the &quot;block all by default&quot; <code>NetworkPolicy</code> CR has been applied,
 connectivity between the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the
 <code>netproj-b</code> <em>Project</em> should now be blocked.</p>
 <p>Test by running:</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;</span>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
 </code></pre>
 <p>You will see something like the following:</p>
 <pre><code class="lang-bash">iperf3: error - unable to connect to server: Connection timed out
-<span class="hljs-built_in">command</span> terminated with <span class="hljs-built_in">exit</span> code 1
+command terminated with exit code 1
 </code></pre>
 <p>Note the last line that says <code>FAILED!</code>. This means that the pod in the
 <code>netproj-a</code> <em>Project</em> was unable to connect to the pod in the <code>netproj-b</code>
@@ -603,28 +505,9 @@ individual or groups of pods in a project by creating multiple
 with the label <code>app: iperf3-server</code>. The pod in the <code>netproj-b</code> project has this label.</p>
 <p>The ingress section specifically allows this access from all projects that
 have the label <code>app: iperf3-client</code>.</p>
-<pre><code class="lang-bash"><span class="hljs-comment"># allow access to TCP port 5201 for pods with the label &quot;run: ose&quot; specifically</span>
-<span class="hljs-comment"># from projects with the label &quot;name: netproj-a&quot;.</span>
-cat &lt;&lt;EOF | oc create -n netproj-b <span class="hljs-_">-f</span> -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: allow-tcp-5201-from-netproj<span class="hljs-_">-a</span>-namespace
-  namespace: netproj-b
-spec:
-  podSelector:
-    matchLabels:
-      app: iperf3-server
-  ingress:
-  - ports:
-    - protocol: TCP
-      port: 5201
-    from:
-    - namespaceSelector:
-        matchLabels:
-          app: iperf3-client
-EOF
-</code></pre>
+<pre><code class="lang-bash"># allow access to TCP port 5201 for pods with the label &quot;run: ose&quot; specifically
+# from projects with the label &quot;name: netproj-a&quot;.
+cat &lt;</code></pre>
 <p>Note that the <code>podSelector</code> is where the local project&apos;s pods are matched
 using a specific label selector.</p>
 <p>All <code>NetworkPolicy</code> CRs in a project are combined to create the allowed
@@ -635,11 +518,11 @@ all&quot; policy is combined with the &quot;allow TCP 5201&quot; policy.</p>
 connectivity between the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the
 <code>netproj-b</code> <em>Project</em> should be allowed again.</p>
 <p>Test by running:</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;</span>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
 </code></pre>
 <p>You will see something like the following:</p>
 <pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
-[  5] <span class="hljs-built_in">local</span> 10.131.0.55 port 34702 connected to 172.30.101.62 port 5201
+[  5] local 10.131.0.55 port 34702 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
 [  5]   0.00-1.00   sec   119 MBytes   999 Mbits/sec    2    274 KBytes
 [  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    0    300 KBytes
@@ -664,15 +547,15 @@ iperf Done.
 <h3 id="test-connectivity-4-while-chaning-networkpolicy">Test Connectivity #4 while chaning NetworkPolicy</h3>
 <p>To show NetworkPolicy is non-disruptive to the application connections while updating the network policies. We will run a test for 30 seconds and try to update network policies in between the test</p>
 <p>Verify that UDP 5201 is still closed by running:</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;</span>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;
 </code></pre>
 <p>The UDP connection should be failed</p>
-<pre><code class="lang-bash">iperf3: error - unable to <span class="hljs-built_in">read</span> from stream socket: Resource temporarily unavailable
+<pre><code class="lang-bash">iperf3: error - unable to read from stream socket: Resource temporarily unavailable
 Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
-<span class="hljs-built_in">command</span> terminated with <span class="hljs-built_in">exit</span> code 1
+command terminated with exit code 1
 </code></pre>
 <p>Run the test again as TCP 5201 for 30 seconds.</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 30 -b 1G&apos;</span>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 30 -b 1G&apos;
 </code></pre>
 <p>And update network policy while the test is still running eg. also add UDP port 5201 in OpenShift console</p>
 <pre><code class="lang-bash">spec:
@@ -694,7 +577,7 @@ Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 </code></pre>
 <p>TCP test result should be able to complete without connection reset or disconnect.</p>
 <pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
-[  5] <span class="hljs-built_in">local</span> 10.131.0.55 port 56720 connected to 172.30.101.62 port 5201
+[  5] local 10.131.0.55 port 56720 connected to 172.30.101.62 port 5201
 [ ID] Interval           Transfer     Bitrate         Retr  Cwnd
 [  5]   0.00-1.00   sec   119 MBytes  1000 Mbits/sec    1    878 KBytes
 [  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    0   1.04 MBytes
@@ -734,11 +617,11 @@ Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
 iperf Done.
 </code></pre>
 <p>Re-run UDP test again to confirm UDP 5201 has been allowed.</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> <span class="hljs-variable">$client</span> -n netproj<span class="hljs-_">-a</span> -- /bin/sh -c <span class="hljs-string">&apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;</span>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;
 </code></pre>
 <p>iperf3 UDP test is now working</p>
 <pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
-[  5] <span class="hljs-built_in">local</span> 10.131.0.55 port 39507 connected to 172.30.4.76 port 5201
+[  5] local 10.131.0.55 port 39507 connected to 172.30.4.76 port 5201
 [ ID] Interval           Transfer     Bitrate         Total Datagrams
 [  5]   0.00-1.00   sec  26.0 MBytes   218 Mbits/sec  19520
 [  5]   1.00-2.00   sec  30.2 MBytes   253 Mbits/sec  22663
@@ -765,33 +648,33 @@ iperf Done.
 <h3 id="configuring-automatically-assigned-egress-ip-addresses-for-a-namespace">Configuring automatically assigned egress IP addresses for a namespace</h3>
 <p>In OpenShift Container Platform you can enable automatic assignment of an egress IP address for a specific namespace across one or more nodes.</p>
 <ol>
-<li>Test ping from pod in netproj-a to VM outside OpenShift, the source IP Address is the Node IP Address<pre><code class="lang-bash"> [root@centos7-tools1 ~]<span class="hljs-comment"># tcpdump -i ens160 icmp</span>
- tcpdump: verbose output suppressed, use -v or -vv <span class="hljs-keyword">for</span> full protocol decode
+<li>Test ping from pod in netproj-a to VM outside OpenShift, the source IP Address is the Node IP Address<pre><code class="lang-bash"> [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
+ tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
  listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
- 08:37:18.756559 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP <span class="hljs-built_in">echo</span> request, id 3, seq 1, length 64
- 08:37:18.756627 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP <span class="hljs-built_in">echo</span> reply, id 3, seq 1, length 64
- 08:37:19.757960 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP <span class="hljs-built_in">echo</span> request, id 3, seq 2, length 64
- 08:37:19.758014 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP <span class="hljs-built_in">echo</span> reply, id 3, seq 2, length 64
+ 08:37:18.756559 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 1, length 64
+ 08:37:18.756627 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP echo reply, id 3, seq 1, length 64
+ 08:37:19.757960 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 2, length 64
+ 08:37:19.758014 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP echo reply, id 3, seq 2, length 64
 </code></pre>
 </li>
-<li>Update the NetNamespace object with the egress IP address using the following JSON:<pre><code class="lang-bash"> oc patch netnamespace netproj<span class="hljs-_">-a</span> --type=merge -p \
- <span class="hljs-string">&apos;{&quot;egressIPs&quot;: [&quot;198.18.1.241&quot;]}&apos;</span>
+<li>Update the NetNamespace object with the egress IP address using the following JSON:<pre><code class="lang-bash"> oc patch netnamespace netproj-a --type=merge -p \
+ &apos;{&quot;egressIPs&quot;: [&quot;198.18.1.241&quot;]}&apos;
 </code></pre>
  You can set egressIPs to two or more IP addresses on different nodes to provide high availability. If multiple egress IP addresses are set, pods use the first IP in the list for egress, but if the node hosting that IP address fails, pods switch to using the next IP in the list after a short delay.</li>
 <li><p>Manually assign the egress IP to the node hosts. Set the egressIPs parameter on the HostSubnet object on the node host. Using the following JSON, include as many IPs as you want to assign to that node host:</p>
-<pre><code class="lang-bash"> <span class="hljs-keyword">for</span> node <span class="hljs-keyword">in</span> $(oc get nodes | grep <span class="hljs-string">&apos;\-worker&apos;</span> | cut <span class="hljs-_">-d</span><span class="hljs-string">&apos; &apos;</span> <span class="hljs-_">-f</span>1); <span class="hljs-keyword">do</span>
- oc patch hostsubnet <span class="hljs-variable">$node</span> --type=merge -p <span class="hljs-string">&apos;{&quot;egressCIDRs&quot;: [&quot;198.18.1.0/24&quot;]}&apos;</span>
- <span class="hljs-keyword">done</span>
+<pre><code class="lang-bash"> for node in $(oc get nodes | grep &apos;\-worker&apos; | cut -d&apos; &apos; -f1); do
+ oc patch hostsubnet $node --type=merge -p &apos;{&quot;egressCIDRs&quot;: [&quot;198.18.1.0/24&quot;]}&apos;
+ done
 </code></pre>
 <p> In the previous example, all egress traffic for project1 will be routed to the node hosting the specified egress IP, and then connected (using NAT) to that IP address.</p>
 </li>
-<li>Test ping from the same POD in netproj-a again, now the source IP Address is now egressIP assigned to netproj-a<pre><code class="lang-bash"> [root@centos7-tools1 ~]<span class="hljs-comment"># tcpdump -i ens160 icmp</span>
- tcpdump: verbose output suppressed, use -v or -vv <span class="hljs-keyword">for</span> full protocol decode
+<li>Test ping from the same POD in netproj-a again, now the source IP Address is now egressIP assigned to netproj-a<pre><code class="lang-bash"> [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
+ tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
  listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
- 09:08:33.841050 IP 198.18.1.241 &gt; registry0.example.com: ICMP <span class="hljs-built_in">echo</span> request, id 7, seq 130, length 64
- 09:08:33.841131 IP registry0.example.com &gt; 198.18.1.241: ICMP <span class="hljs-built_in">echo</span> reply, id 7, seq 130, length 64
- 09:08:34.861757 IP 198.18.1.241 &gt; registry0.example.com: ICMP <span class="hljs-built_in">echo</span> request, id 7, seq 131, length 64
- 09:08:34.861815 IP registry0.example.com &gt; 198.18.1.241: ICMP <span class="hljs-built_in">echo</span> reply, id 7, seq 131, length 64
+ 09:08:33.841050 IP 198.18.1.241 &gt; registry0.example.com: ICMP echo request, id 7, seq 130, length 64
+ 09:08:33.841131 IP registry0.example.com &gt; 198.18.1.241: ICMP echo reply, id 7, seq 130, length 64
+ 09:08:34.861757 IP 198.18.1.241 &gt; registry0.example.com: ICMP echo request, id 7, seq 131, length 64
+ 09:08:34.861815 IP registry0.example.com &gt; 198.18.1.241: ICMP echo reply, id 7, seq 131, length 64
 </code></pre>
 </li>
 </ol>
@@ -838,22 +721,6 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -877,7 +744,7 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-30T09:49:57.523Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-30T10:11:48.084Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -885,22 +752,6 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

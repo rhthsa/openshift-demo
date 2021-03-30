@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift Authentication Providers with AD · GitBook</title>
+        <title>OpenShift Authentication Providers with AD · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -68,10 +60,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -347,9 +335,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="authentication-providers-with-ad">Authentication Providers with AD</h1>
@@ -421,18 +406,18 @@ group</li>
 <pre><code class="lang-bash">oc get oauth cluster -o yaml
 </code></pre>
 <p>You will see something like:</p>
-<pre><code class="lang-YAML"><span class="hljs-attr">apiVersion:</span> config.openshift.io/v1
-<span class="hljs-attr">kind:</span> OAuth
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  annotations:</span>
-    release.openshift.io/create-only: <span class="hljs-string">&quot;true&quot;</span>
-<span class="hljs-attr">  creationTimestamp:</span> <span class="hljs-string">&quot;2020-03-17T18:12:52Z&quot;</span>
-<span class="hljs-attr">  generation:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">  name:</span> cluster
-<span class="hljs-attr">  resourceVersion:</span> <span class="hljs-string">&quot;1563&quot;</span>
-<span class="hljs-attr">  selfLink:</span> /apis/config.openshift.io/v1/oauths/cluster
-<span class="hljs-attr">  uid:</span> ebb0582d-b0e4<span class="hljs-bullet">-4</span>c40-a33f<span class="hljs-bullet">-12459593</span>f8e2
-<span class="hljs-attr">spec:</span> {}
+<pre><code class="lang-YAML">apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  annotations:
+    release.openshift.io/create-only: &quot;true&quot;
+  creationTimestamp: &quot;2020-03-17T18:12:52Z&quot;
+  generation: 1
+  name: cluster
+  resourceVersion: &quot;1563&quot;
+  selfLink: /apis/config.openshift.io/v1/oauths/cluster
+  uid: ebb0582d-b0e4-4c40-a33f-12459593f8e2
+spec: {}
 </code></pre>
 <p>There are a few things to note here. Firstly, there&apos;s basically nothing here!
 How does the <code>kubeadmin</code> user work, then? The OpenShift OAuth system knows to
@@ -441,18 +426,18 @@ examine it with the following:</p>
 <pre><code class="lang-bash">oc get secret -n kube-system kubeadmin -o yaml
 </code></pre>
 <p>You will see something like:</p>
-<pre><code class="lang-YAML"><span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">data:</span>
-<span class="hljs-attr">  kubeadmin:</span> JDJhJDEwJDdQNHZtbXMxdmpDa3FsNlJMLjJBcC5BSWdBazB6d09IWUdXZEdrRXBERGRwWXNmVVcxanpX
-<span class="hljs-attr">kind:</span> Secret
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  creationTimestamp:</span> <span class="hljs-string">&quot;2019-04-29T17:30:51Z&quot;</span>
-<span class="hljs-attr">  name:</span> kubeadmin
-<span class="hljs-attr">  namespace:</span> kube-system
-<span class="hljs-attr">  resourceVersion:</span> <span class="hljs-string">&quot;2065&quot;</span>
-<span class="hljs-attr">  selfLink:</span> /api/v1/namespaces/kube-system/secrets/kubeadmin
-<span class="hljs-attr">  uid:</span> <span class="hljs-number">892945</span>dc<span class="hljs-bullet">-6</span>aa4<span class="hljs-bullet">-11e9</span><span class="hljs-bullet">-9959</span><span class="hljs-bullet">-02774</span>c6d6b2e
-<span class="hljs-attr">type:</span> Opaque
+<pre><code class="lang-YAML">apiVersion: v1
+data:
+  kubeadmin: JDJhJDEwJDdQNHZtbXMxdmpDa3FsNlJMLjJBcC5BSWdBazB6d09IWUdXZEdrRXBERGRwWXNmVVcxanpX
+kind: Secret
+metadata:
+  creationTimestamp: &quot;2019-04-29T17:30:51Z&quot;
+  name: kubeadmin
+  namespace: kube-system
+  resourceVersion: &quot;2065&quot;
+  selfLink: /api/v1/namespaces/kube-system/secrets/kubeadmin
+  uid: 892945dc-6aa4-11e9-9959-02774c6d6b2e
+type: Opaque
 </code></pre>
 <p>That <em>Secret</em> contains the encoded hash of the <code>kubeadmin</code> password. This
 account will continue to work even after we configure a new <code>OAuth</code>. If you
@@ -468,10 +453,10 @@ metadata:
 spec:
   identityProviders:
   - name: ldap
-    challenge: <span class="hljs-literal">false</span>
-    login: <span class="hljs-literal">true</span>
+    challenge: false
+    login: true
     mappingMethod: claim
-    <span class="hljs-built_in">type</span>: LDAP
+    type: LDAP
     ldap:
       attributes:
         id:
@@ -482,11 +467,11 @@ spec:
         - givenName
         preferredUsername:
         - sAMAccountName
-      <span class="hljs-built_in">bind</span>DN: <span class="hljs-string">&quot;cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com&quot;</span>
-      <span class="hljs-built_in">bind</span>Password:
+      bindDN: &quot;cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com&quot;
+      bindPassword:
         name: ldapuser-secret
-      insecure: <span class="hljs-literal">true</span>
-      url: <span class="hljs-string">&quot;ldap://ad1.dcloud.demo.com:389/cn=Users,dc=dcloud,dc=demo,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=demo,dc=com)&quot;</span>
+      insecure: true
+      url: &quot;ldap://ad1.dcloud.demo.com:389/cn=Users,dc=dcloud,dc=demo,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=demo,dc=com)&quot;
   tokenConfig:
     accessTokenMaxAgeSeconds: 86400
 </code></pre>
@@ -525,37 +510,7 @@ OpenShift you can refer to the
 <p>As the <code>kubeadmin</code> user apply the OAuth configuration with <code>oc</code>.</p>
 <pre><code class="lang-yaml">oc create secret generic ldapuser-secret --from-literal=bindPassword=b1ndP^ssword -n openshift-config
 
-cat &lt;&lt;EOF | oc apply -f -
-<span class="hljs-attr">apiVersion:</span> config.openshift.io/v1
-<span class="hljs-attr">kind:</span> OAuth
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> cluster
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  identityProviders:</span>
-<span class="hljs-attr">  - name:</span> ldap
-<span class="hljs-attr">    challenge:</span> <span class="hljs-literal">false</span>
-<span class="hljs-attr">    login:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">    mappingMethod:</span> claim
-<span class="hljs-attr">    type:</span> LDAP
-<span class="hljs-attr">    ldap:</span>
-<span class="hljs-attr">      attributes:</span>
-<span class="hljs-attr">        id:</span>
-<span class="hljs-bullet">        -</span> distinguishedName
-<span class="hljs-attr">        email:</span>
-<span class="hljs-bullet">        -</span> userPrincipalName
-<span class="hljs-attr">        name:</span>
-<span class="hljs-bullet">        -</span> givenName
-<span class="hljs-attr">        preferredUsername:</span>
-<span class="hljs-bullet">        -</span> sAMAccountName
-<span class="hljs-attr">      bindDN:</span> <span class="hljs-string">&quot;cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com&quot;</span>
-<span class="hljs-attr">      bindPassword:</span>
-<span class="hljs-attr">        name:</span> ldapuser-secret
-<span class="hljs-attr">      insecure:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">      url:</span> <span class="hljs-string">&quot;ldap://ad1.dcloud.demo.com:389/cn=Users,dc=dcloud,dc=demo,dc=com?sAMAccountName?sub?(memberOf=cn=ocp-user,cn=Users,dc=dcloud,dc=demo,dc=com)&quot;</span>
-<span class="hljs-attr">  tokenConfig:</span>
-<span class="hljs-attr">    accessTokenMaxAgeSeconds:</span> <span class="hljs-number">86400</span>
-EOF
-</code></pre>
+cat &lt;</code></pre>
 <h4 id="syncing-ldap-groups-to-openshift-groups">Syncing LDAP Groups to OpenShift Groups</h4>
 <p>In OpenShift, groups can be used to manage users and control permissions for
 multiple users at once. There is a section in the documentation on how to
@@ -565,33 +520,33 @@ a configuration file that tells OpenShift what to do with the users it finds in
 the various groups.</p>
 <p>We have provided a <code>groupsync</code> configuration file for you:</p>
 <p>View configuration file</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">kind:</span> LDAPSyncConfig
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">url:</span> ldap://ad1.dcloud.demo.com:<span class="hljs-number">389</span>
-<span class="hljs-attr">insecure:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">bindDN:</span> cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">bindPassword:</span> b1ndP^ssword
-<span class="hljs-attr">rfc2307:</span>
-<span class="hljs-attr">  groupsQuery:</span>
-<span class="hljs-attr">    baseDN:</span> cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">    derefAliases:</span> never
-<span class="hljs-attr">    filter:</span> (cn=ocp-*)
-<span class="hljs-attr">    scope:</span> sub
-<span class="hljs-attr">    pageSize:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">  groupUIDAttribute:</span> distinguishedName
-<span class="hljs-attr">  groupNameAttributes:</span>
-<span class="hljs-bullet">  -</span> cn
-<span class="hljs-attr">  groupMembershipAttributes:</span>
-<span class="hljs-bullet">  -</span> member
-<span class="hljs-attr">  usersQuery:</span>
-<span class="hljs-attr">    baseDN:</span> cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">    derefAliases:</span> never
-<span class="hljs-attr">    filter:</span> (objectclass=user)
-<span class="hljs-attr">    scope:</span> sub
-<span class="hljs-attr">    pageSize:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">  userUIDAttribute:</span> distinguishedName
-<span class="hljs-attr">  userNameAttributes:</span>
-<span class="hljs-bullet">  -</span> sAMAccountName
+<pre><code class="lang-yaml">kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://ad1.dcloud.demo.com:389
+insecure: true
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
+bindPassword: b1ndP^ssword
+rfc2307:
+  groupsQuery:
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
+    derefAliases: never
+    filter: (cn=ocp-*)
+    scope: sub
+    pageSize: 0
+  groupUIDAttribute: distinguishedName
+  groupNameAttributes:
+  - cn
+  groupMembershipAttributes:
+  - member
+  usersQuery:
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
+    derefAliases: never
+    filter: (objectclass=user)
+    scope: sub
+    pageSize: 0
+  userUIDAttribute: distinguishedName
+  userNameAttributes:
+  - sAMAccountName
 </code></pre>
 <p>Without going into too much detail (you can look at the documentation), the
 <code>groupsync</code> config file does the following:</p>
@@ -605,37 +560,37 @@ OpenShift group</li>
 OpenShift</li>
 </ul>
 <p>Execute the <code>groupsync</code>:</p>
-<pre><code class="lang-yaml">cat &lt;&lt;EOF &gt; groupsync.yaml
-<span class="hljs-attr">kind:</span> LDAPSyncConfig
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">url:</span> ldap://ad1.dcloud.demo.com:<span class="hljs-number">389</span>
-<span class="hljs-attr">insecure:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">bindDN:</span> cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">bindPassword:</span> b1ndP^ssword
-<span class="hljs-attr">rfc2307:</span>
-<span class="hljs-attr">  groupsQuery:</span>
-<span class="hljs-attr">    baseDN:</span> cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">    derefAliases:</span> never
-<span class="hljs-attr">    filter:</span> (cn=ocp-*)
-<span class="hljs-attr">    scope:</span> sub
-<span class="hljs-attr">    pageSize:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">  groupUIDAttribute:</span> distinguishedName
-<span class="hljs-attr">  groupNameAttributes:</span>
-<span class="hljs-bullet">  -</span> cn
-<span class="hljs-attr">  groupMembershipAttributes:</span>
-<span class="hljs-bullet">  -</span> member
-<span class="hljs-attr">  usersQuery:</span>
-<span class="hljs-attr">    baseDN:</span> cn=Users,dc=dcloud,dc=demo,dc=com
-<span class="hljs-attr">    derefAliases:</span> never
-<span class="hljs-attr">    filter:</span> (objectclass=user)
-<span class="hljs-attr">    scope:</span> sub
-<span class="hljs-attr">    pageSize:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">  userUIDAttribute:</span> distinguishedName
-<span class="hljs-attr">  userNameAttributes:</span>
-<span class="hljs-bullet">  -</span> sAMAccountName
+<pre><code class="lang-yaml">cat &lt;<eof> groupsync.yaml
+kind: LDAPSyncConfig
+apiVersion: v1
+url: ldap://ad1.dcloud.demo.com:389
+insecure: true
+bindDN: cn=ldapuser,cn=Users,dc=dcloud,dc=demo,dc=com
+bindPassword: b1ndP^ssword
+rfc2307:
+  groupsQuery:
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
+    derefAliases: never
+    filter: (cn=ocp-*)
+    scope: sub
+    pageSize: 0
+  groupUIDAttribute: distinguishedName
+  groupNameAttributes:
+  - cn
+  groupMembershipAttributes:
+  - member
+  usersQuery:
+    baseDN: cn=Users,dc=dcloud,dc=demo,dc=com
+    derefAliases: never
+    filter: (objectclass=user)
+    scope: sub
+    pageSize: 0
+  userUIDAttribute: distinguishedName
+  userNameAttributes:
+  - sAMAccountName
 EOF
 oc adm groups sync --sync-config=./groupsync.yaml --confirm
-</code></pre>
+</eof></code></pre>
 <p>You will see output like the following:</p>
 <pre><code class="lang-bash">group/ocp-fancy-dev
 group/ocp-user
@@ -660,23 +615,23 @@ ocp-user         fancyuser1, fancyuser2, normaluser1, teamuser1, teamuser2
 <pre><code class="lang-bash">oc get group ocp-fancy-dev -o yaml
 </code></pre>
 <p>The YAML looks like:</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> user.openshift.io/v1
-<span class="hljs-attr">kind:</span> Group
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  annotations:</span>
-    openshift.io/ldap.sync-time: <span class="hljs-number">2020</span><span class="hljs-bullet">-03</span><span class="hljs-bullet">-11</span>T10:<span class="hljs-number">57</span>:<span class="hljs-number">03</span><span class="hljs-bullet">-0400</span>
-    openshift.io/ldap.uid: cn=ocp-fancy-dev,ou=Users,o=<span class="hljs-number">5e615</span>ba46b812e7da02e93b5,dc=jumpcloud,dc=com
-    openshift.io/ldap.url: ldap.jumpcloud.com:<span class="hljs-number">636</span>
-<span class="hljs-attr">  creationTimestamp:</span> <span class="hljs-string">&quot;2020-03-11T14:57:03Z&quot;</span>
-<span class="hljs-attr">  labels:</span>
+<pre><code class="lang-yaml">apiVersion: user.openshift.io/v1
+kind: Group
+metadata:
+  annotations:
+    openshift.io/ldap.sync-time: 2020-03-11T10:57:03-0400
+    openshift.io/ldap.uid: cn=ocp-fancy-dev,ou=Users,o=5e615ba46b812e7da02e93b5,dc=jumpcloud,dc=com
+    openshift.io/ldap.url: ldap.jumpcloud.com:636
+  creationTimestamp: &quot;2020-03-11T14:57:03Z&quot;
+  labels:
     openshift.io/ldap.host: ldap.jumpcloud.com
-<span class="hljs-attr">  name:</span> ocp-fancy-dev
-<span class="hljs-attr">  resourceVersion:</span> <span class="hljs-string">&quot;48481&quot;</span>
-<span class="hljs-attr">  selfLink:</span> /apis/user.openshift.io/v1/groups/ocp-fancy-dev
-<span class="hljs-attr">  uid:</span> <span class="hljs-number">630</span>a9d2b-b577<span class="hljs-bullet">-46</span>bd<span class="hljs-bullet">-8294</span><span class="hljs-bullet">-6</span>b26e7f9a6e1
-<span class="hljs-attr">users:</span>
-<span class="hljs-bullet">-</span> fancyuser1
-<span class="hljs-bullet">-</span> fancyuser2
+  name: ocp-fancy-dev
+  resourceVersion: &quot;48481&quot;
+  selfLink: /apis/user.openshift.io/v1/groups/ocp-fancy-dev
+  uid: 630a9d2b-b577-46bd-8294-6b26e7f9a6e1
+users:
+- fancyuser1
+- fancyuser2
 </code></pre>
 <p>OpenShift has automatically associated some LDAP metadata with the <em>Group</em>, and
 has listed the users who are in the group.</p>
@@ -747,9 +702,9 @@ Platform can work.</p>
 <pre><code class="lang-bash">oc login -u ldapuser
 </code></pre>
 <p>Then, create several <em>Projects</em> for people to collaborate:</p>
-<pre><code class="lang-bash">oc adm new-project app-dev --display-name=<span class="hljs-string">&quot;Application Development&quot;</span>
-oc adm new-project app-test --display-name=<span class="hljs-string">&quot;Application Testing&quot;</span>
-oc adm new-project app-prod --display-name=<span class="hljs-string">&quot;Application Production&quot;</span>
+<pre><code class="lang-bash">oc adm new-project app-dev --display-name=&quot;Application Development&quot;
+oc adm new-project app-test --display-name=&quot;Application Testing&quot;
+oc adm new-project app-prod --display-name=&quot;Application Production&quot;
 </code></pre>
 <p>You have now created several <em>Projects</em> that represent a typical Software
 Development Lifecycle setup. Next, you will configure <em>Groups</em> to grant
@@ -805,24 +760,24 @@ and try to create something in the production project as <code>teamuser1</code>:
 oc new-app docker.io/siamaksade/mapit
 </code></pre>
 <p>You will see that it will not work:</p>
-<pre><code class="lang-bash">error: can<span class="hljs-string">&apos;t lookup images: imagestreamimports.image.openshift.io is forbidden: User &quot;teamuser1&quot; cannot create resource &quot;imagestreamimports&quot; in API group &quot;image.openshift.io&quot; in the namespace &quot;app-prod&quot;
+<pre><code class="lang-bash">error: can&apos;t lookup images: imagestreamimports.image.openshift.io is forbidden: User &quot;teamuser1&quot; cannot create resource &quot;imagestreamimports&quot; in API group &quot;image.openshift.io&quot; in the namespace &quot;app-prod&quot;
 error:  local file access failed with: stat docker.io/siamaksade/mapit: no such file or directory
 error: unable to locate any images in image streams, templates loaded in accessible projects, template files, local docker images with name &quot;docker.io/siamaksade/mapit&quot;
 
-Argument &apos;</span>docker.io/siamaksade/mapit<span class="hljs-string">&apos; was classified as an image, image~source, or loaded template reference.
+Argument &apos;docker.io/siamaksade/mapit&apos; was classified as an image, image~source, or loaded template reference.
 
-The &apos;</span>oc new-app<span class="hljs-string">&apos; command will match arguments to the following types:
+The &apos;oc new-app&apos; command will match arguments to the following types:
 
-  1. Images tagged into image streams in the current project or the &apos;</span>openshift<span class="hljs-string">&apos; project
-     - if you don&apos;</span>t specify a tag, we<span class="hljs-string">&apos;ll add &apos;</span>:latest<span class="hljs-string">&apos;
+  1. Images tagged into image streams in the current project or the &apos;openshift&apos; project
+     - if you don&apos;t specify a tag, we&apos;ll add &apos;:latest&apos;
   2. Images in the Docker Hub, on remote registries, or on the local Docker engine
-  3. Templates in the current project or the &apos;</span>openshift<span class="hljs-string">&apos; project
+  3. Templates in the current project or the &apos;openshift&apos; project
   4. Git repository URLs or local paths that point to Git repositories
 
 --allow-missing-images can be used to point to an image that does not exist yet.
 
-See &apos;</span>oc new-app -h<span class="hljs-string">&apos; for examples.
-</span></code></pre>
+See &apos;oc new-app -h&apos; for examples.
+</code></pre>
 <p>This failure is exactly what we wanted to see.</p>
 <h4 id="prometheus">Prometheus</h4>
 <p>Now that you have a user with <code>cluster-reader</code> privileges (one that can see
@@ -866,22 +821,6 @@ information about the current state of the cluster.</p>
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -901,7 +840,7 @@ information about the current state of the cluster.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"next":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"previous":{"title":"Infrastructure","level":"1.2","depth":1,"ref":"","articles":[{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]}]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"infrastructure-authentication-providers.md","mtime":"2021-03-30T09:49:57.523Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"next":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"previous":{"title":"Infrastructure","level":"1.2","depth":1,"ref":"","articles":[{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-authentication-providers.md","mtime":"2021-03-30T10:11:48.080Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -909,22 +848,6 @@ information about the current state of the cluster.</p>
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

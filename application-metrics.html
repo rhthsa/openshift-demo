@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>User Workload Monitoring · GitBook</title>
+        <title>User Workload Monitoring · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="user-workload-metrics">User Workload Metrics</h1>
@@ -369,10 +354,10 @@
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li><p>Setup <a href="manifests/user-workload-monitoring.yaml">User Workload Monitoring</a></p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span>  manifests/user-workload-monitoring.yaml
+<pre><code class="lang-bash">oc apply -f  manifests/user-workload-monitoring.yaml
 </code></pre>
 <p>Remark: You also need to setup and configure <a href="infrastructure-monitoring-alerts.html">cluster monitoring</a> or use following <a href="manifests/cluster-monitoring-config.yaml">simple configuration</a>. You may need to change storageClassName based on your cluster configuration</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span>  manifests/cluster-monitoring-config.yaml
+<pre><code class="lang-bash">oc apply -f  manifests/cluster-monitoring-config.yaml
 </code></pre>
 </li>
 <li><p>Verify monitoring stack</p>
@@ -380,7 +365,7 @@
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash">NAME                                   READY   STATUS    RESTARTS   AGE
-prometheus-operator-5<span class="hljs-built_in">fc</span>7d894dc-9nlhc   2/2     Running   0          9m3s
+prometheus-operator-5fc7d894dc-9nlhc   2/2     Running   0          9m3s
 prometheus-user-workload-0             4/4     Running   1          5m45s
 prometheus-user-workload-1             4/4     Running   1          6m1s
 thanos-ruler-user-workload-0           3/3     Running   5          8m55s
@@ -393,32 +378,32 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 <li><p>Deploy application with custom metrics</p>
 <ul>
 <li><p>Backend application provides metrics by /metrics and /metrics/applications</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend.yaml -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend.yaml -n project1
-oc <span class="hljs-built_in">set</span> env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc <span class="hljs-built_in">set</span> env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+oc apply -f manifests/backend.yaml -n project1
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
 </li>
 <li><p>Test backend application metrics</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk <span class="hljs-string">&apos;{print $1}&apos;</span>) -- curl -L  http://localhost:8080/metrics
-oc <span class="hljs-built_in">exec</span> -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk <span class="hljs-string">&apos;{print $1}&apos;</span>) -- curl -L http://localhost:8080/metrics/application
+<pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) -- curl -L  http://localhost:8080/metrics
+oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) -- curl -L http://localhost:8080/metrics/application
 </code></pre>
 </li>
 <li><p>Sample output</p>
-<pre><code class="lang-bash"><span class="hljs-comment"># TYPE vendor_memory_committedNonHeap_bytes gauge</span>
+<pre><code class="lang-bash"># TYPE vendor_memory_committedNonHeap_bytes gauge
 vendor_memory_committedNonHeap_bytes 3.1780976E7
-<span class="hljs-comment"># HELP vendor_memory_maxNonHeap_bytes Displays the maximum amount of used non-heap memory in bytes.</span>
-<span class="hljs-comment"># TYPE vendor_memory_maxNonHeap_bytes gauge</span>
+# HELP vendor_memory_maxNonHeap_bytes Displays the maximum amount of used non-heap memory in bytes.
+# TYPE vendor_memory_maxNonHeap_bytes gauge
 vendor_memory_maxNonHeap_bytes -1.0
-<span class="hljs-comment"># HELP vendor_memory_usedNonHeap_bytes Displays the amount of used non-heap memory in bytes.</span>
-<span class="hljs-comment"># TYPE vendor_memory_usedNonHeap_bytes gauge</span>
+# HELP vendor_memory_usedNonHeap_bytes Displays the amount of used non-heap memory in bytes.
+# TYPE vendor_memory_usedNonHeap_bytes gauge
 vendor_memory_usedNonHeap_bytes 3.1780976E7
 </code></pre>
 </li>
 </ul>
 </li>
 <li><p>Create <a href="manifests/backend-service-monitor.yaml">Service Monitoring</a> to monitor backend service</p>
-<pre><code class="lang-bash">  oc apply <span class="hljs-_">-f</span> manifests/backend-service-monitor.yaml -n project1
+<pre><code class="lang-bash">  oc apply -f manifests/backend-service-monitor.yaml -n project1
 </code></pre>
 <p>  Remark: Role <strong>monitor-edit</strong> is required for create <strong>ServiceMonitor</strong> and <strong>PodMonitor</strong> resources. Following example is granting role montior-edit to user1 for project1</p>
 <pre><code class="lang-bash">  oc adm policy add-role-to-user  monitoring-edit user1 -n project1
@@ -447,7 +432,7 @@ vendor_memory_usedNonHeap_bytes 3.1780976E7
 <p>Use Grafana Operator (Community Edition) to deploy Grafana and configure datasource to Thanos Querier</p>
 <ul>
 <li><p>Create project</p>
-<pre><code class="lang-bash">oc new-project application-monitor --display-name=<span class="hljs-string">&quot;Custom Grafana&quot;</span> --description=<span class="hljs-string">&quot;Custom Grafana&quot;</span>
+<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;Custom Grafana&quot; --description=&quot;Custom Grafana&quot;
 </code></pre>
 </li>
 <li><p>Install Grafana Operator to project application-monitor</p>
@@ -461,9 +446,9 @@ vendor_memory_usedNonHeap_bytes 3.1780976E7
 <p><img src="images/grafana-operator-02.png" alt=""></p>
 </li>
 <li><p>Create <a href="manifests/grafana.yaml">Grafana instance</a></p>
-<pre><code class="lang-bash">oc create <span class="hljs-_">-f</span> manifests/grafana.yaml -n application-monitor
+<pre><code class="lang-bash">oc create -f manifests/grafana.yaml -n application-monitor
 oc get pods -n application-monitor
-<span class="hljs-comment">#Sample Output</span>
+#Sample Output
 NAME                                 READY   STATUS    RESTARTS   AGE
 grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
 grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
@@ -476,15 +461,15 @@ grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
 </li>
 <li><p>Create <a href="manifests/grafana-datasource.yaml">Grafana DataSource</a> with serviceaccount grafana-serviceaccount&apos;s token and connect to thanos-querier</p>
 <pre><code class="lang-bash">TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
-cat manifests/grafana-datasource.yaml|sed <span class="hljs-string">&apos;s/Bearer .*/Bearer &apos;</span><span class="hljs-string">&quot;<span class="hljs-variable">$TOKEN</span>&quot;</span><span class="hljs-string">&quot;&apos;&quot;</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n application-monitor <span class="hljs-_">-f</span> -
+cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$TOKEN&quot;&quot;&apos;&quot;&apos;/&apos;|oc apply -n application-monitor -f -
 </code></pre>
 </li>
 <li><p>Create <a href="manifests/grafana-dashboard.yaml">Grafana Dashboard</a></p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/grafana-dashboard.yaml -n application-monitor
+<pre><code class="lang-bash">oc apply -f manifests/grafana-dashboard.yaml -n application-monitor
 </code></pre>
 </li>
 <li><p>Login to Grafana Dashboard with following URL</p>
-<pre><code class="lang-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Grafana URL =&gt; https://<span class="hljs-variable">$(oc get route grafana-route -o jsonpath=&apos;{.spec.host}&apos; -n application-monitor)</span>&quot;</span>
+<pre><code class="lang-bash">echo &quot;Grafana URL =&gt; https://$(oc get route grafana-route -o jsonpath=&apos;{.spec.host}&apos; -n application-monitor)&quot;
 </code></pre>
 <p>or use link provided by Developer Console</p>
 <p><img src="images/custom-grafana-route.png" alt=""></p>
@@ -493,17 +478,17 @@ cat manifests/grafana-datasource.yaml|sed <span class="hljs-string">&apos;s/Bear
 </ul>
 <ul>
 <li><p>Generate workload</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
-<span class="hljs-keyword">while</span> [ 1 ];
-<span class="hljs-keyword">do</span>
-  curl <span class="hljs-variable">$FRONTEND_URL</span>
-  <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;\n&quot;</span>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+while [ 1 ];
+do
+  curl $FRONTEND_URL
+  printf &quot;\n&quot;
   sleep .2
-<span class="hljs-keyword">done</span>
+done
 </code></pre>
 <p>Remark: You need to configure frontend app to connect to backend app</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">set</span> env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc <span class="hljs-built_in">set</span> env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+<pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
 </li>
 <li><p>Grafana Dashboard</p>
@@ -513,31 +498,31 @@ oc <span class="hljs-built_in">set</span> env deployment/frontend-v2 BACKEND_URL
 <h2 id="custom-alert">Custom Alert</h2>
 <ul>
 <li><p>Check <code>PrometheusRule</code> <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a></p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> monitoring.coreos.com/v1
-<span class="hljs-attr">kind:</span> PrometheusRule
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> backend-app-alert
-<span class="hljs-attr">  namespace:</span> project1
-<span class="hljs-attr">  labels:</span>
+<pre><code class="lang-yaml">apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backend-app-alert
+  namespace: project1
+  labels:
     openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  groups:</span>
-<span class="hljs-attr">  - name:</span> backend-app
-<span class="hljs-attr">    rules:</span>
-<span class="hljs-attr">    - alert:</span> ConcurrentBackend
-<span class="hljs-attr">      expr:</span> sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)&gt;<span class="hljs-number">15</span>
-      <span class="hljs-comment"># wait just 1 minute for demo purpose</span>
-<span class="hljs-attr">      for:</span> <span class="hljs-number">1</span>m
-<span class="hljs-attr">      labels:</span>
-<span class="hljs-attr">        severity:</span> <span class="hljs-string">&apos;warning&apos;</span>
-<span class="hljs-attr">      annotations:</span>
-<span class="hljs-attr">        message:</span> <span class="hljs-string">&apos;Total concurrent request is  request/sec&apos;</span>
-<span class="hljs-attr">    - alert:</span> HighLatency
-<span class="hljs-attr">      expr:</span> application_com_example_quarkus_BackendResource_timeBackend_max_seconds&gt;<span class="hljs-number">5</span>
-<span class="hljs-attr">      labels:</span>
-<span class="hljs-attr">        severity:</span> <span class="hljs-string">&apos;critical&apos;</span>
-<span class="hljs-attr">      annotations:</span>
-<span class="hljs-attr">        message:</span> <span class="hljs-string">&apos; response time is  sec&apos;</span>
+spec:
+  groups:
+  - name: backend-app
+    rules:
+    - alert: ConcurrentBackend
+      expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)&gt;15
+      # wait just 1 minute for demo purpose
+      for: 1m
+      labels:
+        severity: &apos;warning&apos;
+      annotations:
+        message: &apos;Total concurrent request is  request/sec&apos;
+    - alert: HighLatency
+      expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds&gt;5
+      labels:
+        severity: &apos;critical&apos;
+      annotations:
+        message: &apos; response time is  sec&apos;
 </code></pre>
 <p><a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
 <ul>
@@ -550,7 +535,7 @@ servierity critical when response time is greateer than 5 sec  </li>
 </ul>
 <ul>
 <li><p>Create <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> </p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/backend-custom-alert.yaml
+<pre><code class="lang-bash">oc apply -f manifests/backend-custom-alert.yaml
 </code></pre>
 <p>Remark: Role <code>monitoring-rules-view</code> is required for view <code>PrometheusRule</code> resource and role <code>monitoring-rules-edit</code> is required to  create, modify, and deleting <code>PrometheusRule</code> </p>
 <p>Following example is granting role monitoring-rules-view and monitoring-rules-edit to user1 for project1</p>
@@ -564,8 +549,8 @@ oc scale deployment backend-v1 --replicas=2 -n project1
 </code></pre>
 </li>
 <li><p>Test <code>ConcurrentBackend</code> alert with 25 concurrent requests</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
-siege -c 25 <span class="hljs-variable">$FRONTEND_URL</span>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+siege -c 25 $FRONTEND_URL
 </code></pre>
 <p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
 <ul>
@@ -574,11 +559,11 @@ siege -c 25 <span class="hljs-variable">$FRONTEND_URL</span>
 <li>Ramp up 30 sec</li>
 <li>Ramp down 30 sec</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 oc run load-test -n project1 -i \
---image=loadimpact/k6 --rm=<span class="hljs-literal">true</span> --restart=Never \
+--image=loadimpact/k6 --rm=true --restart=Never \
 --  run -  &lt; manifests/load-test-k6.js \
-<span class="hljs-_">-e</span> URL=<span class="hljs-variable">$FRONTEND_URL</span> <span class="hljs-_">-e</span> THREADS=25 <span class="hljs-_">-e</span> DURATION=2m <span class="hljs-_">-e</span> RAMPUP=30s <span class="hljs-_">-e</span> RAMPDOWN=30s
+-e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
 </code></pre>
 <p>Check for alert in Developer Console by select Menu <code>Monitoring</code> then select <code>Alerts</code></p>
 <p><img src="images/alert-concurrent-backend.png" alt=""></p>
@@ -587,7 +572,7 @@ oc run load-test -n project1 -i \
 <ul>
 <li><p>Set backend with 6 sec response tim</p>
 <ul>
-<li>By CLI<pre><code class="lang-bash">oc <span class="hljs-built_in">set</span> env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
+<li>By CLI<pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
 </code></pre>
 </li>
 <li><p>By Developer Console</p>
@@ -603,7 +588,7 @@ oc run load-test -n project1 -i \
 </ul>
 </li>
 <li><p>Request to frontend app</p>
-<pre><code class="lang-bash">curl <span class="hljs-variable">$FRONTEND_URL</span>
+<pre><code class="lang-bash">curl $FRONTEND_URL
 </code></pre>
 </li>
 <li><p>Check for alert in Developer Console </p>
@@ -619,22 +604,6 @@ oc run load-test -n project1 -i \
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -658,7 +627,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"application-metrics.md","mtime":"2021-03-30T09:49:57.495Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-03-30T10:11:48.052Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -666,22 +635,6 @@ oc run load-test -n project1 -i \
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

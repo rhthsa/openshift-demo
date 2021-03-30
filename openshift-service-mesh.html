@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift Service Mesh · GitBook</title>
+        <title>OpenShift Service Mesh · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="openshift-service-mesh">OpenShift Service Mesh</h1>
@@ -406,7 +391,7 @@
 </li>
 <li><p>Create control plane by create ServiceMeshControlPlane CRD</p>
 <pre><code class="lang-bash">oc new-project istio-system
-oc create <span class="hljs-_">-f</span> manifests/smcp.yaml -n istio-system
+oc create -f manifests/smcp.yaml -n istio-system
 </code></pre>
 </li>
 <li><p>Check for control plane(<a href="bin/get-smcp-status.sh">get-smcp-status.sh</a>)</p>
@@ -416,13 +401,13 @@ oc create <span class="hljs-_">-f</span> manifests/smcp.yaml -n istio-system
 <li><p>Join project1 into control plane</p>
 <ul>
 <li><p>Review <a href="manifests/smcp.yaml">ServiceMeshMemberRoll CRD</a></p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> maistra.io/v1
-<span class="hljs-attr">kind:</span> ServiceMeshMemberRoll
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> default
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  members:</span>
-<span class="hljs-bullet">  -</span> project1
+<pre><code class="lang-yaml">apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+spec:
+  members:
+  - project1
 </code></pre>
 </li>
 <li><p>Create data plane project</p>
@@ -430,7 +415,7 @@ oc create <span class="hljs-_">-f</span> manifests/smcp.yaml -n istio-system
 </code></pre>
 </li>
 <li><p>Apply ServiceMeshMemberRoll</p>
-<pre><code class="lang-bash">oc create <span class="hljs-_">-f</span> manifests/smmr.yaml -n istio-system
+<pre><code class="lang-bash">oc create -f manifests/smmr.yaml -n istio-system
 </code></pre>
 </li>
 <li><p>Check for ServiceMeshMemberRoll status</p>
@@ -440,9 +425,9 @@ oc create <span class="hljs-_">-f</span> manifests/smcp.yaml -n istio-system
 </ul>
 </li>
 <li><p>Deploy sidecar to frontend app in project1</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend.yaml -n project1
-oc patch deployment/frontend-v1 -p <span class="hljs-string">&apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos;</span> -n project1
-oc patch deployment/frontend-v2 -p <span class="hljs-string">&apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos;</span> -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+oc patch deployment/frontend-v1 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
+oc patch deployment/frontend-v2 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
 </code></pre>
 <p><img src="images/dev-console-frontend.png" alt=""></p>
 </li>
@@ -450,11 +435,11 @@ oc patch deployment/frontend-v2 -p <span class="hljs-string">&apos;{&quot;spec&q
 <ul>
 <li><p>Check for sidecar in frontend-v1 and frontend-v2 pods</p>
 <pre><code class="lang-bash">oc get pods -n project1
-<span class="hljs-comment">#Sample output</span>
+#Sample output
 NAME                           READY   STATUS        RESTARTS   AGE
 frontend-v1-577b98f48c-6j5zg   2/2     Running       0          15s
 frontend-v1-c5d4648f9-7jfk2    1/1     Terminating   0          13m
-frontend-v2-5<span class="hljs-built_in">cd</span>968bc59-cwsd8   2/2     Running       0          14s
+frontend-v2-5cd968bc59-cwsd8   2/2     Running       0          14s
 frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
 </code></pre>
 <p><img src="images/pod-with-sidecar.png" alt=""></p>
@@ -462,12 +447,12 @@ frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
 </ul>
 <ul>
 <li><p>Check <a href="manifests/frontend-service.yaml">frontend service</a> which set slector to both v1 and v2</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">selector:</span>
-<span class="hljs-attr">  app:</span> frontend
+<pre><code class="lang-yaml">selector:
+  app: frontend
 </code></pre>
 </li>
 <li><p>Create <a href="manifests/frontend-service.yaml">frontend service</a></p>
-<pre><code class="lang-bash">oc create <span class="hljs-_">-f</span> manifests/frontend-service.yaml -n project1
+<pre><code class="lang-bash">oc create -f manifests/frontend-service.yaml -n project1
 </code></pre>
 </li>
 </ul>
@@ -475,33 +460,33 @@ frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
 <ul>
 <li><p>Create Gateway for frontend app</p>
 <ul>
-<li>Check for cluster&apos;s sub-domain<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-<span class="hljs-built_in">echo</span> <span class="hljs-variable">$SUBDOMAIN</span>
+<li>Check for cluster&apos;s sub-domain<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+echo $SUBDOMAIN
 </code></pre>
 </li>
 <li><p>Review <a href="manifests/frontend-gateway.yaml">Gateway CRD</a>, Replaced SUBDOMAIN with cluster&apos;s sub-domain</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> Gateway
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">name:</span> frontend-gateway
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">selector:</span>
-<span class="hljs-attr">    istio:</span> ingressgateway <span class="hljs-comment"># use istio default controller</span>
-<span class="hljs-attr">servers:</span>
-<span class="hljs-attr">- port:</span>
-<span class="hljs-attr">    number:</span> <span class="hljs-number">80</span>
-<span class="hljs-attr">    name:</span> http2
-<span class="hljs-attr">    protocol:</span> HTTP
-<span class="hljs-attr">    hosts:</span>
-<span class="hljs-bullet">    -</span> <span class="hljs-string">&apos;*.apps.SUBDOMAIN&apos;</span>
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+name: frontend-gateway
+spec:
+selector:
+    istio: ingressgateway # use istio default controller
+servers:
+- port:
+    number: 80
+    name: http2
+    protocol: HTTP
+    hosts:
+    - &apos;*.apps.SUBDOMAIN&apos;
 </code></pre>
 </li>
 <li><p>Replace SUBDOMAIN with your clsuter sub-domain and Create <a href="manifests/frontend-gateway.yaml">gateway</a></p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-gateway.yaml -n istio-system
+<pre><code class="lang-bash">oc apply -f manifests/frontend-gateway.yaml -n istio-system
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-gateway.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n istio-system <span class="hljs-_">-f</span> -
+<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-gateway.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n istio-system -f -
 </code></pre>
 </li>
 </ul>
@@ -509,31 +494,31 @@ cat manifests/frontend-gateway.yaml | sed <span class="hljs-string">&apos;s/SUBD
 <li><p>Create Destination Rule for frontend v1 and frontend v2</p>
 <ul>
 <li><p>Review <a href="manifests/frontend-destination-rule.yaml">Destination Rule CRD</a></p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> DestinationRule
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">    name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">    host:</span> frontend
-<span class="hljs-attr">    subsets:</span>
-<span class="hljs-attr">    - name:</span> v1
-<span class="hljs-attr">    labels:</span>
-<span class="hljs-attr">        app:</span> frontend
-<span class="hljs-attr">        version:</span> v1
-<span class="hljs-attr">    trafficPolicy:</span>
-<span class="hljs-attr">        loadBalancer:</span>
-<span class="hljs-attr">        simple:</span> ROUND_ROBIN
-<span class="hljs-attr">    - name:</span> v2
-<span class="hljs-attr">    labels:</span>
-<span class="hljs-attr">        app:</span> frontend
-<span class="hljs-attr">        version:</span> v2
-<span class="hljs-attr">    trafficPolicy:</span>
-<span class="hljs-attr">        loadBalancer:</span>
-<span class="hljs-attr">        simple:</span> ROUND_ROBIN
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+    name: frontend
+spec:
+    host: frontend
+    subsets:
+    - name: v1
+    labels:
+        app: frontend
+        version: v1
+    trafficPolicy:
+        loadBalancer:
+        simple: ROUND_ROBIN
+    - name: v2
+    labels:
+        app: frontend
+        version: v2
+    trafficPolicy:
+        loadBalancer:
+        simple: ROUND_ROBIN
 </code></pre>
 </li>
 <li><p>Create destination rule</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-destination-rule.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend-destination-rule.yaml -n project1
 </code></pre>
 </li>
 </ul>
@@ -541,57 +526,57 @@ cat manifests/frontend-gateway.yaml | sed <span class="hljs-string">&apos;s/SUBD
 <li><p>Create Virtual Service for frontend app</p>
 <ul>
 <li><p>Review <a href="manifests/frontend-virtual-service.yaml">Virtual Service CRD</a>, Replace SUBDOMAIN with cluster&apos;s sub-domain.</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> VirtualService
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">    name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">    hosts:</span>
-<span class="hljs-bullet">    -</span> frontend.apps.SUBDOMAIN
-<span class="hljs-attr">    gateways:</span>
-<span class="hljs-bullet">    -</span> istio-system/frontend-gateway
-<span class="hljs-attr">    http:</span>
-<span class="hljs-attr">    - route:</span>
-<span class="hljs-attr">    - destination:</span>
-<span class="hljs-attr">        port:</span>
-<span class="hljs-attr">            number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">        host:</span> frontend.project1.svc.cluster.local
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+    name: frontend
+spec:
+    hosts:
+    - frontend.apps.SUBDOMAIN
+    gateways:
+    - istio-system/frontend-gateway
+    http:
+    - route:
+    - destination:
+        port:
+            number: 8080
+        host: frontend.project1.svc.cluster.local
 </code></pre>
 </li>
 <li><p>Replace SUBDOMAIN with cluster subdomain and create <a href="manifests/frontend-virtual-service.yaml">virtual service</a></p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-virtual-service.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service.yaml -n project1
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-virtual-service.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n project1 <span class="hljs-_">-f</span> -
+<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
 <li><p>Check that route is automatically created</p>
 <pre><code class="lang-bash">oc get route -n istio-system | grep istio-system-frontend-gateway
 
-<span class="hljs-comment"># Sample outout</span>
+# Sample outout
 istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2com                                   istio-ingressgateway   http2                        None
 </code></pre>
 <p>&lt;!-- - Create Route (configured with Istio Gateway) for frontend app</p>
 </li>
 <li><p>Review <a href="manifests/frontend-route-istio.yaml">Route</a>, Replace SUBDOMAIN with cluster&apos;s subdomain</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> Route
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">    name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">    host:</span> frontend.apps.SUBDOMAIN
-<span class="hljs-attr">    port:</span>
-<span class="hljs-attr">    targetPort:</span> http2
-<span class="hljs-attr">    to:</span>
-<span class="hljs-attr">    kind:</span> Service
-<span class="hljs-attr">    name:</span> istio-ingressgateway
-<span class="hljs-attr">    weight:</span> <span class="hljs-number">100</span>
-<span class="hljs-attr">    wildcardPolicy:</span> None
+<pre><code class="lang-yaml">apiVersion: v1
+kind: Route
+metadata:
+    name: frontend
+spec:
+    host: frontend.apps.SUBDOMAIN
+    port:
+    targetPort: http2
+    to:
+    kind: Service
+    name: istio-ingressgateway
+    weight: 100
+    wildcardPolicy: None
 </code></pre>
 </li>
 <li><p>Replace SUBDOMAIN with cluster subdomain then create Route</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-route-istio.yaml -n istio-system
+<pre><code class="lang-bash">oc apply -f manifests/frontend-route-istio.yaml -n istio-system
 </code></pre>
 <p>or use following bash command </p>
 <p><code>bash
@@ -603,58 +588,58 @@ cat manifests/frontend-route-istio.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN
 <li><p>Test with cURL</p>
 </li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl http://<span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl http://$FRONTEND_ISTIO_ROUTE
 </code></pre>
 <h2 id="weight-routing-with-istio-virtual-service">Weight-Routing with Istio Virtual Service</h2>
 <ul>
 <li><p>Set weight routing between 2 services with virtual service</p>
 <ul>
-<li>Check for <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service with weight routing</a>, Replace SUBDOMAIN with cluster&apos;s subdomain.<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> VirtualService
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">hosts:</span>
-<span class="hljs-bullet">-</span> frontend.apps.SUBDOMAIN
-<span class="hljs-attr">gateways:</span>
-<span class="hljs-bullet">-</span> istio-system/frontend-gateway
-<span class="hljs-attr">http:</span>
-<span class="hljs-attr">- route:</span>
-<span class="hljs-attr">  - destination:</span>
-<span class="hljs-attr">      port:</span>
-<span class="hljs-attr">        number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">      host:</span> frontend.project1.svc.cluster.local
-<span class="hljs-attr">      subset:</span> v1
-<span class="hljs-attr">    weight:</span> <span class="hljs-number">100</span>
-<span class="hljs-attr">  - destination:</span>
-<span class="hljs-attr">      port:</span>
-<span class="hljs-attr">        number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">      host:</span> frontend.project1.svc.cluster.local
-<span class="hljs-attr">      subset:</span> v2
-<span class="hljs-attr">    weight:</span> <span class="hljs-number">0</span>
+<li>Check for <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service with weight routing</a>, Replace SUBDOMAIN with cluster&apos;s subdomain.<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+name: frontend
+spec:
+hosts:
+- frontend.apps.SUBDOMAIN
+gateways:
+- istio-system/frontend-gateway
+http:
+- route:
+  - destination:
+      port:
+        number: 8080
+      host: frontend.project1.svc.cluster.local
+      subset: v1
+    weight: 100
+  - destination:
+      port:
+        number: 8080
+      host: frontend.project1.svc.cluster.local
+      subset: v2
+    weight: 0
 </code></pre>
 or use following bash command </li>
 </ul>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n project1 <span class="hljs-_">-f</span> -
+<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 <ul>
 <li><p>Apply <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service</a> for Blue/Green deployment with route all traffic to v1</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-virtual-service-with-weight-routing.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-weight-routing.yaml -n project1
 </code></pre>
 </li>
 </ul>
 <ul>
 <li>Test with cURL to verify that all requests are routed to v1</li>
 <li><p>Blue/Green deployment by route all requests to v2</p>
-<pre><code class="lang-bash">oc patch virtualservice frontend --type=<span class="hljs-string">&apos;json&apos;</span> -p=<span class="hljs-string">&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:0},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:100}]}}]&apos;</span> -n project1
+<pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:0},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:100}]}}]&apos; -n project1
 </code></pre>
 </li>
 <li><p>Test with cURL to verify that all requests are routed to v2</p>
 </li>
 <li><p>Canary deployment by weight requests between v1 and v2 with 70% and 30%</p>
-<pre><code class="lang-bash">oc patch virtualservice frontend --type=<span class="hljs-string">&apos;json&apos;</span> -p=<span class="hljs-string">&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos;</span> -n project1
+<pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos; -n project1
 </code></pre>
 </li>
 </ul>
@@ -662,23 +647,23 @@ cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed <span clas
 <li><p>Test canary deployment</p>
 <ul>
 <li><p>Run 100 requests</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
 COUNT=0
-rm <span class="hljs-_">-f</span> result.txt
-<span class="hljs-keyword">while</span> [ <span class="hljs-variable">$COUNT</span> <span class="hljs-_">-lt</span> 100 ];
-<span class="hljs-keyword">do</span>
-    OUTPUT=$(curl <span class="hljs-_">-s</span> <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/version)
-    <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;%s\n&quot;</span> <span class="hljs-variable">$OUTPUT</span> &gt;&gt; result.txt
-    <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;%s\n&quot;</span> <span class="hljs-variable">$OUTPUT</span>
+rm -f result.txt
+while [ $COUNT -lt 100 ];
+do
+    OUTPUT=$(curl -s $FRONTEND_ISTIO_ROUTE/version)
+    printf &quot;%s\n&quot; $OUTPUT &gt;&gt; result.txt
+    printf &quot;%s\n&quot; $OUTPUT
     sleep .2
-    COUNT=$(expr <span class="hljs-variable">$COUNT</span> + 1)
-<span class="hljs-keyword">done</span>
+    COUNT=$(expr $COUNT + 1)
+done
 </code></pre>
 </li>
 <li><p>Check result for comparing percentage of requests to v1 and v2</p>
-<pre><code class="lang-bash"><span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;Version 1: %s\n&quot;</span> $(cat result.txt | grep <span class="hljs-string">&quot;1.0.0&quot;</span> | wc <span class="hljs-_">-l</span>)
-<span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;Version 2: %s\n&quot;</span> $(cat result.txt | grep <span class="hljs-string">&quot;2.0.0&quot;</span> | wc <span class="hljs-_">-l</span>)
-rm <span class="hljs-_">-f</span> result.txt
+<pre><code class="lang-bash">printf &quot;Version 1: %s\n&quot; $(cat result.txt | grep &quot;1.0.0&quot; | wc -l)
+printf &quot;Version 2: %s\n&quot; $(cat result.txt | grep &quot;2.0.0&quot; | wc -l)
+rm -f result.txt
 </code></pre>
 </li>
 </ul>
@@ -688,34 +673,34 @@ rm <span class="hljs-_">-f</span> result.txt
 <ul>
 <li>Set conditional routing between 2 services with virtual service<ul>
 <li>Check for <a href="manifests/frontend-virtual-service-with-uri.yaml">virtual service by URI</a>, Replace SUBDOMAIN with cluster&apos;s subdomain. Condition with regular expression<ul>
-<li>Route to v1 if request URI start with &quot;/ver&quot; and end with &quot;1&quot;<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> VirtualService
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">hosts:</span>
-<span class="hljs-bullet">-</span> frontend.apps.SUBDOMAIN
-<span class="hljs-attr">gateways:</span>
-<span class="hljs-bullet">-</span> istio-system/frontend-gateway
-<span class="hljs-attr">http:</span>
-<span class="hljs-attr">- match:</span>
-<span class="hljs-attr">- uri:</span>
-<span class="hljs-attr">    regex:</span> /ver(.*)<span class="hljs-number">1</span>
-<span class="hljs-attr">rewrite:</span>
-<span class="hljs-comment"># Rewrite URI back to / because frontend app not have /ver(*)1</span>
-<span class="hljs-attr">uri:</span> <span class="hljs-string">&quot;/&quot;</span>
-<span class="hljs-attr">route:</span>
-<span class="hljs-attr">- destination:</span>
-<span class="hljs-attr">    host:</span> frontend
-<span class="hljs-attr">    port:</span>
-<span class="hljs-attr">    number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">    subset:</span> v1
-<span class="hljs-attr">- route:</span>
-<span class="hljs-attr">- destination:</span>
-<span class="hljs-attr">    host:</span> frontend
-<span class="hljs-attr">    port:</span>
-<span class="hljs-attr">    number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">    subset:</span> v2
+<li>Route to v1 if request URI start with &quot;/ver&quot; and end with &quot;1&quot;<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+name: frontend
+spec:
+hosts:
+- frontend.apps.SUBDOMAIN
+gateways:
+- istio-system/frontend-gateway
+http:
+- match:
+- uri:
+    regex: /ver(.*)1
+rewrite:
+# Rewrite URI back to / because frontend app not have /ver(*)1
+uri: &quot;/&quot;
+route:
+- destination:
+    host: frontend
+    port:
+    number: 8080
+    subset: v1
+- route:
+- destination:
+    host: frontend
+    port:
+    number: 8080
+    subset: v2
 </code></pre>
 </li>
 </ul>
@@ -723,23 +708,23 @@ rm <span class="hljs-_">-f</span> result.txt
 </ul>
 </li>
 <li><p>Apply virtual service</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-virtual-service-with-uri.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-uri.yaml -n project1
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-virtual-service-with-uri.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n project1 <span class="hljs-_">-f</span> -
+<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-uri.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
 <li><p>Test with URI /version1 and /ver1</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/version1
-curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/vers1
-curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/ver1
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl $FRONTEND_ISTIO_ROUTE/version1
+curl $FRONTEND_ISTIO_ROUTE/vers1
+curl $FRONTEND_ISTIO_ROUTE/ver1
 </code></pre>
 </li>
 <li><p>Test with URI /</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl $FRONTEND_ISTIO_ROUTE/
 </code></pre>
 </li>
 </ul>
@@ -749,64 +734,64 @@ curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>/
 <ul>
 <li>If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2</li>
 </ul>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> networking.istio.io/v1alpha3
-<span class="hljs-attr">kind:</span> VirtualService
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> frontend
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  hosts:</span>
-<span class="hljs-bullet">  -</span> frontend.apps.SUBDOMAIN
-<span class="hljs-attr">  gateways:</span>
-<span class="hljs-bullet">  -</span> istio-gateway/frontend-gateway
-<span class="hljs-attr">  http:</span>
-<span class="hljs-attr">  - match:</span>
-<span class="hljs-attr">    - headers:</span>
-<span class="hljs-attr">        user-agent:</span>
-<span class="hljs-attr">          regex:</span> (.*)Firefox(.*)
-<span class="hljs-attr">    route:</span>
-<span class="hljs-attr">    - destination:</span>
-<span class="hljs-attr">        host:</span> frontend
-<span class="hljs-attr">        port:</span>
-<span class="hljs-attr">          number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">        subset:</span> v2
-<span class="hljs-attr">  - route:</span>
-<span class="hljs-attr">    - destination:</span>
-<span class="hljs-attr">        host:</span> frontend
-<span class="hljs-attr">        port:</span>
-<span class="hljs-attr">          number:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">        subset:</span> v1
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: frontend
+spec:
+  hosts:
+  - frontend.apps.SUBDOMAIN
+  gateways:
+  - istio-gateway/frontend-gateway
+  http:
+  - match:
+    - headers:
+        user-agent:
+          regex: (.*)Firefox(.*)
+    route:
+    - destination:
+        host: frontend
+        port:
+          number: 8080
+        subset: v2
+  - route:
+    - destination:
+        host: frontend
+        port:
+          number: 8080
+        subset: v1
 </code></pre>
 </li>
 <li><p>Apply <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a></p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend-virtual-service-with-header.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-virtual-service-with-header.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n project1 <span class="hljs-_">-f</span> -
+<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-header.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
 <li><p>Test with cURL with HTTP header User-Agent contains Firefox</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl -H <span class="hljs-string">&quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot;</span> <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot; $FRONTEND_ISTIO_ROUTE
 </code></pre>
 <h2 id="traffic-analysis">Traffic Analysis</h2>
 </li>
 <li><p>Deploy backend application</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/backend.yaml -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend-destination-rule.yaml -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend-virtual-service-v1-v2-50-50.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/backend.yaml -n project1
+oc apply -f manifests/backend-destination-rule.yaml -n project1
+oc apply -f manifests/backend-virtual-service-v1-v2-50-50.yaml -n project1
 oc get pods -n project1
 </code></pre>
 </li>
 <li><p><strong>Optional</strong>: Draw connetion from frontend to backend in Developer Console</p>
-<pre><code class="lang-bash">oc annotate deployment frontend-v1 <span class="hljs-string">&apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos;</span> -n project1
-oc annotate deployment frontend-v2 <span class="hljs-string">&apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos;</span> -n project1
+<pre><code class="lang-bash">oc annotate deployment frontend-v1 &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos; -n project1
+oc annotate deployment frontend-v2 &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos; -n project1
 </code></pre>
 <p><img src="images/dev-console-topology-frontend-v1-v2-backend-v1-v2.png" alt=""></p>
 </li>
 <li><p>Configure frontend to request to backend</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">set</span> env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc <span class="hljs-built_in">set</span> env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+<pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
 </li>
 <li><p>Check Kiali Console</p>
@@ -819,14 +804,14 @@ oc <span class="hljs-built_in">set</span> env deployment/frontend-v2 BACKEND_URL
 <li>Display: select checkbox &quot;Requests percentage&quot; and &quot;Traffic animation&quot;</li>
 </ul>
 </li>
-<li>Run following command<pre><code class="lang-bash">oc patch virtualservice frontend --type=<span class="hljs-string">&apos;json&apos;</span> -p=<span class="hljs-string">&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos;</span> -n project1
-FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-<span class="hljs-keyword">while</span> [ 1 ];
-<span class="hljs-keyword">do</span>
-        OUTPUT=$(curl <span class="hljs-_">-s</span> <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>)
-        <span class="hljs-built_in">printf</span> <span class="hljs-string">&quot;%s\n&quot;</span> <span class="hljs-variable">$OUTPUT</span>
+<li>Run following command<pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos; -n project1
+FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+while [ 1 ];
+do
+        OUTPUT=$(curl -s $FRONTEND_ISTIO_ROUTE)
+        printf &quot;%s\n&quot; $OUTPUT
         sleep .2
-<span class="hljs-keyword">done</span>
+done
 </code></pre>
 </li>
 <li><p>Check Kiali Console</p>
@@ -857,41 +842,41 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 <h2 id="traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</h2>
 <ul>
 <li><p>Deploy audit app and mirror every requests that frontend call backend to audit app</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/audit-app.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/audit-app.yaml -n project1
 oc get pods -n project1
 </code></pre>
 </li>
 <li><p>Update <a href="manifests/backend-virtual-service-mirror.yaml">backend virtual service</a> to mirror requests to audit app.</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/backend-virtual-service-mirror.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/backend-virtual-service-mirror.yaml -n project1
 </code></pre>
 </li>
 <li><p>Use cURL to call frontend and check audit&apos;s pod log by CLI (with another terminal) or Web Console</p>
 <ul>
 <li>cURL frontend</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl $FRONTEND_ISTIO_ROUTE
 </code></pre>
 <ul>
 <li>View audit log </li>
 </ul>
-<pre><code class="lang-bash">oc logs <span class="hljs-_">-f</span> $(oc get pods --no-headers | grep audit|head -n 1|awk <span class="hljs-string">&apos;{print $1}&apos;</span>) -c backend -n project1
+<pre><code class="lang-bash">oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk &apos;{print $1}&apos;) -c backend -n project1
 </code></pre>
 <p><img src="images/mirror-log.png" alt=""></p>
 </li>
 </ul>
 <h2 id="envoy-access-log">Envoy Access Log</h2>
 <ul>
-<li>Envoy access log already enabled with <a href="manifests/smcp.yaml">ServiceMeshControlPlane CRD</a><pre><code class="lang-yaml"><span class="hljs-attr">  proxy:</span>
-<span class="hljs-attr">  accessLogging:</span>
-<span class="hljs-attr">    envoyService:</span>
-<span class="hljs-attr">      enabled:</span> <span class="hljs-literal">false</span>
-<span class="hljs-attr">    file:</span>
-<span class="hljs-attr">      encoding:</span> TEXT
-<span class="hljs-attr">      name:</span> /dev/stdout
+<li>Envoy access log already enabled with <a href="manifests/smcp.yaml">ServiceMeshControlPlane CRD</a><pre><code class="lang-yaml">  proxy:
+  accessLogging:
+    envoyService:
+      enabled: false
+    file:
+      encoding: TEXT
+      name: /dev/stdout
 </code></pre>
 </li>
-<li>Check access log<pre><code class="lang-bash">oc logs <span class="hljs-_">-f</span> $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk <span class="hljs-string">&apos;{print $1}&apos;</span>) -c istio-proxy -n project1
+<li>Check access log<pre><code class="lang-bash">oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk &apos;{print $1}&apos;) -c istio-proxy -n project1
 </code></pre>
 </li>
 <li>Sample output<pre><code class="lang-log">[2020-12-25T10:33:04.848Z] &quot;GET / HTTP/1.1&quot; 200 - &quot;-&quot; &quot;-&quot; 0 103 5750 5749 &quot;-&quot; &quot;-&quot; &quot;0c3ce34a-f5a0-9340-b84f-3631cd8eb444&quot; &quot;backend:8080&quot; &quot;10.128.2.133:8080&quot; outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
@@ -900,47 +885,47 @@ curl <span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>
 <h2 id="circuit-breaker">Circuit Breaker</h2>
 </li>
 <li><p>Configure our application to contains only frontend-v1 and backend-v1 and scale backend to 3 pods.</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/frontend.yaml -n project1
-oc patch deployment/frontend-v1 -p <span class="hljs-string">&apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos;</span> -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+oc patch deployment/frontend-v1 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
+oc apply -f manifests/backend.yaml -n project1
 oc delete deployment frontend-v2 -n project1
 oc delete deployment backend-v2 -n project1 
 oc delete svc frontend-v2 -n project1
-oc <span class="hljs-built_in">set</span> env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc annotate deployment frontend-v1 <span class="hljs-string">&apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos;</span> -n project1
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc annotate deployment frontend-v1 &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos; -n project1
 oc delete route frontend -n project1
 oc scale deployment backend-v1 --replicas=3 -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend-destination-rule-v1-only.yaml -n project1
-oc apply <span class="hljs-_">-f</span> manifests/backend-virtual-service.yaml -n project1
-oc apply <span class="hljs-_">-f</span> manifests/frontend-destination-rule-v1-only.yaml -n project1
-SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-virtual-service.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n project1 <span class="hljs-_">-f</span> -
-SUBDOMAIN=$(oc whoami --show-console|awk -F<span class="hljs-string">&apos;apps.&apos;</span> <span class="hljs-string">&apos;{print $2}&apos;</span>)
-cat manifests/frontend-gateway.yaml | sed <span class="hljs-string">&apos;s/SUBDOMAIN/&apos;</span><span class="hljs-variable">$SUBDOMAIN</span><span class="hljs-string">&apos;/&apos;</span>|oc apply -n istio-system <span class="hljs-_">-f</span> -
+oc apply -f manifests/backend-destination-rule-v1-only.yaml -n project1
+oc apply -f manifests/backend-virtual-service.yaml -n project1
+oc apply -f manifests/frontend-destination-rule-v1-only.yaml -n project1
+SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
+SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-gateway.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n istio-system -f -
 oc get pods -n project1
 </code></pre>
 </li>
 <li><p>Test with cURL</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
-curl http://<span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl http://$FRONTEND_ISTIO_ROUTE
 
-<span class="hljs-comment"># Sample output - Check for field Host that is backend pod that processed for this request</span>
-Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
+# Sample output - Check for field Host that is backend pod that processed for this request
+Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
 </code></pre>
 </li>
 <li><p>Loop 6 times. Result from backend will be round robin.</p>
 <ul>
 <li>Create bash function</li>
 </ul>
-<pre><code class="lang-bash"><span class="hljs-keyword">function</span> <span class="hljs-function"><span class="hljs-title">loop_frontend</span></span>(){
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk <span class="hljs-string">&apos;{print $2}&apos;</span>)
+<pre><code class="lang-bash">function loop_frontend(){
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
   COUNT=0
-  MAX=<span class="hljs-variable">$1</span>
-  <span class="hljs-keyword">while</span> [ <span class="hljs-variable">$COUNT</span> <span class="hljs-_">-lt</span> <span class="hljs-variable">$MAX</span> ];
-  <span class="hljs-keyword">do</span>
-    curl <span class="hljs-_">-s</span> http://<span class="hljs-variable">$FRONTEND_ISTIO_ROUTE</span> | awk -F<span class="hljs-string">&apos;,&apos;</span> <span class="hljs-string">&apos;{print $5 &quot;=&gt;&quot; $6}&apos;</span>
-    COUNT=$(expr <span class="hljs-variable">$COUNT</span> + 1 )
-  <span class="hljs-keyword">done</span>
+  MAX=$1
+  while [ $COUNT -lt $MAX ];
+  do
+    curl -s http://$FRONTEND_ISTIO_ROUTE | awk -F&apos;,&apos; &apos;{print $5 &quot;=&gt;&quot; $6}&apos;
+    COUNT=$(expr $COUNT + 1 )
+  done
 }
 </code></pre>
 <ul>
@@ -948,13 +933,13 @@ Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Bod
 </ul>
 <pre><code class="lang-bash">loop_frontend 6
 
-<span class="hljs-comment"># Sample output</span>
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
+# Sample output
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </code></pre>
 </li>
 <li><p>By default, Envoy will automatically retry if it get response with code 503</p>
@@ -975,12 +960,12 @@ oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut
 </ul>
 </li>
 <li><p>Verify response from that pod.</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut <span class="hljs-_">-d</span> <span class="hljs-string">&quot; &quot;</span> <span class="hljs-_">-f</span>1) -- curl -sv http://localhost:8080/
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
 
-<span class="hljs-comment"># Sample Output</span>
+# Sample Output
 *   Trying ::1...
-* TCP_NODELAY <span class="hljs-built_in">set</span>
-* Connected to localhost (::1) port 8080 (<span class="hljs-comment">#0)</span>
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
 &gt; GET / HTTP/1.1
 &gt; Host: localhost:8080
 &gt; User-Agent: curl/7.61.1
@@ -992,35 +977,35 @@ oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut
 &lt; Content-Length: 125
 &lt; Content-Type: text/plain;charset=UTF-8
 &lt;
-* Connection <span class="hljs-comment">#0 to host localhost left intact</span>
- Backend version:v1, Response:503, Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg, Status:503, Message: Application readiness is <span class="hljs-built_in">set</span> to <span class="hljs-literal">false</span>
+* Connection #0 to host localhost left intact
+ Backend version:v1, Response:503, Host:backend-v1-f4dbf777f-h7rwg, Status:503, Message: Application readiness is set to false
 </code></pre>
 </li>
 <li><p>Test with cURL again. You will get only status 200</p>
 <pre><code class="lang-bash">loop_frontend 10
 
-<span class="hljs-comment"># Sample Output</span>
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
+# Sample Output
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </code></pre>
 </li>
 <li><p>Set backend pod to return 200</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut <span class="hljs-_">-d</span> <span class="hljs-string">&quot; &quot;</span> <span class="hljs-_">-f</span>1) -- curl <span class="hljs-_">-s</span> http://localhost:8080/ready
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/ready
 </code></pre>
 </li>
 </ul>
 </li>
 <li>Test CB</li>
 <li><p>Update destination rule with circuit breaker</p>
-<pre><code class="lang-bash">oc apply <span class="hljs-_">-f</span> manifests/backend-destination-rule-circuit-breaker.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/backend-destination-rule-circuit-breaker.yaml -n project1
 </code></pre>
 </li>
 <li><p>Review Circuit Breaker configuration in <a href="manifests/backend-destination-rule-circuit-breaker.yaml">deatination rule</a></p>
@@ -1030,20 +1015,20 @@ Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
 <li>Maximum number of pod that can be ejected is 100% (maxEjectionPercent)</li>
 <li>Check this every 15 min (interval)</li>
 </ul>
-<pre><code class="lang-yaml"><span class="hljs-attr">outlierDetection:</span>
-<span class="hljs-attr">      baseEjectionTime:</span> <span class="hljs-number">15</span>m
-<span class="hljs-attr">      consecutiveErrors:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">      interval:</span> <span class="hljs-number">15</span>m
-<span class="hljs-attr">      maxEjectionPercent:</span> <span class="hljs-number">100</span>
+<pre><code class="lang-yaml">outlierDetection:
+      baseEjectionTime: 15m
+      consecutiveErrors: 1
+      interval: 15m
+      maxEjectionPercent: 100
 </code></pre>
 </li>
 <li><p>Set one backend pod to return 504 and verify that pod return 504</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut <span class="hljs-_">-d</span> <span class="hljs-string">&quot; &quot;</span> <span class="hljs-_">-f</span>1) -- curl -sv http://localhost:8080/stop
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/stop
 
-<span class="hljs-comment"># Sample output</span>
+# Sample output
 *   Trying ::1...
-* TCP_NODELAY <span class="hljs-built_in">set</span>
-* Connected to localhost (::1) port 8080 (<span class="hljs-comment">#0)</span>
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
 &gt; GET /stop HTTP/1.1
 &gt; Host: localhost:8080
 &gt; User-Agent: curl/7.61.1
@@ -1056,17 +1041,17 @@ Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
 &lt; Content-Type: text/plain;charset=UTF-8
 &lt;
 { [103 bytes data]
-* Connection <span class="hljs-comment">#0 to host localhost left intact</span>
-Backend version:v1, Response:200, Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg, Status:200, Message: Liveness: <span class="hljs-literal">false</span>
+* Connection #0 to host localhost left intact
+Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Liveness: false
 </code></pre>
 </li>
 <li><p>Verify that backend pod return 504</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut <span class="hljs-_">-d</span> <span class="hljs-string">&quot; &quot;</span> <span class="hljs-_">-f</span>1) -- curl -sv http://localhost:8080/
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
 
-<span class="hljs-comment"># Sample output</span>
+# Sample output
 *   Trying ::1...
-* TCP_NODELAY <span class="hljs-built_in">set</span>
-* Connected to localhost (::1) port 8080 (<span class="hljs-comment">#0)</span>
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
 &gt; GET / HTTP/1.1
 &gt; Host: localhost:8080
 &gt; User-Agent: curl/7.61.1
@@ -1079,36 +1064,36 @@ Backend version:v1, Response:200, Host:backend-v1<span class="hljs-_">-f</span>4
 &lt; Content-Type: text/plain;charset=UTF-8
 &lt;
 { [124 bytes data]
-* Connection <span class="hljs-comment">#0 to host localhost left intact</span>
-Backend version:v1, Response:504, Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg, Status:504, Message: Application liveness is <span class="hljs-built_in">set</span> to <span class="hljs-literal">false</span>
+* Connection #0 to host localhost left intact
+Backend version:v1, Response:504, Host:backend-v1-f4dbf777f-h7rwg, Status:504, Message: Application liveness is set to false
 </code></pre>
 </li>
 <li><p>Test again with cURL. You will get 504 just one times.</p>
 <pre><code class="lang-bash">loop_frontend 15
 
-<span class="hljs-comment"># Sample output</span>
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-h7rwg=&gt; Status:504
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
+# Sample output
+Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:504
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </code></pre>
 </li>
 <li><p>Check Kiali Console. Remark that there is lightning icon at backend service. This is represent for circuit breaker.</p>
 <p><img src="images/kiali-graph-cb.gif" alt=""></p>
 </li>
 <li><p>Set backend pod to normal status</p>
-<pre><code class="lang-bash">oc <span class="hljs-built_in">exec</span> -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut <span class="hljs-_">-d</span> <span class="hljs-string">&quot; &quot;</span> <span class="hljs-_">-f</span>1) -- curl -sv http://localhost:8080/start
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/start
 </code></pre>
 <h2 id="secure-with-mtls">Secure with mTLS</h2>
 <p>Check following Git for setup mTLS between service and ingress service</p>
@@ -1119,22 +1104,6 @@ Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -1158,7 +1127,7 @@ Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"next":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"openshift-service-mesh.md","mtime":"2021-03-30T09:49:57.527Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"next":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-03-30T10:11:48.084Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -1166,22 +1135,6 @@ Host:backend-v1<span class="hljs-_">-f</span>4dbf777f-tgssd=&gt; Status:200
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

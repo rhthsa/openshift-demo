@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift Platform Monitoring and Alert · GitBook</title>
+        <title>OpenShift Platform Monitoring and Alert · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="cluster-monitoring-and-alerts">Cluster Monitoring and Alerts</h1>
@@ -417,51 +402,7 @@ In addition to the components of the stack itself, the default monitoring stack 
 </li>
 <li><p>If the ConfigMap object does not exist:</p>
 <p>Create and apply the following YAML manifest. In this example the file is called cluster-monitoring-config.yaml:</p>
-<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc apply -f -
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> ConfigMap
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> cluster-monitoring-config
-<span class="hljs-attr">  namespace:</span> openshift-monitoring
-<span class="hljs-attr">data:</span>
-  config.yaml: <span class="hljs-string">|
-</span><span class="hljs-attr">    enableUserWorkload:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">    prometheusK8s:</span> 
-<span class="hljs-attr">      retention:</span> <span class="hljs-number">7</span>d
-<span class="hljs-attr">      externalLabels:</span>
-<span class="hljs-attr">        region:</span> sea
-<span class="hljs-attr">        environment:</span> dev
-<span class="hljs-attr">      volumeClaimTemplate:</span>
-<span class="hljs-attr">        spec:</span>
-<span class="hljs-attr">          storageClassName:</span> thin
-<span class="hljs-attr">          volumeMode:</span> Filesystem
-<span class="hljs-attr">          resources:</span>
-<span class="hljs-attr">            requests:</span>
-<span class="hljs-attr">              storage:</span> <span class="hljs-number">40</span>Gi
-<span class="hljs-attr">    alertmanagerMain:</span>
-<span class="hljs-attr">      volumeClaimTemplate:</span>
-<span class="hljs-attr">        spec:</span>
-<span class="hljs-attr">          storageClassName:</span> thin
-<span class="hljs-attr">          resources:</span>
-<span class="hljs-attr">            requests:</span>
-<span class="hljs-attr">              storage:</span> <span class="hljs-number">5</span>Gi
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> ConfigMap
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> user-workload-monitoring-config
-<span class="hljs-attr">  namespace:</span> openshift-user-workload-monitoring
-<span class="hljs-attr">data:</span>
-  config.yaml: <span class="hljs-string">|
-</span><span class="hljs-attr">    prometheus:</span> 
-<span class="hljs-attr">        retention:</span> <span class="hljs-number">12</span>h 
-<span class="hljs-attr">        resources:</span>
-<span class="hljs-attr">          requests:</span>
-<span class="hljs-attr">            cpu:</span> <span class="hljs-number">200</span>m 
-<span class="hljs-attr">            memory:</span> <span class="hljs-number">1</span>Gi
-EOF
-</code></pre>
+<pre><code class="lang-yaml">cat &lt;</code></pre>
 </li>
 </ol>
 <h2 id="managing-alerts">Managing alerts</h2>
@@ -515,7 +456,7 @@ EOF
 <ol>
 <li><p>Deploy the maildev in default namespace and expose webmail</p>
 <pre><code class="lang-bash">oc project default
-oc new-app --docker-image=maildev/maildev --name=<span class="hljs-string">&apos;maildev&apos;</span>
+oc new-app --docker-image=maildev/maildev --name=&apos;maildev&apos;
 oc expose service/maildev --port=80
 </code></pre>
 <p>From this deployment you can reach smtp via <code>maildev.default.svc.cluster.local:25</code> and webmail from route host using command <code>oc get route</code></p>
@@ -535,96 +476,89 @@ oc -n default get svc
 <li><p>In the Administrator perspective, navigate to Administration &#x2192; Cluster Settings &#x2192; Global Configuration &#x2192; Alertmanager.</p>
 </li>
 <li><p>You can apply Alert Receivers configuration example that includes receivers for smtp to webmail, slack and line-notification-gateway.</p>
-<pre><code class="lang-yaml"> cat &lt;&lt;EOF | oc apply -f -
-<span class="hljs-attr"> kind:</span> Secret
-<span class="hljs-attr"> apiVersion:</span> v1
-<span class="hljs-attr"> metadata:</span>
-<span class="hljs-attr">   name:</span> alertmanager-main
-<span class="hljs-attr">   namespace:</span> openshift-monitoring
-<span class="hljs-attr"> data:</span>
-   alertmanager.yaml: &gt;-
+<pre><code class="lang-yaml"> cat &lt;<eof |="" oc="" apply="" -f="" -="" kind:="" secret="" apiversion:="" v1="" metadata:="" name:="" alertmanager-main="" namespace:="" openshift-monitoring="" data:="" alertmanager.yaml:="">-
      Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0KICBzbXRwX2Zyb206IG9jcEBleGFtcGxlLmNvbQogIHNtdHBfc21hcnRob3N0OiAnbWFpbGRldi5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsOjI1JwogIHNtdHBfaGVsbG86IGxvY2FsaG9zdAogIHNtdHBfcmVxdWlyZV90bHM6IGZhbHNlCiAgc2xhY2tfYXBpX3VybDogPi0KICAgIGh0dHBzOi8vaG9va3Muc2xhY2suY29tL3NlcnZpY2VzL1QwMUJBNVoxUUczL0IwMUpEMEZTSzVXL01kWGJpTlpxRjVVTlZ1MWtReWE2dEFlRgppbmhpYml0X3J1bGVzOgogIC0gZXF1YWw6CiAgICAgIC0gbmFtZXNwYWNlCiAgICAgIC0gYWxlcnRuYW1lCiAgICBzb3VyY2VfbWF0Y2g6CiAgICAgIHNldmVyaXR5OiBjcml0aWNhbAogICAgdGFyZ2V0X21hdGNoX3JlOgogICAgICBzZXZlcml0eTogd2FybmluZ3xpbmZvCiAgLSBlcXVhbDoKICAgICAgLSBuYW1lc3BhY2UKICAgICAgLSBhbGVydG5hbWUKICAgIHNvdXJjZV9tYXRjaDoKICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIHRhcmdldF9tYXRjaF9yZToKICAgICAgc2V2ZXJpdHk6IGluZm8KcmVjZWl2ZXJzOgogIC0gbmFtZTogQ3JpdGljYWwKICAgIGVtYWlsX2NvbmZpZ3M6CiAgICAgIC0gdG86IGFkbWluQGV4YW1wbGUuY29tCiAgLSBuYW1lOiBEZWZhdWx0CiAgICBlbWFpbF9jb25maWdzOgogICAgICAtIHRvOiBhZG1pbkBleGFtcGxlLmNvbQogIC0gbmFtZTogbGluZS13YXJuaW5nCiAgICB3ZWJob29rX2NvbmZpZ3M6CiAgICAgIC0gdXJsOiA+LQogICAgICAgICAgaHR0cDovL2xpbmUtbm90aWZ5LWdhdGV3YXkuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbDoxODA4MS92MS9hbGVydG1hbmFnZXIvcGF5bG9hZD9ub3RpZnlfdG9rZW49aG1OODlpUU1qTTNubE1IVkRaNnc3Y0t1S0RVaWZwd21tdzhvNGVwMTNTQwogIC0gbmFtZTogbGluZS13YXRjaGRvZwogICAgd2ViaG9va19jb25maWdzOgogICAgICAtIHVybDogPi0KICAgICAgICAgIGh0dHA6Ly9saW5lLW5vdGlmeS1nYXRld2F5LmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWw6MTgwODEvdjEvYWxlcnRtYW5hZ2VyL3BheWxvYWQ/bm90aWZ5X3Rva2VuPWhtTjg5aVFNak0zbmxNSFZEWjZ3N2NLdUtEVWlmcHdtbXc4bzRlcDEzU0MKICAtIG5hbWU6IHNsYWNrCiAgICBzbGFja19jb25maWdzOgogICAgICAtIGNoYW5uZWw6ICcjYWxlcnQnCiAgLSBuYW1lOiBzbGFjay13YXJuaW5nCiAgICBzbGFja19jb25maWdzOgogICAgICAtIGNoYW5uZWw6ICcjYWxlcnQnCiAgLSBuYW1lOiBzbGFjay13YXRjaGRvZwogICAgc2xhY2tfY29uZmlnczoKICAgICAgLSBjaGFubmVsOiAnI2FsZXJ0JwogIC0gbmFtZTogV2FybmluZwogICAgZW1haWxfY29uZmlnczoKICAgICAgLSB0bzogd2FybmluZ0BleGFtcGxlLmNvbQogIC0gbmFtZTogV2F0Y2hkb2cKICAgIGVtYWlsX2NvbmZpZ3M6CiAgICAgIC0gdG86IHdhdGNoZG9nQGV4YW1wbGUuY29tCnJvdXRlOgogIGdyb3VwX2J5OgogICAgLSBuYW1lc3BhY2UKICBncm91cF9pbnRlcnZhbDogNW0KICBncm91cF93YWl0OiAzMHMKICByZWNlaXZlcjogRGVmYXVsdAogIHJlcGVhdF9pbnRlcnZhbDogMWgKICByb3V0ZXM6CiAgICAtIHJlY2VpdmVyOiBXYXRjaGRvZwogICAgICBtYXRjaDoKICAgICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICAtIHJlY2VpdmVyOiBDcml0aWNhbAogICAgICBtYXRjaDoKICAgICAgICBzZXZlcml0eTogY3JpdGljYWwKICAgIC0gcmVjZWl2ZXI6IFdhcm5pbmcKICAgICAgbWF0Y2g6CiAgICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIC0gcmVjZWl2ZXI6IHNsYWNrCiAgICAgIG1hdGNoOgogICAgICAgIHNldmVyaXR5OiBpbmZvCiAgICAtIHJlY2VpdmVyOiBzbGFjay13YXRjaGRvZwogICAgICBtYXRjaDoKICAgICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICAtIHJlY2VpdmVyOiBzbGFjay13YXJuaW5nCiAgICAgIG1hdGNoOgogICAgICAgIHNldmVyaXR5OiB3YXJuaW5nCiAgICAtIHJlY2VpdmVyOiBsaW5lLXdhcm5pbmcKICAgICAgbWF0Y2g6CiAgICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIC0gcmVjZWl2ZXI6IGxpbmUtd2F0Y2hkb2cKICAgICAgbWF0Y2g6CiAgICAgICAgYWxlcnRuYW1lOiBXYXRjaGRvZwo=
-<span class="hljs-attr"> type:</span> Opaque
+ type: Opaque
  EOF
-</code></pre>
+</eof></code></pre>
 <p> Configuration content in plain-text</p>
-<pre><code class="lang-yaml"><span class="hljs-attr"> global:</span>
-<span class="hljs-attr">   resolve_timeout:</span> <span class="hljs-number">5</span>m
-<span class="hljs-attr">   smtp_from:</span> ocp@example.com
-<span class="hljs-attr">   smtp_smarthost:</span> <span class="hljs-string">&apos;maildev.default.svc.cluster.local:25&apos;</span>
-<span class="hljs-attr">   smtp_hello:</span> localhost
-<span class="hljs-attr">   smtp_require_tls:</span> <span class="hljs-literal">false</span>
-<span class="hljs-attr">   slack_api_url:</span> &gt;-
-<span class="hljs-attr">     https:</span>//hooks.slack.com/services/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
-<span class="hljs-attr"> inhibit_rules:</span>
-<span class="hljs-attr">   - equal:</span>
-<span class="hljs-bullet">       -</span> namespace
-<span class="hljs-bullet">       -</span> alertname
-<span class="hljs-attr">     source_match:</span>
-<span class="hljs-attr">       severity:</span> critical
-<span class="hljs-attr">     target_match_re:</span>
-<span class="hljs-attr">       severity:</span> warning|info
-<span class="hljs-attr">   - equal:</span>
-<span class="hljs-bullet">       -</span> namespace
-<span class="hljs-bullet">       -</span> alertname
-<span class="hljs-attr">     source_match:</span>
-<span class="hljs-attr">       severity:</span> warning
-<span class="hljs-attr">     target_match_re:</span>
-<span class="hljs-attr">       severity:</span> info
-<span class="hljs-attr"> receivers:</span>
-<span class="hljs-attr">   - name:</span> Critical
-<span class="hljs-attr">     email_configs:</span>
-<span class="hljs-attr">       - to:</span> admin@example.com
-<span class="hljs-attr">   - name:</span> Default
-<span class="hljs-attr">     email_configs:</span>
-<span class="hljs-attr">       - to:</span> admin@example.com
-<span class="hljs-attr">   - name:</span> slack
-<span class="hljs-attr">     slack_configs:</span>
-<span class="hljs-attr">       - channel:</span> <span class="hljs-string">&apos;#alert&apos;</span>
-<span class="hljs-attr">   - name:</span> slack-warning
-<span class="hljs-attr">     slack_configs:</span>
-<span class="hljs-attr">       - channel:</span> <span class="hljs-string">&apos;#alert&apos;</span>
-<span class="hljs-attr">   - name:</span> slack-watchdog
-<span class="hljs-attr">     slack_configs:</span>
-<span class="hljs-attr">       - channel:</span> <span class="hljs-string">&apos;#alert&apos;</span>
-<span class="hljs-attr">   - name:</span> Warning
-<span class="hljs-attr">     email_configs:</span>
-<span class="hljs-attr">       - to:</span> warning@example.com
-<span class="hljs-attr">   - name:</span> Watchdog
-<span class="hljs-attr">     email_configs:</span>
-<span class="hljs-attr">       - to:</span> watchdog@example.com
-<span class="hljs-attr"> route:</span>
-<span class="hljs-attr">   group_by:</span>
-<span class="hljs-bullet">     -</span> namespace
-<span class="hljs-attr">   group_interval:</span> <span class="hljs-number">5</span>m
-<span class="hljs-attr">   group_wait:</span> <span class="hljs-number">30</span>s
-<span class="hljs-attr">   receiver:</span> Default
-<span class="hljs-attr">   repeat_interval:</span> <span class="hljs-number">1</span>h
-<span class="hljs-attr">   routes:</span>
-<span class="hljs-attr">     - receiver:</span> Watchdog
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         alertname:</span> Watchdog
-<span class="hljs-attr">     - receiver:</span> Critical
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         severity:</span> critical
-<span class="hljs-attr">     - receiver:</span> Warning
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         severity:</span> warning
-<span class="hljs-attr">     - receiver:</span> slack
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         severity:</span> info
-<span class="hljs-attr">     - receiver:</span> slack-watchdog
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         alertname:</span> Watchdog
-<span class="hljs-attr">     - receiver:</span> slack-warning
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         severity:</span> warning
-<span class="hljs-attr">     - receiver:</span> line-warning
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         severity:</span> warning
-<span class="hljs-attr">     - receiver:</span> line-watchdog
-<span class="hljs-attr">       match:</span>
-<span class="hljs-attr">         alertname:</span> Watchdog
+<pre><code class="lang-yaml"> global:
+   resolve_timeout: 5m
+   smtp_from: ocp@example.com
+   smtp_smarthost: &apos;maildev.default.svc.cluster.local:25&apos;
+   smtp_hello: localhost
+   smtp_require_tls: false
+   slack_api_url: &gt;-
+     https://hooks.slack.com/services/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
+ inhibit_rules:
+   - equal:
+       - namespace
+       - alertname
+     source_match:
+       severity: critical
+     target_match_re:
+       severity: warning|info
+   - equal:
+       - namespace
+       - alertname
+     source_match:
+       severity: warning
+     target_match_re:
+       severity: info
+ receivers:
+   - name: Critical
+     email_configs:
+       - to: admin@example.com
+   - name: Default
+     email_configs:
+       - to: admin@example.com
+   - name: slack
+     slack_configs:
+       - channel: &apos;#alert&apos;
+   - name: slack-warning
+     slack_configs:
+       - channel: &apos;#alert&apos;
+   - name: slack-watchdog
+     slack_configs:
+       - channel: &apos;#alert&apos;
+   - name: Warning
+     email_configs:
+       - to: warning@example.com
+   - name: Watchdog
+     email_configs:
+       - to: watchdog@example.com
+ route:
+   group_by:
+     - namespace
+   group_interval: 5m
+   group_wait: 30s
+   receiver: Default
+   repeat_interval: 1h
+   routes:
+     - receiver: Watchdog
+       match:
+         alertname: Watchdog
+     - receiver: Critical
+       match:
+         severity: critical
+     - receiver: Warning
+       match:
+         severity: warning
+     - receiver: slack
+       match:
+         severity: info
+     - receiver: slack-watchdog
+       match:
+         alertname: Watchdog
+     - receiver: slack-warning
+       match:
+         severity: warning
+     - receiver: line-warning
+       match:
+         severity: warning
+     - receiver: line-watchdog
+       match:
+         alertname: Watchdog
 </code></pre>
 </li>
 </ol>
@@ -635,63 +569,63 @@ oc -n default get svc
 <li><p>Deploy a sample httpd pod with persistent volume 1G size mount to <code>/httpd-pvc</code> path </p>
 <pre><code class="lang-yaml">oc new-project user1
 cat &lt;&lt; EOF | oc create -f -
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">kind:</span> Deployment
-<span class="hljs-attr">apiVersion:</span> apps/v1
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">  namespace:</span> user1
-<span class="hljs-attr">  labels:</span>
-<span class="hljs-attr">    app:</span> httpd<span class="hljs-bullet">-24</span>
-    app.kubernetes.io/component: httpd<span class="hljs-bullet">-24</span>
-    app.kubernetes.io/instance: httpd<span class="hljs-bullet">-24</span>
-    app.kubernetes.io/part-of: httpd<span class="hljs-bullet">-24</span>-app
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: httpd-24
+  namespace: user1
+  labels:
+    app: httpd-24
+    app.kubernetes.io/component: httpd-24
+    app.kubernetes.io/instance: httpd-24
+    app.kubernetes.io/part-of: httpd-24-app
     app.openshift.io/runtime-namespace: user1
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  replicas:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">  selector:</span>
-<span class="hljs-attr">    matchLabels:</span>
-<span class="hljs-attr">      app:</span> httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">  template:</span>
-<span class="hljs-attr">    metadata:</span>
-<span class="hljs-attr">      labels:</span>
-<span class="hljs-attr">        app:</span> httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">        deploymentconfig:</span> httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">    spec:</span>
-<span class="hljs-attr">      volumes:</span>
-<span class="hljs-attr">        - name:</span> httpd-pvc
-<span class="hljs-attr">          persistentVolumeClaim:</span>
-<span class="hljs-attr">            claimName:</span> httpd-pvc
-<span class="hljs-attr">      containers:</span>
-<span class="hljs-attr">        - name:</span> httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">          image:</span> registry.redhat.io/rhel8/httpd<span class="hljs-bullet">-24</span>
-<span class="hljs-attr">          ports:</span>
-<span class="hljs-attr">            - containerPort:</span> <span class="hljs-number">8080</span>
-<span class="hljs-attr">              protocol:</span> TCP
-<span class="hljs-attr">            - containerPort:</span> <span class="hljs-number">8443</span>
-<span class="hljs-attr">              protocol:</span> TCP
-<span class="hljs-attr">          volumeMounts:</span>
-<span class="hljs-attr">            - name:</span> httpd-pvc
-<span class="hljs-attr">              mountPath:</span> /httpd-pvc
-<span class="hljs-meta">---</span>
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> PersistentVolumeClaim
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> httpd-pvc
-<span class="hljs-attr">  namespace:</span> user1
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  accessModes:</span>
-<span class="hljs-bullet">    -</span> ReadWriteOnce
-<span class="hljs-attr">  resources:</span>
-<span class="hljs-attr">    requests:</span>
-<span class="hljs-attr">      storage:</span> <span class="hljs-number">1</span>Gi
-<span class="hljs-attr">  storageClassName:</span> thin
-<span class="hljs-attr">  volumeMode:</span> Filesystem
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpd-24
+  template:
+    metadata:
+      labels:
+        app: httpd-24
+        deploymentconfig: httpd-24
+    spec:
+      volumes:
+        - name: httpd-pvc
+          persistentVolumeClaim:
+            claimName: httpd-pvc
+      containers:
+        - name: httpd-24
+          image: registry.redhat.io/rhel8/httpd-24
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+          volumeMounts:
+            - name: httpd-pvc
+              mountPath: /httpd-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: httpd-pvc
+  namespace: user1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: thin
+  volumeMode: Filesystem
 EOF
 </code></pre>
 </li>
 <li><p>rsh to httpd pod to check PV size and use <code>fallocate</code> command to make PV high utilization (&gt;95%)</p>
-<pre><code class="lang-bash">oc rsh $(oc -n user1 get pod | grep httpd | cut <span class="hljs-_">-d</span><span class="hljs-string">&apos; &apos;</span> <span class="hljs-_">-f</span>1)
+<pre><code class="lang-bash">oc rsh $(oc -n user1 get pod | grep httpd | cut -d&apos; &apos; -f1)
 </code></pre>
 <p>check volume utilization</p>
 <pre><code class="lang-bash">df -h
@@ -711,8 +645,8 @@ tmpfs                                 3.9G     0  3.9G   0% /proc/scsi
 tmpfs                                 3.9G     0  3.9G   0% /sys/firmware
 </code></pre>
 <p>use <code>fallocate</code> to create a file with 950M size</p>
-<pre><code class="lang-bash"><span class="hljs-built_in">cd</span> /httpd-pvc/
-fallocate <span class="hljs-_">-l</span> 950M file.tmp
+<pre><code class="lang-bash">cd /httpd-pvc/
+fallocate -l 950M file.tmp
 </code></pre>
 <p>re-check <code>/httpd-pvc</code> again, now it is Use 100%</p>
 <pre><code class="lang-bash">df -h
@@ -739,22 +673,22 @@ tmpfs                                 3.9G     0  3.9G   0% /sys/firmware
 </li>
 <li><p>Create Prometheus Rule to alert when PV utilization is &gt;80% in namespace <code>user1</code></p>
 <pre><code class="lang-yaml">cat &lt;&lt; EOF | oc create -f -
-<span class="hljs-attr">apiVersion:</span> monitoring.coreos.com/v1
-<span class="hljs-attr">kind:</span> PrometheusRule
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> pvfull-alert
-<span class="hljs-attr">  namespace:</span> user1
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  groups:</span>
-<span class="hljs-attr">  - name:</span> PersistenVolumeFullAlertRule
-<span class="hljs-attr">    rules:</span>
-<span class="hljs-attr">    - alert:</span> PersistenVolumeFull
-<span class="hljs-attr">      expr:</span> kubelet_volume_stats_available_bytes{job=<span class="hljs-string">&quot;kubelet&quot;</span>,metrics_path=<span class="hljs-string">&quot;/metrics&quot;</span>} / kubelet_volume_stats_capacity_bytes{job=<span class="hljs-string">&quot;kubelet&quot;</span>,metrics_path=<span class="hljs-string">&quot;/metrics&quot;</span>} &lt; <span class="hljs-number">0.20</span>
-<span class="hljs-attr">    for:</span> <span class="hljs-number">5</span>m
-<span class="hljs-attr">    labels:</span>
-<span class="hljs-attr">      secerity:</span> critical
-<span class="hljs-attr">    annotations:</span>
-<span class="hljs-attr">      message:</span> The PersistentVolume claimed is under <span class="hljs-number">20</span> percent free.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pvfull-alert
+  namespace: user1
+spec:
+  groups:
+  - name: PersistenVolumeFullAlertRule
+    rules:
+    - alert: PersistenVolumeFull
+      expr: kubelet_volume_stats_available_bytes{job=&quot;kubelet&quot;,metrics_path=&quot;/metrics&quot;} / kubelet_volume_stats_capacity_bytes{job=&quot;kubelet&quot;,metrics_path=&quot;/metrics&quot;} &lt; 0.20
+    for: 5m
+    labels:
+      secerity: critical
+    annotations:
+      message: The PersistentVolume claimed is under 20 percent free.
 EOF
 </code></pre>
 </li>
@@ -771,22 +705,6 @@ EOF
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -810,7 +728,7 @@ EOF
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"next":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"previous":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"infrastructure-monitoring-alerts.md","mtime":"2021-03-30T09:49:57.523Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"next":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"previous":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-monitoring-alerts.md","mtime":"2021-03-30T10:11:48.084Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -818,22 +736,6 @@ EOF
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

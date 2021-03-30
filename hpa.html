@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Horizontal Pod Autoscaler · GitBook</title>
+        <title>Horizontal Pod Autoscaler · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</h1>
@@ -368,10 +353,10 @@
 <h2 id="cpu">CPU</h2>
 <ul>
 <li>Deploy frontend app (if you still not deploy it yet)<pre><code class="lang-bash">oc new-project project1
-oc apply <span class="hljs-_">-f</span> manifests/frontend.yaml -n project1
+oc apply -f manifests/frontend.yaml -n project1
 oc delete deployment frontend-v2 -n project1
-FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
-curl -k <span class="hljs-variable">$FRONTEND_URL</span>
+FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+curl -k $FRONTEND_URL
 </code></pre>
 </li>
 <li><p>Review <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
@@ -379,32 +364,32 @@ curl -k <span class="hljs-variable">$FRONTEND_URL</span>
 <li>Scale out when average CPU utilization is greater than 80% of CPU limit</li>
 <li>Maximum pods is 3</li>
 <li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> autoscaling/v2beta2
-<span class="hljs-attr">kind:</span> HorizontalPodAutoscaler
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> frontend-v1-cpu
-<span class="hljs-attr">  namespace:</span> project1
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  scaleTargetRef:</span>
-<span class="hljs-attr">    apiVersion:</span> apps/v1
-<span class="hljs-attr">    kind:</span> Deployment
-<span class="hljs-attr">    name:</span> frontend-v1
-<span class="hljs-attr">  minReplicas:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">  maxReplicas:</span> <span class="hljs-number">3</span>
-<span class="hljs-attr">  metrics:</span>
-<span class="hljs-attr">    - type:</span> Resource
-<span class="hljs-attr">      resource:</span>
-<span class="hljs-attr">        name:</span> cpu
-<span class="hljs-attr">        target:</span>
-<span class="hljs-attr">          averageUtilization:</span> <span class="hljs-number">80</span>
-<span class="hljs-attr">          type:</span> Utilization
-<span class="hljs-attr">  behavior:</span>
-<span class="hljs-attr">    scaleDown:</span>
-<span class="hljs-attr">      stabilizationWindowSeconds:</span> <span class="hljs-number">60</span>
-<span class="hljs-attr">      policies:</span>
-<span class="hljs-attr">      - type:</span> Percent
-<span class="hljs-attr">        value:</span> <span class="hljs-number">100</span>
-<span class="hljs-attr">        periodSeconds:</span> <span class="hljs-number">15</span>
+<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-v1-cpu
+  namespace: project1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          averageUtilization: 80
+          type: Utilization
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
 </code></pre>
 </li>
 </ul>
@@ -412,7 +397,7 @@ curl -k <span class="hljs-variable">$FRONTEND_URL</span>
 <li><p>Create <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
 </li>
 </ul>
-<pre><code class="lang-bash">oc create <span class="hljs-_">-f</span> manifests/frontend-v1-cpu-hpa.yaml -n project1
+<pre><code class="lang-bash">oc create -f manifests/frontend-v1-cpu-hpa.yaml -n project1
 </code></pre>
 <ul>
 <li><p>Check HPA status</p>
@@ -420,8 +405,8 @@ curl -k <span class="hljs-variable">$FRONTEND_URL</span>
 </code></pre>
 </li>
 <li><p>Generate load with load test tool (siege)</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
-siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+siege -c 40 $FRONTEND_URL
 </code></pre>
 </li>
 </ul>
@@ -432,11 +417,11 @@ siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
 <li>Ramp up 30 sec</li>
 <li>Ramp down 30 sec</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 oc run load-test -n project1 -i \
---image=loadimpact/k6 --rm=<span class="hljs-literal">true</span> --restart=Never \
+--image=loadimpact/k6 --rm=true --restart=Never \
 --  run -  &lt; manifests/load-test-k6.js \
-<span class="hljs-_">-e</span> URL=<span class="hljs-variable">$FRONTEND_URL</span> <span class="hljs-_">-e</span> THREADS=40 <span class="hljs-_">-e</span> DURATION=3m <span class="hljs-_">-e</span> RAMPUP=30s <span class="hljs-_">-e</span> RAMPDOWN=30s
+-e URL=$FRONTEND_URL -e THREADS=40 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
 </code></pre>
 <p>Remark: k6 will run as pod name <code>load-test</code> for 4 minutes if you want to force stop before 4 minutes just delete <code>load-test</code> pod</p>
 <pre><code class="lang-bash">oc delete pod load-test -n project1
@@ -456,44 +441,44 @@ oc run load-test -n project1 -i \
 <li>Review <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><ul>
 <li>Scale out when average memory utilization is greater than 60M of memory limit</li>
 <li>Maximum pods is 3</li>
-<li>Scale down to min replicas if utilization is lower than threshold for 60 sec<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> autoscaling/v2beta2
-<span class="hljs-attr">kind:</span> HorizontalPodAutoscaler
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> frontend-v1-memory
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  scaleTargetRef:</span>
-<span class="hljs-attr">    apiVersion:</span> apps/v1
-<span class="hljs-attr">    kind:</span> Deployment
-<span class="hljs-attr">    name:</span> frontend-v1
-<span class="hljs-attr">  minReplicas:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">  maxReplicas:</span> <span class="hljs-number">3</span>
-<span class="hljs-attr">  metrics:</span>
-<span class="hljs-attr">  - type:</span> Resource
-<span class="hljs-attr">    resource:</span>
-<span class="hljs-attr">      name:</span> memory
-<span class="hljs-attr">      target:</span>
-<span class="hljs-attr">        type:</span> Utilization
-<span class="hljs-attr">        averageValue:</span> <span class="hljs-number">50</span>Mi
-<span class="hljs-attr">  behavior:</span>
-<span class="hljs-attr">    scaleDown:</span>
-<span class="hljs-attr">      stabilizationWindowSeconds:</span> <span class="hljs-number">60</span>
-<span class="hljs-attr">      policies:</span>
-<span class="hljs-attr">      - type:</span> Percent
-<span class="hljs-attr">        value:</span> <span class="hljs-number">100</span>
-<span class="hljs-attr">        periodSeconds:</span> <span class="hljs-number">15</span>
+<li>Scale down to min replicas if utilization is lower than threshold for 60 sec<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-v1-memory
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageValue: 50Mi
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
 </code></pre>
 </li>
 </ul>
 </li>
-<li>Create <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><pre><code class="lang-bash">oc delete <span class="hljs-_">-f</span> manifests/frontend-v1-cpu-hpa.yaml -n project1
-oc create <span class="hljs-_">-f</span> manifests/frontend-v1-memory-hpa.yaml -n project1
+<li>Create <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><pre><code class="lang-bash">oc delete -f manifests/frontend-v1-cpu-hpa.yaml -n project1
+oc create -f manifests/frontend-v1-memory-hpa.yaml -n project1
 </code></pre>
 </li>
 <li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-memory -n project1
 </code></pre>
 </li>
-<li>Generate load with load test tool (siege)<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -jsonpath=<span class="hljs-string">&apos;{.spec.host}&apos;</span>)
-siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
+<li>Generate load with load test tool (siege)<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -jsonpath=&apos;{.spec.host}&apos;)
+siege -c 40 $FRONTEND_URL
 </code></pre>
 </li>
 <li><p>Wait for HPA to trigger</p>
@@ -510,22 +495,6 @@ siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -549,7 +518,7 @@ siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.3.3","depth":2,"next":{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.3.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"hpa.md","mtime":"2021-03-30T09:49:57.499Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.3.3","depth":2,"next":{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.3.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2021-03-30T10:11:48.056Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -557,22 +526,6 @@ siege -c 40 <span class="hljs-variable">$FRONTEND_URL</span>
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

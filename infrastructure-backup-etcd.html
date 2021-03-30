@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift state backup with etcd snapshot · GitBook</title>
+        <title>OpenShift state backup with etcd snapshot · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -68,10 +60,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -347,9 +335,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="infrastructure-basic">Infrastructure Basic</h1>
@@ -394,8 +379,8 @@
 <p>Procedure</p>
 <ul>
 <li><p>Start a debug session for a master node:</p>
-<pre><code class="lang-bash">oc debug node/&lt;node_name&gt;
-</code></pre>
+<pre><code class="lang-bash">oc debug node/<node_name>
+</node_name></code></pre>
 </li>
 <li><p>Change your root directory to the host:</p>
 <pre><code class="lang-bash">chroot /host
@@ -404,10 +389,10 @@
 <li><p>If the cluster-wide proxy is enabled, be sure that you have exported the <code>NO_PROXY</code>, <code>HTTP_PROXY</code>, and <code>HTTPS_PROXY</code> environment variables.</p>
 </li>
 <li><p>Run the cluster-backup.sh script and pass in the location to save the backup to.</p>
-<pre><code class="lang-bash">/usr/<span class="hljs-built_in">local</span>/bin/cluster-backup.sh /home/core/assets/backup
+<pre><code class="lang-bash">/usr/local/bin/cluster-backup.sh /home/core/assets/backup
 </code></pre>
 <p>Example script output</p>
-<pre><code class="lang-bash">1bf371f1b5a483927<span class="hljs-built_in">cd</span>01bb593b0e12cff406eb8d7d0acf4ab079c36a0abd3f7
+<pre><code class="lang-bash">1bf371f1b5a483927cd01bb593b0e12cff406eb8d7d0acf4ab079c36a0abd3f7
 etcdctl version: 3.3.18
 API version: 3.3
 found latest kube-apiserver-pod: /etc/kubernetes/static-pod-resources/kube-apiserver-pod-7
@@ -429,26 +414,26 @@ snapshot db and kube resources are successfully saved to /home/core/assets/backu
 <ul>
 <li><p>Set your sftp target, username and password</p>
 <pre><code class="lang-bash">sftp_target=198.18.134.150
-sftp_user=<span class="hljs-string">&quot;root&quot;</span>
-sftp_pass=<span class="hljs-string">&quot;b1ndP^ssword&quot;</span>
+sftp_user=&quot;root&quot;
+sftp_pass=&quot;b1ndP^ssword&quot;
 </code></pre>
 </li>
 <li><p>Create a backup script</p>
 <pre><code class="lang-bash">cat &lt;&lt; EOF &gt; etcd-backup-on-debug-pod.sh
-<span class="hljs-meta">#!/bin/sh
-</span>
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;chroot to /host&quot;</span>
+#!/bin/sh
+
+echo &quot;chroot to /host&quot;
 chroot /host /bin/sh &lt;&lt; EOT
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;start cluster-backup.sh&quot;</span>
-/usr/<span class="hljs-built_in">local</span>/bin/cluster-backup.sh /home/core/assets/backup
+echo &quot;start cluster-backup.sh&quot;
+/usr/local/bin/cluster-backup.sh /home/core/assets/backup
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;sftp backup files to sftp target&quot;</span>
-curl --insecure --user <span class="hljs-variable">$sftp_user</span>:<span class="hljs-variable">$sftp_pass</span> -T /home/core/assets/backup/snapshot*.db sftp://<span class="hljs-variable">$sftp_target</span>/root/backup/
-curl --insecure --user <span class="hljs-variable">$sftp_user</span>:<span class="hljs-variable">$sftp_pass</span> -T /home/core/assets/backup/static*.tar.gz sftp://<span class="hljs-variable">$sftp_target</span>/root/backup/
+echo &quot;sftp backup files to sftp target&quot;
+curl --insecure --user $sftp_user:$sftp_pass -T /home/core/assets/backup/snapshot*.db sftp://$sftp_target/root/backup/
+curl --insecure --user $sftp_user:$sftp_pass -T /home/core/assets/backup/static*.tar.gz sftp://$sftp_target/root/backup/
 
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;remove local backup files&quot;</span>
-rm <span class="hljs-_">-f</span> /home/core/assets/backup/*
+echo &quot;remove local backup files&quot;
+rm -f /home/core/assets/backup/*
 
 EOT
 
@@ -459,20 +444,20 @@ chmod +x etcd-backup-on-debug-pod.sh
 </li>
 <li><p>Create etcd backup namespace</p>
 <pre><code class="lang-yaml">cat &lt;&lt; EOF | oc apply -f -
-<span class="hljs-attr">kind:</span> Project
-<span class="hljs-attr">apiVersion:</span> project.openshift.io/v1
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  annotations:</span>
-    openshift.io/node-selector: <span class="hljs-string">&apos;&apos;</span>
-    openshift.io/sa.scc.mcs: <span class="hljs-string">&apos;s0:c25,c0&apos;</span>
-    openshift.io/sa.scc.supplemental-groups: <span class="hljs-number">1000600000</span>/<span class="hljs-number">10000</span>
-    openshift.io/sa.scc.uid-range: <span class="hljs-number">1000600000</span>/<span class="hljs-number">10000</span>
-<span class="hljs-attr">  name:</span> ocp-etcd-backup
-<span class="hljs-attr">  labels:</span>
-    openshift.io/run-level: <span class="hljs-string">&apos;0&apos;</span>
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  finalizers:</span>
-<span class="hljs-bullet">    -</span> kubernetes
+kind: Project
+apiVersion: project.openshift.io/v1
+metadata:
+  annotations:
+    openshift.io/node-selector: &apos;&apos;
+    openshift.io/sa.scc.mcs: &apos;s0:c25,c0&apos;
+    openshift.io/sa.scc.supplemental-groups: 1000600000/10000
+    openshift.io/sa.scc.uid-range: 1000600000/10000
+  name: ocp-etcd-backup
+  labels:
+    openshift.io/run-level: &apos;0&apos;
+spec:
+  finalizers:
+    - kubernetes
 EOF
 
 oc project ocp-etcd-backup
@@ -483,70 +468,70 @@ oc project ocp-etcd-backup
 </code></pre>
 </li>
 <li><p>Pickup the first master node name to run etcd backup</p>
-<pre><code class="lang-bash">master_node=$(oc get node <span class="hljs-_">-l</span> node-role.kubernetes.io/master= -o=jsonpath=<span class="hljs-string">&apos;{.items[0].metadata.name}&apos;</span>)
+<pre><code class="lang-bash">master_node=$(oc get node -l node-role.kubernetes.io/master= -o=jsonpath=&apos;{.items[0].metadata.name}&apos;)
 </code></pre>
 </li>
 <li><p>Create a cronjob to run debug pod and backup script</p>
 <pre><code class="lang-yaml">cat &lt;&lt; EOF | oc apply -f -
-<span class="hljs-attr">apiVersion:</span> batch/v1beta1
-<span class="hljs-attr">kind:</span> CronJob
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> etcd-backup
-<span class="hljs-attr">  namespace:</span> ocp-etcd-backup
-<span class="hljs-attr">spec:</span>
-<span class="hljs-attr">  schedule:</span> <span class="hljs-string">&apos;*/5 * * * *&apos;</span>
-<span class="hljs-attr">  concurrencyPolicy:</span> <span class="hljs-string">&quot;Replace&quot;</span>
-<span class="hljs-attr">  startingDeadlineSeconds:</span> <span class="hljs-number">200</span>
-<span class="hljs-attr">  jobTemplate:</span>
-<span class="hljs-attr">    spec:</span>
-<span class="hljs-attr">      template:</span>
-<span class="hljs-attr">        metadata:</span>
-<span class="hljs-attr">          labels:</span>          
-<span class="hljs-attr">            job:</span> <span class="hljs-string">&quot;etcd-backup&quot;</span>
-<span class="hljs-attr">        spec:</span>
-<span class="hljs-attr">          restartPolicy:</span> Never
-<span class="hljs-attr">          activeDeadlineSeconds:</span> <span class="hljs-number">21600</span>
-<span class="hljs-attr">          serviceAccountName:</span> default
-<span class="hljs-attr">          hostPID:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">          priority:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">          schedulerName:</span> default-scheduler
-<span class="hljs-attr">          hostNetwork:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">          enableServiceLinks:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">          terminationGracePeriodSeconds:</span> <span class="hljs-number">30</span>
-<span class="hljs-attr">          preemptionPolicy:</span> PreemptLowerPriority
-<span class="hljs-attr">          nodeName:</span> $master_node
-<span class="hljs-attr">          securityContext:</span> {}
-<span class="hljs-attr">          containers:</span>
-<span class="hljs-attr">            - resources:</span> {}
-<span class="hljs-attr">              stdin:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">              terminationMessagePath:</span> /dev/termination-log
-<span class="hljs-attr">              stdinOnce:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">              name:</span> ocp-etcd-backup-pod<span class="hljs-bullet">-00</span>
-<span class="hljs-attr">              command:</span>
-<span class="hljs-bullet">                -</span> /scripts/etcd-backup-on-debug-pod.sh
-<span class="hljs-attr">              securityContext:</span>
-<span class="hljs-attr">                privileged:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">                runAsUser:</span> <span class="hljs-number">0</span>
-<span class="hljs-attr">              imagePullPolicy:</span> IfNotPresent
-<span class="hljs-attr">              volumeMounts:</span>
-<span class="hljs-attr">                - name:</span> host
-<span class="hljs-attr">                  mountPath:</span> /host
-<span class="hljs-attr">                - name:</span> etcd-backup-script
-<span class="hljs-attr">                  mountPath:</span> /scripts
-<span class="hljs-attr">              terminationMessagePolicy:</span> File
-<span class="hljs-attr">              tty:</span> <span class="hljs-literal">true</span>
-<span class="hljs-attr">              image:</span> &gt;-
-                quay.io/openshift-release-dev/ocp-v4<span class="hljs-number">.0</span>-art-dev@sha256:<span class="hljs-number">091</span>cd1158444af8382312b71150d26e6550c5d52023b993fec6afd2253d2e425
-<span class="hljs-attr">          serviceAccount:</span> default
-<span class="hljs-attr">          volumes:</span>
-<span class="hljs-attr">            - name:</span> host
-<span class="hljs-attr">              hostPath:</span>
-<span class="hljs-attr">                path:</span> /
-<span class="hljs-attr">                type:</span> Directory
-<span class="hljs-attr">            - name:</span> etcd-backup-script
-<span class="hljs-attr">              configMap:</span>
-<span class="hljs-attr">                name:</span> etcd-backup-on-debug-pod
-<span class="hljs-attr">                defaultMode:</span> <span class="hljs-number">0744</span>
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: ocp-etcd-backup
+spec:
+  schedule: &apos;*/5 * * * *&apos;
+  concurrencyPolicy: &quot;Replace&quot;
+  startingDeadlineSeconds: 200
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:          
+            job: &quot;etcd-backup&quot;
+        spec:
+          restartPolicy: Never
+          activeDeadlineSeconds: 21600
+          serviceAccountName: default
+          hostPID: true
+          priority: 0
+          schedulerName: default-scheduler
+          hostNetwork: true
+          enableServiceLinks: true
+          terminationGracePeriodSeconds: 30
+          preemptionPolicy: PreemptLowerPriority
+          nodeName: $master_node
+          securityContext: {}
+          containers:
+            - resources: {}
+              stdin: true
+              terminationMessagePath: /dev/termination-log
+              stdinOnce: true
+              name: ocp-etcd-backup-pod-00
+              command:
+                - /scripts/etcd-backup-on-debug-pod.sh
+              securityContext:
+                privileged: true
+                runAsUser: 0
+              imagePullPolicy: IfNotPresent
+              volumeMounts:
+                - name: host
+                  mountPath: /host
+                - name: etcd-backup-script
+                  mountPath: /scripts
+              terminationMessagePolicy: File
+              tty: true
+              image: &gt;-
+                quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:091cd1158444af8382312b71150d26e6550c5d52023b993fec6afd2253d2e425
+          serviceAccount: default
+          volumes:
+            - name: host
+              hostPath:
+                path: /
+                type: Directory
+            - name: etcd-backup-script
+              configMap:
+                name: etcd-backup-on-debug-pod
+                defaultMode: 0744
 EOF
 </code></pre>
 </li>
@@ -597,24 +582,24 @@ The output of this command should be empty. If it is not empty, wait a few minut
 <li>If the cluster-wide proxy is enabled, be sure that you have exported the NO_PROXY, HTTP_PROXY, and HTTPS_PROXY environment variables.
 You can check whether the proxy is enabled by reviewing the output of oc get proxy cluster -o yaml. The proxy is enabled if the httpProxy, httpsProxy, and noProxy fields have values set.</li>
 <li><p>Run the restore script on the recovery control plane host and pass in the path to the etcd backup directory:</p>
-<pre><code class="lang-bash">sudo -E /usr/<span class="hljs-built_in">local</span>/bin/cluster-restore.sh /home/core/backup
+<pre><code class="lang-bash">sudo -E /usr/local/bin/cluster-restore.sh /home/core/backup
 </code></pre>
 <p>Example script output</p>
 <pre><code class="lang-bash">...stopping kube-scheduler-pod.yaml
 ...stopping kube-controller-manager-pod.yaml
 ...stopping etcd-pod.yaml
 ...stopping kube-apiserver-pod.yaml
-Waiting <span class="hljs-keyword">for</span> container etcd to stop
+Waiting for container etcd to stop
 .complete
-Waiting <span class="hljs-keyword">for</span> container etcdctl to stop
+Waiting for container etcdctl to stop
 .............................complete
-Waiting <span class="hljs-keyword">for</span> container etcd-metrics to stop
+Waiting for container etcd-metrics to stop
 complete
-Waiting <span class="hljs-keyword">for</span> container kube-controller-manager to stop
+Waiting for container kube-controller-manager to stop
 complete
-Waiting <span class="hljs-keyword">for</span> container kube-apiserver to stop
+Waiting for container kube-apiserver to stop
 ..........................................................................................complete
-Waiting <span class="hljs-keyword">for</span> container kube-scheduler to stop
+Waiting for container kube-scheduler to stop
 complete
 Moving etcd data-dir /var/lib/etcd/member to /var/lib/etcd-backup
 starting restore-etcd static pod
@@ -656,14 +641,14 @@ etcd-ip-10-0-143-125.ec2.internal                1/1     Running     1          
 </li>
 <li><p>Force etcd redeployment.
 In a terminal that has access to the cluster as a cluster-admin user, run the following command:</p>
-<pre><code class="lang-bash">oc patch etcd cluster -p=<span class="hljs-string">&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;</span><span class="hljs-string">&quot;<span class="hljs-variable">$( date --rfc-3339=ns )</span>&quot;</span><span class="hljs-string">&apos;&quot;}}&apos;</span> --type=merge
+<pre><code class="lang-bash">oc patch etcd cluster -p=&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;&quot;$( date --rfc-3339=ns )&quot;&apos;&quot;}}&apos; --type=merge
 </code></pre>
 <p>The forceRedeploymentReason value must be unique, which is why a timestamp is appended.
 When the etcd cluster Operator performs a redeployment, the existing nodes are started with new pods similar to the initial bootstrap scale up.</p>
 </li>
 <li><p>Verify all nodes are updated to the latest revision.</p>
 <p>In a terminal that has access to the cluster as a cluster-admin user, run the following command:</p>
-<pre><code class="lang-bash">oc get etcd -o=jsonpath=<span class="hljs-string">&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;</span>
+<pre><code class="lang-bash">oc get etcd -o=jsonpath=&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;
 </code></pre>
 <p>Review the <code>NodeInstallerProgressing</code> status condition for etcd to verify that all nodes are at the latest revision. The output shows <code>AllNodesAtLatestRevision</code> upon successful update:</p>
 <pre><code class="lang-bash">AllNodesAtLatestRevision
@@ -677,10 +662,10 @@ When the etcd cluster Operator performs a redeployment, the existing nodes are s
 <p>In a terminal that has access to the cluster as a cluster-admin user, run the following commands.</p>
 <ul>
 <li><p>Update the kubeapiserver:</p>
-<pre><code class="lang-bash">oc patch kubeapiserver cluster -p=<span class="hljs-string">&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;</span><span class="hljs-string">&quot;<span class="hljs-variable">$( date --rfc-3339=ns )</span>&quot;</span><span class="hljs-string">&apos;&quot;}}&apos;</span> --type=merge
+<pre><code class="lang-bash">oc patch kubeapiserver cluster -p=&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;&quot;$( date --rfc-3339=ns )&quot;&apos;&quot;}}&apos; --type=merge
 </code></pre>
 <p>Verify all nodes are updated to the latest revision.</p>
-<pre><code class="lang-bash">oc get kubeapiserver -o=jsonpath=<span class="hljs-string">&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;</span>
+<pre><code class="lang-bash">oc get kubeapiserver -o=jsonpath=&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;
 </code></pre>
 <p>Review the <code>NodeInstallerProgressing</code> status condition to verify that all nodes are at the latest revision. The output shows <code>AllNodesAtLatestRevision</code> upon successful update:</p>
 <pre><code class="lang-bash">AllNodesAtLatestRevision
@@ -688,10 +673,10 @@ When the etcd cluster Operator performs a redeployment, the existing nodes are s
 </code></pre>
 </li>
 <li><p>Update the kubecontrollermanager:</p>
-<pre><code class="lang-bash">oc patch kubecontrollermanager cluster -p=<span class="hljs-string">&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;</span><span class="hljs-string">&quot;<span class="hljs-variable">$( date --rfc-3339=ns )</span>&quot;</span><span class="hljs-string">&apos;&quot;}}&apos;</span> --type=merge
+<pre><code class="lang-bash">oc patch kubecontrollermanager cluster -p=&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;&quot;$( date --rfc-3339=ns )&quot;&apos;&quot;}}&apos; --type=merge
 </code></pre>
 <p>Verify all nodes are updated to the latest revision.</p>
-<pre><code class="lang-bash">oc get kubecontrollermanager -o=jsonpath=<span class="hljs-string">&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;</span>
+<pre><code class="lang-bash">oc get kubecontrollermanager -o=jsonpath=&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;
 </code></pre>
 <p>Review the <code>NodeInstallerProgressing</code> status condition to verify that all nodes are at the latest revision. The output shows <code>AllNodesAtLatestRevision</code> upon successful update:</p>
 <pre><code class="lang-bash">AllNodesAtLatestRevision
@@ -699,10 +684,10 @@ When the etcd cluster Operator performs a redeployment, the existing nodes are s
 </code></pre>
 </li>
 <li><p>Update the kubescheduler:</p>
-<pre><code class="lang-bash">oc patch kubescheduler cluster -p=<span class="hljs-string">&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;</span><span class="hljs-string">&quot;<span class="hljs-variable">$( date --rfc-3339=ns )</span>&quot;</span><span class="hljs-string">&apos;&quot;}}&apos;</span> --type=merge
+<pre><code class="lang-bash">oc patch kubescheduler cluster -p=&apos;{&quot;spec&quot;: {&quot;forceRedeploymentReason&quot;: &quot;recovery-&apos;&quot;$( date --rfc-3339=ns )&quot;&apos;&quot;}}&apos; --type=merge
 </code></pre>
 <p>Verify all nodes are updated to the latest revision.</p>
-<pre><code class="lang-bash">oc get kubescheduler -o=jsonpath=<span class="hljs-string">&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;</span>
+<pre><code class="lang-bash">oc get kubescheduler -o=jsonpath=&apos;{range .items[0].status.conditions[?(@.type==&quot;NodeInstallerProgressing&quot;)]}{.reason}{&quot;\n&quot;}{.message}{&quot;\n&quot;}&apos;
 </code></pre>
 <p>Review the <code>NodeInstallerProgressing</code> status condition to verify that all nodes are at the latest revision. The output shows <code>AllNodesAtLatestRevision</code> upon successful update:</p>
 <pre><code class="lang-bash">AllNodesAtLatestRevision
@@ -726,22 +711,6 @@ etcd-ip-10-0-173-171.ec2.internal                2/2     Running     0          
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -761,7 +730,7 @@ etcd-ip-10-0-173-171.ec2.internal                2/2     Running     0          
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"next":{"title":"Container Applications","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Deployment with Helm","level":"1.3.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"OpenShift Route","level":"1.3.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.3.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]}]},"previous":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"infrastructure-backup-etcd.md","mtime":"2021-03-30T09:49:57.523Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"next":{"title":"Container Applications","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Deployment with Helm","level":"1.3.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"OpenShift Route","level":"1.3.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.3.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.3.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.3.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]}]},"previous":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-backup-etcd.md","mtime":"2021-03-30T10:11:48.080Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -769,22 +738,6 @@ etcd-ip-10-0-173-171.ec2.internal                2/2     Running     0          
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>

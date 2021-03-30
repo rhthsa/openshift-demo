@@ -4,25 +4,17 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>OpenShift Cluster Logging · GitBook</title>
+        <title>OpenShift Cluster Logging · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
-        
+        <meta name="author" content="Red Hat Thailand SA">
         
         
     
     <link rel="stylesheet" href="gitbook/style.css">
 
     
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
-                
-            
-                
-                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
-                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -70,10 +62,6 @@
     <div class="book-summary">
         
             
-<div id="book-search-input" role="search">
-    <input type="text" placeholder="Type to search" />
-</div>
-
             
                 <nav role="navigation">
                 
@@ -349,9 +337,6 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
-<div id="book-search-results">
-    <div class="search-noresults">
-    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="openshift-infrastructure-nodes">OpenShift Infrastructure Nodes</h1>
@@ -385,29 +370,18 @@ This lab requires that you have completed the infra-nodes lab. The logging stack
 <p>If you want to customize your deployment, make changes to the sample CR as needed. The following describes the configurations you can make when installing your cluster logging instance or modify after installtion. See the Configuring sections for more information on working with each component, including modifications you can make outside of the Cluster Logging Custom Resource.</p>
 <p><strong>Create the openshift-logging namespace</strong>
 OpenShift Logging will be run from within its own namespace openshift-logging. This namespace does not exist by default, and needs to be created before logging may be installed. The namespace is represented in yaml format as:</p>
-<pre><code class="lang-yaml"><span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> Namespace
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> openshift-logging
-<span class="hljs-attr">  annotations:</span>
-    openshift.io/node-selector: <span class="hljs-string">&quot;&quot;</span>
-<span class="hljs-attr">  labels:</span>
-    openshift.io/cluster-logging: <span class="hljs-string">&quot;true&quot;</span>
-    openshift.io/cluster-monitoring: <span class="hljs-string">&quot;true&quot;</span>
+<pre><code class="lang-yaml">apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-logging
+  annotations:
+    openshift.io/node-selector: &quot;&quot;
+  labels:
+    openshift.io/cluster-logging: &quot;true&quot;
+    openshift.io/cluster-monitoring: &quot;true&quot;
 </code></pre>
 <p>To create the namespace, run the following command:</p>
-<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -f -
-<span class="hljs-attr">apiVersion:</span> v1
-<span class="hljs-attr">kind:</span> Namespace
-<span class="hljs-attr">metadata:</span>
-<span class="hljs-attr">  name:</span> openshift-logging
-<span class="hljs-attr">  annotations:</span>
-    openshift.io/node-selector: <span class="hljs-string">&quot;&quot;</span>
-<span class="hljs-attr">  labels:</span>
-    openshift.io/cluster-logging: <span class="hljs-string">&quot;true&quot;</span>
-    openshift.io/cluster-monitoring: <span class="hljs-string">&quot;true&quot;</span>
-EOF
-</code></pre>
+<pre><code class="lang-yaml">cat &lt;</code></pre>
 <p><strong>Install the Elasticsearch and Cluster Logging Operators in the cluster</strong></p>
 <p>In order to install and configure the EFK stack into the cluster, additional operators need to be installed. These can be installed from the Operator Hub from within the cluster via the GUI.</p>
 <p>When using operators in OpenShift, it is important to understand the basics of some of the underlying principles that make up the Operators. CustomResourceDefinion (CRD) and CustomResource (CR) are two Kubernetes objects that we will briefly describe.CRDs are generic pre-defined structures of data. The operator understands how to apply the data that is defined by the CRD. In terms of programming, CRDs can be thought as being similar to a class. CustomResource (CR) is an actual implementations of the CRD, where the structured data has actual values. These values are what the operator will use when configuring it&#x2019;s service. Again, in programming terms, CRs would be similar to an instantiated object of the class.</p>
@@ -452,42 +426,42 @@ During installation an operator might display a Failed status. If the operator t
  If you see a 404 error, don&#x2019;t panic. While the operator installation succeeded, the operator itself has not finished installing and the CustomResourceDefinition may not have been created yet. Wait a few moments and then refresh the page.</li>
 <li>On the Cluster Loggings page, click Create Cluster Logging.</li>
 <li>In the YAML editor, replace the code with the following:
- <strong>Note: you need to change storageclass that available in your environment</strong><pre><code class="lang-yaml"><span class="hljs-attr"> apiVersion:</span> <span class="hljs-string">&quot;logging.openshift.io/v1&quot;</span>
-<span class="hljs-attr"> kind:</span> <span class="hljs-string">&quot;ClusterLogging&quot;</span>
-<span class="hljs-attr"> metadata:</span>
-<span class="hljs-attr">   name:</span> <span class="hljs-string">&quot;instance&quot;</span>
-<span class="hljs-attr">   namespace:</span> <span class="hljs-string">&quot;openshift-logging&quot;</span>
-<span class="hljs-attr"> spec:</span>
-<span class="hljs-attr">   managementState:</span> <span class="hljs-string">&quot;Managed&quot;</span>
-<span class="hljs-attr">   logStore:</span>
-<span class="hljs-attr">     type:</span> <span class="hljs-string">&quot;elasticsearch&quot;</span>
-<span class="hljs-attr">     elasticsearch:</span>
-<span class="hljs-attr">       nodeCount:</span> <span class="hljs-number">3</span>
-<span class="hljs-attr">       storage:</span>
-<span class="hljs-attr">         storageClassName:</span> thin
-<span class="hljs-attr">         size:</span> <span class="hljs-number">100</span>Gi
-<span class="hljs-attr">       redundancyPolicy:</span> <span class="hljs-string">&quot;SingleRedundancy&quot;</span>
-<span class="hljs-attr">       nodeSelector:</span>
-         node-role.kubernetes.io/infra: <span class="hljs-string">&quot;&quot;</span>
-<span class="hljs-attr">       resources:</span>
-<span class="hljs-attr">         request:</span>
-<span class="hljs-attr">           memory:</span> <span class="hljs-number">4</span>G
-<span class="hljs-attr">   visualization:</span>
-<span class="hljs-attr">     type:</span> <span class="hljs-string">&quot;kibana&quot;</span>
-<span class="hljs-attr">     kibana:</span>
-<span class="hljs-attr">       replicas:</span> <span class="hljs-number">1</span>
-<span class="hljs-attr">       nodeSelector:</span>
-         node-role.kubernetes.io/infra: <span class="hljs-string">&quot;&quot;</span>
-<span class="hljs-attr">   curation:</span>
-<span class="hljs-attr">     type:</span> <span class="hljs-string">&quot;curator&quot;</span>
-<span class="hljs-attr">     curator:</span>
-<span class="hljs-attr">       schedule:</span> <span class="hljs-string">&quot;30 3 * * *&quot;</span>
-<span class="hljs-attr">       nodeSelector:</span>
-         node-role.kubernetes.io/infra: <span class="hljs-string">&quot;&quot;</span>
-<span class="hljs-attr">   collection:</span>
-<span class="hljs-attr">     logs:</span>
-<span class="hljs-attr">       type:</span> <span class="hljs-string">&quot;fluentd&quot;</span>
-<span class="hljs-attr">       fluentd:</span> {}
+ <strong>Note: you need to change storageclass that available in your environment</strong><pre><code class="lang-yaml"> apiVersion: &quot;logging.openshift.io/v1&quot;
+ kind: &quot;ClusterLogging&quot;
+ metadata:
+   name: &quot;instance&quot;
+   namespace: &quot;openshift-logging&quot;
+ spec:
+   managementState: &quot;Managed&quot;
+   logStore:
+     type: &quot;elasticsearch&quot;
+     elasticsearch:
+       nodeCount: 3
+       storage:
+         storageClassName: thin
+         size: 100Gi
+       redundancyPolicy: &quot;SingleRedundancy&quot;
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+       resources:
+         request:
+           memory: 4G
+   visualization:
+     type: &quot;kibana&quot;
+     kibana:
+       replicas: 1
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+   curation:
+     type: &quot;curator&quot;
+     curator:
+       schedule: &quot;30 3 * * *&quot;
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+   collection:
+     logs:
+       type: &quot;fluentd&quot;
+       fluentd: {}
 </code></pre>
 </li>
 <li>Then click Create.</li>
@@ -530,11 +504,11 @@ fluentd   9         9         9       9            9           kubernetes.io/os=
 <p>You will see something like:</p>
 <pre><code class="lang-bash">NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS
 MODES   STORAGECLASS                  AGE
-elasticsearch-elasticsearch-cdm-ggzilasv-1   Bound    pvc<span class="hljs-_">-f</span>3239564-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+elasticsearch-elasticsearch-cdm-ggzilasv-1   Bound    pvc-f3239564-389c-11ea-bab2-06ca7918708a   100Gi      RWO
         ocs-storagecluster-ceph-rbd   15m
-elasticsearch-elasticsearch-cdm-ggzilasv-2   Bound    pvc<span class="hljs-_">-f</span>324a252-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+elasticsearch-elasticsearch-cdm-ggzilasv-2   Bound    pvc-f324a252-389c-11ea-bab2-06ca7918708a   100Gi      RWO
         ocs-storagecluster-ceph-rbd   15m
-elasticsearch-elasticsearch-cdm-ggzilasv-3   Bound    pvc<span class="hljs-_">-f</span>326aa7d-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+elasticsearch-elasticsearch-cdm-ggzilasv-3   Bound    pvc-f326aa7d-389c-11ea-bab2-06ca7918708a   100Gi      RWO
         ocs-storagecluster-ceph-rbd   15m
 </code></pre>
 <p><strong>Note</strong>
@@ -554,8 +528,8 @@ As mentioned before, Kibana is the front end and the way that users and admins m
 </code></pre>
 <p>You will see something like:</p>
 <pre><code class="lang-bash">NAME     HOST/PORT                                                           PATH   SERVICES   PORT    TERMINATION          WILDCARD
-kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     &lt;all&gt;   reencrypt/Redirect   None
-</code></pre>
+kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     <all>   reencrypt/Redirect   None
+</all></code></pre>
 <p>There is a special authentication proxy that is configured as part of the EFK installation that results in Kibana requiring OpenShift credentials for access.</p>
 <p>Because you&#x2019;ve already authenticated to the OpenShift Console as a cluster-admin user, you will see an administrative view of what Kibana has to show you (which you authorized by clicking the button).</p>
 <p><strong>Queries with Kibana</strong>
@@ -584,22 +558,6 @@ Once the Kibana web interface is up, we are now able to do queries. Kibana offer
                                 
                                 </section>
                             
-    </div>
-    <div class="search-results">
-        <div class="has-results">
-            
-            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
-            <ul class="search-results-list"></ul>
-            
-        </div>
-        <div class="no-results">
-            
-            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
-            
-        </div>
-    </div>
-</div>
-
                         </div>
                     </div>
                 
@@ -623,7 +581,7 @@ Once the Kibana web interface is up, we are now able to do queries. Kibana offer
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"infrastructure-cluster-logging.md","mtime":"2021-03-30T09:49:57.523Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T09:50:34.448Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-cluster-logging.md","mtime":"2021-03-30T10:11:48.084Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:13:04.828Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -631,22 +589,6 @@ Once the Kibana web interface is up, we are now able to do queries. Kibana offer
         
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-search/search.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
-        
-    
-        
-        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
-        
     
         
         <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
