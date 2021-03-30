@@ -12,5 +12,10 @@
         { "name": "mermaid",
           "version": "git+https://github.com/hypc/gitbook-plugin-mermaid.git"
         }
-    ]
+    ],
+    "pluginsConfig": {
+      "mermaid": {
+         "theme": "forest"
+      }
+    }
 }
