@@ -407,79 +407,7 @@ oc label namespace netproj-a app=iperf3-client
 oc new-project netproj-b
 oc label namespace netproj-b app=iperf3-server
 
-cat &lt;&lt;EOF | oc create -f -
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: iperf3-server-deployment
-  namespace: netproj-b
-  labels:
-    app: iperf3-server
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: iperf3-server
-  template:
-    metadata:
-      labels:
-        app: iperf3-server
-    spec:
-      containers:
-      - name: iperf3-server
-        image: networkstatic/iperf3
-        args: [&apos;-s&apos;]
-        ports:
-          - name: server
-            containerPort: 5201
-            protocol: TCP
-          - name: server-udp
-            containerPort: 5201
-            protocol: UDP
-      terminationGracePeriodSeconds: 0
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: iperf3-server
-  namespace: netproj-b
-spec:
-  selector:
-    app: iperf3-server
-  ports:
-  - protocol: TCP
-    port: 5201
-    targetPort: server
-    name: server
-  - protocol: UDP
-    port: 5201
-    targetPort: server-udp
-    name: server-udp
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: iperf3-clients
-  namespace: netproj-a
-  labels:
-    app: iperf3-client
-spec:
-  selector:
-    matchLabels:
-      app: iperf3-client
-  template:
-    metadata:
-      labels:
-        app: iperf3-client
-    spec:
-      containers:
-      - name: iperf3-client
-        image: networkstatic/iperf3
-        command: [&apos;/bin/sh&apos;, &apos;-c&apos;, &apos;sleep infinity&apos;]
-      terminationGracePeriodSeconds: 0
-EOF
-</code></pre>
+cat &lt;</code></pre>
 <h3 id="examine-the-created-infrastructure">Examine the created infrastructure</h3>
 <p>Two <em>Projects</em> were created for you, <code>netproj-a</code> and <code>netproj-b</code>. Execute the
 following command to see the created resources:</p>
@@ -554,18 +482,7 @@ means that there are no allowed <code>ingress</code> rules defined by this
 <code>NetworkPolicy</code> CR.</p>
 <p>To restrict access to the pod in the <code>netproj-b</code> <em>Project</em> simply apply the
 above NetworkPolicy CR with:</p>
-<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -n netproj-b -f -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: deny-by-default
-spec:
-  podSelector: null
-  ingress:
-    - from:
-        - podSelector: {}
-EOF
-</code></pre>
+<pre><code class="lang-yaml">cat &lt;</code></pre>
 <h3 id="test-connectivity-2-should-fail">Test Connectivity #2 (should fail)</h3>
 <p>Since the &quot;block all by default&quot; <code>NetworkPolicy</code> CR has been applied,
 connectivity between the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the
@@ -590,26 +507,7 @@ with the label <code>app: iperf3-server</code>. The pod in the <code>netproj-b</
 have the label <code>app: iperf3-client</code>.</p>
 <pre><code class="lang-bash"># allow access to TCP port 5201 for pods with the label &quot;run: ose&quot; specifically
 # from projects with the label &quot;name: netproj-a&quot;.
-cat &lt;&lt;EOF | oc create -n netproj-b -f -
-kind: NetworkPolicy
-apiVersion: networking.k8s.io/v1
-metadata:
-  name: allow-tcp-5201-from-netproj-a-namespace
-  namespace: netproj-b
-spec:
-  podSelector:
-    matchLabels:
-      app: iperf3-server
-  ingress:
-  - ports:
-    - protocol: TCP
-      port: 5201
-    from:
-    - namespaceSelector:
-        matchLabels:
-          app: iperf3-client
-EOF
-</code></pre>
+cat &lt;</code></pre>
 <p>Note that the <code>podSelector</code> is where the local project&apos;s pods are matched
 using a specific label selector.</p>
 <p>All <code>NetworkPolicy</code> CRs in a project are combined to create the allowed
@@ -846,7 +744,7 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-30T10:15:18.518Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:16:32.370Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-30T10:49:25.175Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T10:50:46.493Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
