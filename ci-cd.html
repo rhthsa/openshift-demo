@@ -12,9 +12,14 @@
         
         
     
+    
     <link rel="stylesheet" href="gitbook/style.css">
 
     
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -36,6 +41,9 @@
         
     
         
+    
+
+
     
 
         
@@ -396,7 +404,7 @@ oc expose svc/back
 oc secrets link default myharbor --for=pull --namespace=test
 </code></pre><p>For private Container Registry and Self Sign Cert, if use CA go to create imagestream</p>
 <p>get ca.crt with openssl</p>
-<pre><code>openssl s_client -connect ocr.apps.cluster-b3e9.b3e9.example.opentlc.com:443 -showcerts /dev/null|openssl x509 -outform PEM &gt; ca.crt
+<pre><code>openssl s_client -connect ocr.apps.cluster-b3e9.b3e9.example.opentlc.com:443 -showcerts &lt;/dev/null 2&gt;/dev/null|openssl x509 -outform PEM &gt; ca.crt
 </code></pre><p>or
 get cert with firefox (ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/v2 --&gt; select both PEM &amp; PEM chain)</p>
 <p>create configmap and add trust ca to openshift (both PEM &amp; PEM chain</p>
@@ -573,12 +581,12 @@ oc tag test/demoapp:xxx test/demoapp:latest
 </ul>
 <h2 id="openshift-internal-registry">openshift internal registry</h2>
 <ul>
-<li>add permission to user for internal registry<pre><code>oc adm policy add-role-to-user system:registry <intended_user> -n <namespace project="">
-oc adm policy add-role-to-user system:image-builder <intended_user> -n <namespace project="">
+<li>add permission to user for internal registry<pre><code>oc adm policy add-role-to-user system:registry &lt;intended_user&gt; -n &lt;namespace/project&gt;
+oc adm policy add-role-to-user system:image-builder &lt;intended_user&gt; -n &lt;namespace/project&gt;
 ## or for cluster-wide access...
-oc adm policy add-cluster-role-to-user system:registry <intended_user>
-oc adm policy add-cluster-role-to-user system:image-builder <intended_user>
-</intended_user></intended_user></namespace></intended_user></namespace></intended_user></code></pre>example<pre><code>oc login (with user1)
+oc adm policy add-cluster-role-to-user system:registry &lt;intended_user&gt;
+oc adm policy add-cluster-role-to-user system:image-builder &lt;intended_user&gt;
+</code></pre>example<pre><code>oc login (with user1)
 oc new-project user1
 oc login (with user2)
 oc new-project user2
@@ -630,14 +638,19 @@ docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.exampl
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"previous":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd.md","mtime":"2021-03-30T15:31:09.482Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T15:32:29.270Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"CI/CD with Azure DevOps","level":"1.3.7","depth":2,"previous":{"title":"User Workload Monitoring","level":"1.3.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-gb3","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-gb3":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd.md","mtime":"2021-03-30T15:37:58.063Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T15:38:46.169Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
 
         
+    
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
     
         
         <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
@@ -651,6 +664,8 @@ docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.exampl
         <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
         
     
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
 
     </body>
 </html>

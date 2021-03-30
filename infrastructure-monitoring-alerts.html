@@ -12,9 +12,14 @@
         
         
     
+    
     <link rel="stylesheet" href="gitbook/style.css">
 
     
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -36,6 +41,9 @@
         
     
         
+    
+
+
     
 
         
@@ -402,7 +410,51 @@ In addition to the components of the stack itself, the default monitoring stack 
 </li>
 <li><p>If the ConfigMap object does not exist:</p>
 <p>Create and apply the following YAML manifest. In this example the file is called cluster-monitoring-config.yaml:</p>
-<pre><code class="lang-yaml">cat &lt;</code></pre>
+<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc apply -f -
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    prometheusK8s: 
+      retention: 7d
+      externalLabels:
+        region: sea
+        environment: dev
+      volumeClaimTemplate:
+        spec:
+          storageClassName: thin
+          volumeMode: Filesystem
+          resources:
+            requests:
+              storage: 40Gi
+    alertmanagerMain:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: thin
+          resources:
+            requests:
+              storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-workload-monitoring-config
+  namespace: openshift-user-workload-monitoring
+data:
+  config.yaml: |
+    prometheus: 
+        retention: 12h 
+        resources:
+          requests:
+            cpu: 200m 
+            memory: 1Gi
+EOF
+</code></pre>
 </li>
 </ol>
 <h2 id="managing-alerts">Managing alerts</h2>
@@ -476,11 +528,18 @@ oc -n default get svc
 <li><p>In the Administrator perspective, navigate to Administration &#x2192; Cluster Settings &#x2192; Global Configuration &#x2192; Alertmanager.</p>
 </li>
 <li><p>You can apply Alert Receivers configuration example that includes receivers for smtp to webmail, slack and line-notification-gateway.</p>
-<pre><code class="lang-yaml"> cat &lt;<eof |="" oc="" apply="" -f="" -="" kind:="" secret="" apiversion:="" v1="" metadata:="" name:="" alertmanager-main="" namespace:="" openshift-monitoring="" data:="" alertmanager.yaml:="">-
+<pre><code class="lang-yaml"> cat &lt;&lt;EOF | oc apply -f -
+ kind: Secret
+ apiVersion: v1
+ metadata:
+   name: alertmanager-main
+   namespace: openshift-monitoring
+ data:
+   alertmanager.yaml: &gt;-
      Z2xvYmFsOgogIHJlc29sdmVfdGltZW91dDogNW0KICBzbXRwX2Zyb206IG9jcEBleGFtcGxlLmNvbQogIHNtdHBfc21hcnRob3N0OiAnbWFpbGRldi5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsOjI1JwogIHNtdHBfaGVsbG86IGxvY2FsaG9zdAogIHNtdHBfcmVxdWlyZV90bHM6IGZhbHNlCiAgc2xhY2tfYXBpX3VybDogPi0KICAgIGh0dHBzOi8vaG9va3Muc2xhY2suY29tL3NlcnZpY2VzL1QwMUJBNVoxUUczL0IwMUpEMEZTSzVXL01kWGJpTlpxRjVVTlZ1MWtReWE2dEFlRgppbmhpYml0X3J1bGVzOgogIC0gZXF1YWw6CiAgICAgIC0gbmFtZXNwYWNlCiAgICAgIC0gYWxlcnRuYW1lCiAgICBzb3VyY2VfbWF0Y2g6CiAgICAgIHNldmVyaXR5OiBjcml0aWNhbAogICAgdGFyZ2V0X21hdGNoX3JlOgogICAgICBzZXZlcml0eTogd2FybmluZ3xpbmZvCiAgLSBlcXVhbDoKICAgICAgLSBuYW1lc3BhY2UKICAgICAgLSBhbGVydG5hbWUKICAgIHNvdXJjZV9tYXRjaDoKICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIHRhcmdldF9tYXRjaF9yZToKICAgICAgc2V2ZXJpdHk6IGluZm8KcmVjZWl2ZXJzOgogIC0gbmFtZTogQ3JpdGljYWwKICAgIGVtYWlsX2NvbmZpZ3M6CiAgICAgIC0gdG86IGFkbWluQGV4YW1wbGUuY29tCiAgLSBuYW1lOiBEZWZhdWx0CiAgICBlbWFpbF9jb25maWdzOgogICAgICAtIHRvOiBhZG1pbkBleGFtcGxlLmNvbQogIC0gbmFtZTogbGluZS13YXJuaW5nCiAgICB3ZWJob29rX2NvbmZpZ3M6CiAgICAgIC0gdXJsOiA+LQogICAgICAgICAgaHR0cDovL2xpbmUtbm90aWZ5LWdhdGV3YXkuZGVmYXVsdC5zdmMuY2x1c3Rlci5sb2NhbDoxODA4MS92MS9hbGVydG1hbmFnZXIvcGF5bG9hZD9ub3RpZnlfdG9rZW49aG1OODlpUU1qTTNubE1IVkRaNnc3Y0t1S0RVaWZwd21tdzhvNGVwMTNTQwogIC0gbmFtZTogbGluZS13YXRjaGRvZwogICAgd2ViaG9va19jb25maWdzOgogICAgICAtIHVybDogPi0KICAgICAgICAgIGh0dHA6Ly9saW5lLW5vdGlmeS1nYXRld2F5LmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWw6MTgwODEvdjEvYWxlcnRtYW5hZ2VyL3BheWxvYWQ/bm90aWZ5X3Rva2VuPWhtTjg5aVFNak0zbmxNSFZEWjZ3N2NLdUtEVWlmcHdtbXc4bzRlcDEzU0MKICAtIG5hbWU6IHNsYWNrCiAgICBzbGFja19jb25maWdzOgogICAgICAtIGNoYW5uZWw6ICcjYWxlcnQnCiAgLSBuYW1lOiBzbGFjay13YXJuaW5nCiAgICBzbGFja19jb25maWdzOgogICAgICAtIGNoYW5uZWw6ICcjYWxlcnQnCiAgLSBuYW1lOiBzbGFjay13YXRjaGRvZwogICAgc2xhY2tfY29uZmlnczoKICAgICAgLSBjaGFubmVsOiAnI2FsZXJ0JwogIC0gbmFtZTogV2FybmluZwogICAgZW1haWxfY29uZmlnczoKICAgICAgLSB0bzogd2FybmluZ0BleGFtcGxlLmNvbQogIC0gbmFtZTogV2F0Y2hkb2cKICAgIGVtYWlsX2NvbmZpZ3M6CiAgICAgIC0gdG86IHdhdGNoZG9nQGV4YW1wbGUuY29tCnJvdXRlOgogIGdyb3VwX2J5OgogICAgLSBuYW1lc3BhY2UKICBncm91cF9pbnRlcnZhbDogNW0KICBncm91cF93YWl0OiAzMHMKICByZWNlaXZlcjogRGVmYXVsdAogIHJlcGVhdF9pbnRlcnZhbDogMWgKICByb3V0ZXM6CiAgICAtIHJlY2VpdmVyOiBXYXRjaGRvZwogICAgICBtYXRjaDoKICAgICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICAtIHJlY2VpdmVyOiBDcml0aWNhbAogICAgICBtYXRjaDoKICAgICAgICBzZXZlcml0eTogY3JpdGljYWwKICAgIC0gcmVjZWl2ZXI6IFdhcm5pbmcKICAgICAgbWF0Y2g6CiAgICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIC0gcmVjZWl2ZXI6IHNsYWNrCiAgICAgIG1hdGNoOgogICAgICAgIHNldmVyaXR5OiBpbmZvCiAgICAtIHJlY2VpdmVyOiBzbGFjay13YXRjaGRvZwogICAgICBtYXRjaDoKICAgICAgICBhbGVydG5hbWU6IFdhdGNoZG9nCiAgICAtIHJlY2VpdmVyOiBzbGFjay13YXJuaW5nCiAgICAgIG1hdGNoOgogICAgICAgIHNldmVyaXR5OiB3YXJuaW5nCiAgICAtIHJlY2VpdmVyOiBsaW5lLXdhcm5pbmcKICAgICAgbWF0Y2g6CiAgICAgICAgc2V2ZXJpdHk6IHdhcm5pbmcKICAgIC0gcmVjZWl2ZXI6IGxpbmUtd2F0Y2hkb2cKICAgICAgbWF0Y2g6CiAgICAgICAgYWxlcnRuYW1lOiBXYXRjaGRvZwo=
  type: Opaque
  EOF
-</eof></code></pre>
+</code></pre>
 <p> Configuration content in plain-text</p>
 <pre><code class="lang-yaml"> global:
    resolve_timeout: 5m
@@ -728,14 +787,19 @@ EOF
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"next":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"previous":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-newface","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-monitoring-alerts.md","mtime":"2021-03-30T15:31:09.514Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T15:32:29.270Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"next":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"previous":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","mermaid-gb3","copy-code-button"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-gb3":{},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-monitoring-alerts.md","mtime":"2021-03-30T15:37:58.091Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-30T15:38:46.169Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
 
         
+    
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
     
         
         <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
@@ -749,6 +813,8 @@ EOF
         <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
         
     
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
 
     </body>
 </html>
