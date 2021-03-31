@@ -21,7 +21,6 @@
 
 Sample application
 
-
 ![](images/service-mesh-sample-app.png)
 
 
