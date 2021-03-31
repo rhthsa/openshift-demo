@@ -8,6 +8,7 @@
     "-search",
     "-highlight",
     "-livereload",
+    "search-plus"
     "copy-code-button",
     "mermaid-gb3"
   ],
