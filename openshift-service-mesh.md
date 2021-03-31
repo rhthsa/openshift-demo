@@ -21,27 +21,9 @@
 
 Sample application
 
-```mermaid
-graph LR
 
-    client-->router
-    subgraph openshift-ingress
-    router
-    end
-    subgraph control-plane
-    istio-ingress
-    end
-    router-->istio-ingress
-    subgraph data-plane
-    istio-ingress-->frontend
-    frontend-->backend
-    end
-    subgraph "external system"
-    httpbin.org
-    end
-    backend-->httpbin.org
-    
-``` 
+![](images/service-mesh-sample-app.png)
+
 
 ## Setup Control Plane and sidecar
 
@@ -816,3 +798,7 @@ Check following Git for setup mTLS between service and ingress service
 
 [Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
 
+
+<!-- 
+
+-->
