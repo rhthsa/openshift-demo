@@ -49,6 +49,25 @@ graph LR;
     end;
 ```
 
+```mermaid
+flowchart LR;
+  subgraph openshift-ingress;
+  router;
+  end;
+  subgraph control-plane;
+  istio-ingress;
+  end;
+  subgraph data-plane;
+  istio-ingress-->frontend;
+  frontend-->backend;
+  end;
+  subgraph external_system;
+  httpbin-org;
+  end;
+  client-->router;
+  backend-->httpbin-org;
+  router-->istio-ingress;
+```
 ## Setup Control Plane and sidecar
 
 - Install following Operators from OperatorHub
