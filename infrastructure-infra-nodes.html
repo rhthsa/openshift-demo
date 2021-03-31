@@ -12,9 +12,14 @@
         
         
     
+    
     <link rel="stylesheet" href="gitbook/style.css">
 
     
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -36,6 +41,9 @@
         
     
         
+    
+
+
     
 
         
@@ -468,7 +476,61 @@ The template needs to specify how the Machine/Node should be created. You will n
 <p>This sounds complicated, but we have a template that will do the hard work for you:</p>
 <pre><code>export CLUSTERID=$(oc get machineset -n openshift-machine-api | grep worker | cut -d&apos; &apos; -f 1 | sed &apos;s/-worker//g&apos;)
 
-cat &lt;</code></pre><p>oc get machineset -n openshift-machine-api
+cat &lt;&lt;EOF | oc create -f -
+apiVersion: machine.openshift.io/v1beta1
+kind: MachineSet
+metadata:
+  creationTimestamp: null
+  labels:
+    machine.openshift.io/cluster-api-cluster: $CLUSTERID
+  name: $CLUSTERID-infra
+  namespace: openshift-machine-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      machine.openshift.io/cluster-api-cluster: $CLUSTERID
+      machine.openshift.io/cluster-api-machineset: $CLUSTERID-infra
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        machine.openshift.io/cluster-api-cluster: $CLUSTERID
+        machine.openshift.io/cluster-api-machine-role: infra
+        machine.openshift.io/cluster-api-machine-type: infra
+        machine.openshift.io/cluster-api-machineset: $CLUSTERID-infra
+    spec:
+      metadata:
+        creationTimestamp: null
+        labels:
+          node-role.kubernetes.io/infra: &quot;&quot;
+      providerSpec:
+        value:
+          apiVersion: vsphereprovider.openshift.io/v1beta1
+          credentialsSecret:
+            name: vsphere-cloud-credentials
+          diskGiB: 120
+          kind: VSphereMachineProviderSpec
+          memoryMiB: 8192
+          metadata:
+            creationTimestamp: null
+          network:
+            devices:
+            - networkName: VM Network
+          numCPUs: 2
+          numCoresPerSocket: 2
+          snapshot: &quot;&quot;
+          template: $CLUSTERID-rhcos
+          userDataSecret:
+            name: worker-user-data
+          workspace:
+            datacenter: dCloud-DC
+            datastore: NFS_Datastore
+            folder: /dCloud-DC/vm/$CLUSTERID
+            resourcePool: /dCloud-DC/host/dCloud-Cluster/Resources
+            server: vc1.dcloud.cisco.com
+EOF
+</code></pre><p>oc get machineset -n openshift-machine-api
 You should see the new infra set listed with a name similar to the following:</p>
 <pre><code>ocp01-7k4c4-infra    1         1                             13s
 </code></pre><p>We don&#x2019;t yet have any ready or available machines in the set because the instances are still coming up and bootstrapping. You can check oc get machine -n openshift-machine-api to see when the instance finally starts running. Then, you can use oc get node to see when the actual node is joined and ready.</p>
@@ -579,8 +641,8 @@ oc describe mcp worker</p>
   Ready Machine Count:        3
   Unavailable Machine Count:  0
   Updated Machine Count:      3
-Events:                       <none>
-</none></code></pre><p>You can view the contents of a particular machineconfig (in this case, 01-master-kubelet). The trimmed output from the following oc describe command shows that this machineconfig contains both configuration files (cloud.conf and kubelet.conf) and a systemd service (Kubernetes Kubelet):</p>
+Events:                       &lt;none&gt;
+</code></pre><p>You can view the contents of a particular machineconfig (in this case, 01-master-kubelet). The trimmed output from the following oc describe command shows that this machineconfig contains both configuration files (cloud.conf and kubelet.conf) and a systemd service (Kubernetes Kubelet):</p>
 <pre><code>oc describe machineconfigs 01-master-kubelet
 </code></pre><p>result</p>
 <pre><code>Name:         01-master-kubelet
@@ -740,17 +802,22 @@ oc apply -f ./99_workers-chrony-configuration.yaml
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"next":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"previous":{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","copy-code-button","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-infra-nodes.md","mtime":"2021-03-31T04:22:13.990Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T04:23:55.213Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"next":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"previous":{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-infra-nodes.md","mtime":"2021-03-31T04:44:40.360Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T04:45:39.407Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
 
         
+    
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
     
         
         <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
         
     
         
@@ -761,6 +828,8 @@ oc apply -f ./99_workers-chrony-configuration.yaml
         <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
         
     
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
 
     </body>
 </html>

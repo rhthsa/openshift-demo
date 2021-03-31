@@ -12,9 +12,14 @@
         
         
     
+    
     <link rel="stylesheet" href="gitbook/style.css">
 
     
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
             
                 
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
@@ -36,6 +41,9 @@
         
     
         
+    
+
+
     
 
         
@@ -381,7 +389,18 @@ metadata:
     openshift.io/cluster-monitoring: &quot;true&quot;
 </code></pre>
 <p>To create the namespace, run the following command:</p>
-<pre><code class="lang-yaml">cat &lt;</code></pre>
+<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-logging
+  annotations:
+    openshift.io/node-selector: &quot;&quot;
+  labels:
+    openshift.io/cluster-logging: &quot;true&quot;
+    openshift.io/cluster-monitoring: &quot;true&quot;
+EOF
+</code></pre>
 <p><strong>Install the Elasticsearch and Cluster Logging Operators in the cluster</strong></p>
 <p>In order to install and configure the EFK stack into the cluster, additional operators need to be installed. These can be installed from the Operator Hub from within the cluster via the GUI.</p>
 <p>When using operators in OpenShift, it is important to understand the basics of some of the underlying principles that make up the Operators. CustomResourceDefinion (CRD) and CustomResource (CR) are two Kubernetes objects that we will briefly describe.CRDs are generic pre-defined structures of data. The operator understands how to apply the data that is defined by the CRD. In terms of programming, CRDs can be thought as being similar to a class. CustomResource (CR) is an actual implementations of the CRD, where the structured data has actual values. These values are what the operator will use when configuring it&#x2019;s service. Again, in programming terms, CRs would be similar to an instantiated object of the class.</p>
@@ -528,8 +547,8 @@ As mentioned before, Kibana is the front end and the way that users and admins m
 </code></pre>
 <p>You will see something like:</p>
 <pre><code class="lang-bash">NAME     HOST/PORT                                                           PATH   SERVICES   PORT    TERMINATION          WILDCARD
-kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     <all>   reencrypt/Redirect   None
-</all></code></pre>
+kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     &lt;all&gt;   reencrypt/Redirect   None
+</code></pre>
 <p>There is a special authentication proxy that is configured as part of the EFK installation that results in Kibana requiring OpenShift credentials for access.</p>
 <p>Because you&#x2019;ve already authenticated to the OpenShift Console as a cluster-admin user, you will see an administrative view of what Kibana has to show you (which you authorized by clicking the button).</p>
 <p><strong>Queries with Kibana</strong>
@@ -581,17 +600,22 @@ Once the Kibana web interface is up, we are now able to do queries. Kibana offer
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","copy-code-button","mermaid-newface"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"copy-code-button":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-cluster-logging.md","mtime":"2021-03-31T04:22:13.990Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T04:23:55.213Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-cluster-logging.md","mtime":"2021-03-31T04:44:40.360Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T04:45:39.407Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
 
         
+    
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
     
         
         <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
         
     
         
@@ -602,6 +626,8 @@ Once the Kibana web interface is up, we are now able to do queries. Kibana offer
         <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
         
     
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
 
     </body>
 </html>
