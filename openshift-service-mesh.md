@@ -32,20 +32,20 @@ graph TD;
 ```mermaid
 graph LR;
     client-->router;
-    subgraph "openshift-ingress";
-        router;
+    subgraph openshift-ingress;
+    router;
     end;
     router-->istio-ingress;
-    subgraph "control-plane";
-        istio-ingress;
+    subgraph control-plane;
+    istio-ingress;
     end;
-    subgraph "data-plane";
-        istio-ingress-->frontend;
-        frontend-->backend;
+    subgraph data-plane;
+    istio-ingress-->frontend;
+    frontend-->backend;
     end;
     backend-->httpbin-org;
-    subgraph "external system";
-        httpbin-org;
+    subgraph external_system;
+    httpbin-org;
     end;
 ```
 
