@@ -28,7 +28,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install -g gengjiawen/gitbook-cli mermaid-cli
+    - run: npm install -g gengjiawen/gitbook-cli mermaid-cli gibook-plugin-mermaid-newface gitbook-plugin-copy-code-button
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
     - run: git pull origin gh-pages --rebase
