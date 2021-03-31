@@ -9,7 +9,7 @@
     "-highlight",
     "-livereload",
     "copy-code-button",
-    "mermaid-newface"
+    "mermaid-gb3"
   ],
   "pluginsConfig": {
     "mermaid-newface": {
