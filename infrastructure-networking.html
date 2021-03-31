@@ -18,6 +18,10 @@
     
             
                 
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
                 <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
                 
             
@@ -70,6 +74,10 @@
     <div class="book-summary">
         
             
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
             
                 <nav role="navigation">
                 
@@ -345,6 +353,9 @@
                     <div class="page-wrapper" tabindex="-1" role="main">
                         <div class="page-inner">
                             
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="infrastructure-networking">Infrastructure Networking</h1>
@@ -831,6 +842,22 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
                                 
                                 </section>
                             
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
                         </div>
                     </div>
                 
@@ -854,7 +881,7 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-31T06:24:54.805Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T06:25:49.152Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-03-31T07:18:22.969Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-03-31T07:19:10.278Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
@@ -863,6 +890,14 @@ We can dedicate Router/Ingress Controller to be the ingestion point in each netw
     
     <script src="gitbook/gitbook.js"></script>
     <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
     
         
         <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
