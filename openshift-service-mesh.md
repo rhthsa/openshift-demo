@@ -2,49 +2,24 @@
 <!-- TOC -->
 
 - [OpenShift Service Mesh](#openshift-service-mesh)
-    - [Overview](#overview)
-    - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
-    - [Create Istio Gateway](#create-istio-gateway)
-    - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
-    - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
-    - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
-    - [Traffic Analysis](#traffic-analysis)
-    - [Distributed Tracing](#distributed-tracing)
-    - [Traffic Mirroring Dark Launch](#traffic-mirroring-dark-launch)
-    - [Envoy Access Log](#envoy-access-log)
-    - [Circuit Breaker](#circuit-breaker)
-    - [Secure with mTLS](#secure-with-mtls)
+  - [Overview](#overview)
+  - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
+  - [Create Istio Gateway](#create-istio-gateway)
+  - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
+  - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
+  - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
+  - [Traffic Analysis](#traffic-analysis)
+  - [Distributed Tracing](#distributed-tracing)
+  - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
+  - [Envoy Access Log](#envoy-access-log)
+  - [Circuit Breaker](#circuit-breaker)
+  - [Secure with mTLS](#secure-with-mtls)
 
 <!-- /TOC -->
 
 ## Overview
 
 Sample application
-
-```mermaid
-graph LR;
-  A-->B;
-  A-->C;
-  B-->D;
-  C-->D;
-```
-
-```mermaid
-graph LR;
-    subgraph openshift-ingress;
-    router;
-    end;
-    subgraph control-plane;
-    istio-ingress;
-    end;
-    subgraph data-plane;
-    istio-ingress-->frontend;
-    frontend-->backend;
-    end;
-    subgraph external_system;
-    httpbin-org;
-    end;
-```
 
 ```mermaid
 graph LR;
