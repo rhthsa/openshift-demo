@@ -23,19 +23,20 @@ Sample application
 
 ```mermaid
 graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+  A-->B;
+  A-->C;
+  B-->D;
+  C-->D;
 ```
 
 ```mermaid
 graph LR;
-    client-->router;
+  client-->router;
+  backend-->httpbin-org;
+  router-->istio-ingress;
     subgraph openshift-ingress;
     router;
     end;
-    router-->istio-ingress;
     subgraph control-plane;
     istio-ingress;
     end;
@@ -43,7 +44,6 @@ graph LR;
     istio-ingress-->frontend;
     frontend-->backend;
     end;
-    backend-->httpbin-org;
     subgraph external_system;
     httpbin-org;
     end;
