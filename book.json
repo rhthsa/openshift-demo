@@ -9,13 +9,11 @@
     "-highlight",
     "-livereload",
     "copy-code-button",
-    { "name": "mermaid",
-      "version": "git+https://github.com/hypc/gitbook-plugin-mermaid.git"
-    }
+    "mermaid-newface"
   ],
   "pluginsConfig": {
-    "mermaid": {
-      "theme": "forest"
+    "mermaid-newface": {
+      "theme": "neutral"
     }
   }
 }

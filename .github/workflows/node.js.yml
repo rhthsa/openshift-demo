@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [10.x]
+        node-version: [12.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
@@ -28,7 +28,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install -g gitbook-cli
+    - run: npm install -g gengjiawen/gitbook-cli mermaid-cli
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
     - run: git pull origin gh-pages --rebase
