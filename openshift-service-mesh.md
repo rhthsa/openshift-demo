@@ -23,7 +23,6 @@ Sample application
 
 ![](images/service-mesh-sample-app.png)
 
-
 ## Setup Control Plane and sidecar
 
 - Install following Operators from OperatorHub
