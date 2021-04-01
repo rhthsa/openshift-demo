@@ -1,13 +1,23 @@
 # Test by Preecha K. 
-<!-- TOC -->
 
-- [Test by Preecha K.](#test-by-preecha-k)
-  - [CPU](#cpu)
-  - [Memory](#memory)
-  - [Custom Metrics](#custom-metrics)
+## Step 1
+- 1.1
+- 1.2
+- 1.3
 
-<!-- /TOC -->
-## CPU
+## Step 2
+- log on xxx.xx.xxx
+  - module 1
+  - module 2
+  
+- deploy application 
+```bash
+ls -lat
+yum install
+df -k 
+reboot
+```
+
 - Deploy frontend app (if you still not deploy it yet)
   ```bash
   oc new-project project1
