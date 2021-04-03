@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Hibernate cluster for cost saving for OpenShift on Cloud Providers · OpenShift Demo</title>
+        <title>Horizontal Pod Autoscaler · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,6 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="health.html" />
+    
+    
+    <link rel="prev" href="openshift-route.html" />
     
 
     </head>
@@ -213,7 +217,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter active" data-level="1.3.1" data-path="acm-hibernate.html">
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
             
                 <a href="acm-hibernate.html">
             
@@ -271,7 +275,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+        <li class="chapter active" data-level="1.4.3" data-path="hpa.html">
             
                 <a href="hpa.html">
             
@@ -371,7 +375,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Hibernate cluster for cost saving for OpenShift on Cloud Providers</a>
+        <a href="." >Horizontal Pod Autoscaler</a>
     </h1>
 </div>
 
@@ -386,77 +390,158 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</h1>
+                                <h1 id="horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</h1>
 <!-- TOC -->
 <ul>
-<li><a href="#rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</a><ul>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</a></li>
-<li><a href="#steps-1-2-3">Steps 1-2-3</a></li>
+<li><a href="#horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</a><ul>
+<li><a href="#cpu">CPU</a></li>
+<li><a href="#memory">Memory</a></li>
+<li><a href="#custom-metrics">Custom Metrics</a></li>
 </ul>
 </li>
 </ul>
 <!-- /TOC -->
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="cpu">CPU</h2>
 <ul>
-<li>OpenShift 4.6 or 4.7</li>
-<li>Cluster-admin user access</li>
-<li>Red Hat Advanced Cluster Management</li>
-<li>Cloud Provider Credentials</li>
-</ul>
-<h2 id="introduction">Introduction</h2>
-<p>Original article from <a href="https://www.openshift.com/blog/hibernate-for-cost-savings-for-advanced-cluster-management-provisioned-clusters-with-subscriptions" target="_blank">Hibernate for cost savings for Advanced Cluster Management Provisioned Clusters with Subscriptions</a></p>
-<p>OpenShift 4 has the ability to suspend and resume clusters on Cloud Providers. Red Hat Advanced Cluster Management extends this capability through its Cluster Lifecycle Management (Hive), where you can have a policy to hibernate the clusters to save the cost saving in non-working hours (ex. 16 hours in a day is 16/24 = 66% saving)</p>
-<h2 id="how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</h2>
-<p>We will walkthrough high-level process how ACM can define the herbernate policy for the cluster on Clouds</p>
-<ol>
-<li>Clone the cluster-hibernate repository to your environment</li>
-<li>Create the Running/Hibernate manifest files and put them in your Channel</li>
-<li>Create the Subscription to local hub cluster with your desire time windows</li>
-</ol>
-<p>Sample picture
-<img src="images/service-mesh-sample-app.png" alt="your sample picture"></p>
-<h2 id="steps-1-2-3">Steps 1-2-3</h2>
-<p>Steps:</p>
+<li>Deploy frontend app (if you still not deploy it yet)<pre><code class="lang-bash">oc new-project project1
+oc apply -f manifests/frontend.yaml -n project1
+oc delete deployment frontend-v2 -n project1
+FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+curl -k $FRONTEND_URL
+</code></pre>
+</li>
+<li><p>Review <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
 <ul>
-<li>a</li>
-<li>b<ul>
-<li>c</li>
+<li>Scale out when average CPU utilization is greater than 80% of CPU limit</li>
+<li>Maximum pods is 3</li>
+<li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
+<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-v1-cpu
+  namespace: project1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          averageUtilization: 80
+          type: Utilization
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+</code></pre>
+</li>
 </ul>
 </li>
-<li>d</li>
+<li><p>Create <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
+</li>
 </ul>
-<p>Code Block</p>
-<pre><code class="lang-bash">uname -a
+<pre><code class="lang-bash">oc create -f manifests/frontend-v1-cpu-hpa.yaml -n project1
 </code></pre>
-<pre><code class="lang-yaml">---
-sample: yaml
-spec:
-  key1: value1
-  item_list:
-    - name: item1
-      property: prop1
-    - name: item2
-      property: prop2
+<ul>
+<li><p>Check HPA status</p>
+<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-cpu -n project1
 </code></pre>
-<p>Sample inline yaml to oc apply</p>
-<pre><code class="lang-bash">cat &lt;&lt;EOF | oc create -f -
-kind: PersistentVolumeClaim
-apiVersion: v1
+</li>
+<li><p>Generate load with load test tool (siege)</p>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+siege -c 40 $FRONTEND_URL
+</code></pre>
+</li>
+</ul>
+<p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
+<ul>
+<li>40 threads</li>
+<li>Duration 3 minutes</li>
+<li>Ramp up 30 sec</li>
+<li>Ramp down 30 sec</li>
+</ul>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+oc run load-test -n project1 -i \
+--image=loadimpact/k6 --rm=true --restart=Never \
+--  run -  &lt; manifests/load-test-k6.js \
+-e URL=$FRONTEND_URL -e THREADS=40 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+</code></pre>
+<p>Remark: k6 will run as pod name <code>load-test</code> for 4 minutes if you want to force stop before 4 minutes just delete <code>load-test</code> pod</p>
+<pre><code class="lang-bash">oc delete pod load-test -n project1
+</code></pre>
+<ul>
+<li><p>Wait for HPA to trigger</p>
+<p><img src="images/hpa-cpu-status.png" alt=""></p>
+</li>
+<li><p>Check Developer Console</p>
+<p><img src="images/hpa-cpu-dev-console.png" alt=""></p>
+</li>
+<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
+</li>
+</ul>
+<h2 id="memory">Memory</h2>
+<ul>
+<li>Review <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><ul>
+<li>Scale out when average memory utilization is greater than 60M of memory limit</li>
+<li>Maximum pods is 3</li>
+<li>Scale down to min replicas if utilization is lower than threshold for 60 sec<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
 metadata:
-  name: image-registry-storage
-  namespace: openshift-image-registry
+  name: frontend-v1-memory
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Gi
-  storageClassName: thin
-  volumeMode: Filesystem
-EOF
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageValue: 50Mi
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
 </code></pre>
+</li>
+</ul>
+</li>
+<li>Create <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><pre><code class="lang-bash">oc delete -f manifests/frontend-v1-cpu-hpa.yaml -n project1
+oc create -f manifests/frontend-v1-memory-hpa.yaml -n project1
+</code></pre>
+</li>
+<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-memory -n project1
+</code></pre>
+</li>
+<li>Generate load with load test tool (siege)<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -jsonpath=&apos;{.spec.host}&apos;)
+siege -c 40 $FRONTEND_URL
+</code></pre>
+</li>
+<li><p>Wait for HPA to trigger</p>
+<p><img src="images/memory-hpa-status.png" alt=""></p>
+</li>
+<li><p>Check memory utilization from Developer console</p>
+<p><img src="images/memory-hpa-utilization.png" alt=""></p>
+</li>
+<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
+</li>
+</ul>
+<h2 id="custom-metrics">Custom Metrics</h2>
 
                                 
                                 </section>
@@ -484,6 +569,14 @@ EOF
 
             
                 
+                <a href="openshift-route.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift Route">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="health.html" class="navigation navigation-next " aria-label="Next page: Health Check">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -492,7 +585,7 @@ EOF
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"next":{"title":"Container Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Deployment with Helm","level":"1.4.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]}]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-hibernate.md","mtime":"2021-04-03T03:38:07.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T03:39:02.727Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"next":{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2021-04-03T04:02:40.916Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:03:35.833Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

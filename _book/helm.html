@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Introduction · OpenShift Demo</title>
+        <title>Application Deployment with Helm · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,6 +61,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="openshift-route.html" />
+    
     
 
     </head>
@@ -89,7 +91,7 @@
         
         
     
-        <li class="chapter active" data-level="1.1" data-path="./">
+        <li class="chapter " data-level="1.1" data-path="./">
             
                 <a href="./">
             
@@ -245,7 +247,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+        <li class="chapter active" data-level="1.4.1" data-path="helm.html">
             
                 <a href="helm.html">
             
@@ -371,7 +373,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Introduction</a>
+        <a href="." >Application Deployment with Helm</a>
     </h1>
 </div>
 
@@ -386,89 +388,34 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="openshift-demo">OpenShift Demo</h1>
-<p><img src="images/OpenShiftContainerPlatform.png" alt=""></p>
-<h2 id="table-of-contents">Table of Contents</h2>
+                                <h1 id="deploy-backend-app-with-helm-chart">Deploy Backend app with Helm Chart</h1>
 <ul>
-<li><a href="infrastructure-authentication-providers.html">OpenShift Authentication Providers with AD</a><ul>
-<li>OpenShift External Authentication Provider</li>
-<li>LDAP group sync</li>
-<li>Group Policy</li>
-<li>Access and Projects collaboration</li>
-</ul>
+<li>Deploy backend app using helm chart =&gt; <a href="manifests/backend-chart">backend-chart</a></li>
+<li>Test with dry run <pre><code class="lang-bash">oc project project1
+helm install --dry-run test ./manifests/backend-chart
+</code></pre>
 </li>
-<li><a href="infrastructure-infra-nodes.html">OpenShift MachineSet and Infrastructure Nodes</a><ul>
-<li>MachineSet on VMware</li>
-<li>Infrastructure Node and Moving Cluster Services to Infra Nodes</li>
+<li>Install chart
+```bash
+helm install backend-helm --namespace=project1 ./manifests/backend-chart<h1 id="sample-output">Sample Output</h1>
+1 ./manifests/backend-chart
+NAME: backend-helm
+LAST DEPLOYED: Tue Feb 16 17:32:46 2021
+NAMESPACE: project1
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:</li>
+<li>Get the application URL by running these commands:
+<a href="http://backend-helm:8080" target="_blank">http://backend-helm:8080</a>
+```</li>
+<li>Check Helm Chart in Developer Console Topology view</li>
 </ul>
-</li>
-<li><a href="infrastructure-monitoring-alerts.html">OpenShift Platform Monitoring and Alert</a><ul>
-<li>Monitoring Stack</li>
-<li>AlertRules and Alert Receiver</li>
+<p><img src="images/developer-console-helm-topology.png" alt="Helm Topology"></p>
+<ul>
+<li>Helm Chart details</li>
 </ul>
-</li>
-<li><a href="infrastructure-cluster-logging.html">OpenShift Cluster Logging</a></li>
-<li><a href="infrastructure-networking.html">OpenShift Networking</a><ul>
-<li>OpenShift Network Policies Based SDN</li>
-<li>Egress IPs</li>
-<li>Network Access Logs</li>
-</ul>
-</li>
-<li><a href="infrastructure-backup-etcd.html">OpenShift state backup with etcd snapshot</a></li>
-<li>Application Deployment<ul>
-<li><a href="helm.html">Helm</a> </li>
-</ul>
-</li>
-<li><a href="openshift-route.html">OpenShift Route</a><ul>
-<li>Blue/Green Deployment</li>
-<li>Canary Deployment</li>
-<li>Configure TLS version</li>
-</ul>
-</li>
-<li><a href="hpa.html">Horizontal Pod Autoscaler</a><ul>
-<li>HPA by CPU</li>
-<li>HPA by Memory</li>
-</ul>
-</li>
-<li><a href="health.html">Health Check</a><ul>
-<li>Readiness Probe</li>
-<li>Liveness Probe</li>
-<li>Startup Probe</li>
-</ul>
-</li>
-<li><a href="openshift-service-mesh.html">OpenShift Service Mesh</a><ul>
-<li>Install and configure control plane</li>
-<li>Sidecar injection</li>
-<li>Blue/Green Deployment</li>
-<li>Canary Deployment</li>
-<li>A/B Testing Deployment</li>
-<li>Routing by URI with regular expression</li>
-<li>Traffic Analysis</li>
-<li>Traffic Mirroring</li>
-<li>Tracing</li>
-<li>Circuit Breaker</li>
-<li>Secure with mTLS</li>
-</ul>
-</li>
-<li><a href="application-metrics.html">User Workload Monitoring</a><ul>
-<li>Setup User Workload Monitoring</li>
-<li>Configure Service Monitoring</li>
-<li>Custom Grafana Dashboard</li>
-<li>Custom Alert</li>
-</ul>
-</li>
-<li><a href="build-with-oc.md">Build Container with OC command</a></li>
-<li><a href="build-with-odo.md">Build Container with OpenShift DO (odo)</a></li>
-<li><a href="ci-cd.html">CI/CD with Azure DevOps</a><ul>
-<li>Azure DevOps</li>
-<li>Deploy Back App</li>
-<li>Deploy Front App</li>
-<li>Prepare Harbor On Kubernetes/OpenShift</li>
-<li>Prepare Azure DevOps Service Connection</li>
-<li>Azure pipelines</li>
-</ul>
-</li>
-</ul>
+<p><img src="images/developer-console-helm-chart.png" alt="Helm Chart"></p>
 
                                 
                                 </section>
@@ -497,6 +444,10 @@
             
                 
                 
+                <a href="openshift-route.html" class="navigation navigation-next navigation-unique" aria-label="Next page: OpenShift Route">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
             
         
     </div>
@@ -504,7 +455,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Infrastructure","level":"1.2","depth":1,"ref":"","articles":[{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"README.md","mtime":"2021-04-03T03:38:07.057Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T03:39:02.727Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Application Deployment with Helm","level":"1.4.1","depth":2,"next":{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"previous":{"title":"Container Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Deployment with Helm","level":"1.4.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"helm.md","mtime":"2021-04-03T04:02:40.916Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:03:35.833Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

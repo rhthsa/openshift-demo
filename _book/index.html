@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Horizontal Pod Autoscaler · OpenShift Demo</title>
+        <title>Introduction · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,6 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="health.html" />
-    
-    
-    <link rel="prev" href="openshift-route.html" />
     
 
     </head>
@@ -93,7 +89,7 @@
         
         
     
-        <li class="chapter " data-level="1.1" data-path="./">
+        <li class="chapter active" data-level="1.1" data-path="./">
             
                 <a href="./">
             
@@ -275,7 +271,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.4.3" data-path="hpa.html">
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
             
                 <a href="hpa.html">
             
@@ -375,7 +371,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Horizontal Pod Autoscaler</a>
+        <a href="." >Introduction</a>
     </h1>
 </div>
 
@@ -390,158 +386,89 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</h1>
-<!-- TOC -->
+                                <h1 id="openshift-demo">OpenShift Demo</h1>
+<p><img src="images/OpenShiftContainerPlatform.png" alt=""></p>
+<h2 id="table-of-contents">Table of Contents</h2>
 <ul>
-<li><a href="#horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</a><ul>
-<li><a href="#cpu">CPU</a></li>
-<li><a href="#memory">Memory</a></li>
-<li><a href="#custom-metrics">Custom Metrics</a></li>
+<li><a href="infrastructure-authentication-providers.html">OpenShift Authentication Providers with AD</a><ul>
+<li>OpenShift External Authentication Provider</li>
+<li>LDAP group sync</li>
+<li>Group Policy</li>
+<li>Access and Projects collaboration</li>
+</ul>
+</li>
+<li><a href="infrastructure-infra-nodes.html">OpenShift MachineSet and Infrastructure Nodes</a><ul>
+<li>MachineSet on VMware</li>
+<li>Infrastructure Node and Moving Cluster Services to Infra Nodes</li>
+</ul>
+</li>
+<li><a href="infrastructure-monitoring-alerts.html">OpenShift Platform Monitoring and Alert</a><ul>
+<li>Monitoring Stack</li>
+<li>AlertRules and Alert Receiver</li>
+</ul>
+</li>
+<li><a href="infrastructure-cluster-logging.html">OpenShift Cluster Logging</a></li>
+<li><a href="infrastructure-networking.html">OpenShift Networking</a><ul>
+<li>OpenShift Network Policies Based SDN</li>
+<li>Egress IPs</li>
+<li>Network Access Logs</li>
+</ul>
+</li>
+<li><a href="infrastructure-backup-etcd.html">OpenShift state backup with etcd snapshot</a></li>
+<li>Application Deployment<ul>
+<li><a href="helm.html">Helm</a> </li>
+</ul>
+</li>
+<li><a href="openshift-route.html">OpenShift Route</a><ul>
+<li>Blue/Green Deployment</li>
+<li>Canary Deployment</li>
+<li>Configure TLS version</li>
+</ul>
+</li>
+<li><a href="hpa.html">Horizontal Pod Autoscaler</a><ul>
+<li>HPA by CPU</li>
+<li>HPA by Memory</li>
+</ul>
+</li>
+<li><a href="health.html">Health Check</a><ul>
+<li>Readiness Probe</li>
+<li>Liveness Probe</li>
+<li>Startup Probe</li>
+</ul>
+</li>
+<li><a href="openshift-service-mesh.html">OpenShift Service Mesh</a><ul>
+<li>Install and configure control plane</li>
+<li>Sidecar injection</li>
+<li>Blue/Green Deployment</li>
+<li>Canary Deployment</li>
+<li>A/B Testing Deployment</li>
+<li>Routing by URI with regular expression</li>
+<li>Traffic Analysis</li>
+<li>Traffic Mirroring</li>
+<li>Tracing</li>
+<li>Circuit Breaker</li>
+<li>Secure with mTLS</li>
+</ul>
+</li>
+<li><a href="application-metrics.html">User Workload Monitoring</a><ul>
+<li>Setup User Workload Monitoring</li>
+<li>Configure Service Monitoring</li>
+<li>Custom Grafana Dashboard</li>
+<li>Custom Alert</li>
+</ul>
+</li>
+<li><a href="build-with-oc.md">Build Container with OC command</a></li>
+<li><a href="build-with-odo.md">Build Container with OpenShift DO (odo)</a></li>
+<li><a href="ci-cd.html">CI/CD with Azure DevOps</a><ul>
+<li>Azure DevOps</li>
+<li>Deploy Back App</li>
+<li>Deploy Front App</li>
+<li>Prepare Harbor On Kubernetes/OpenShift</li>
+<li>Prepare Azure DevOps Service Connection</li>
+<li>Azure pipelines</li>
 </ul>
 </li>
 </ul>
-<!-- /TOC -->
-<h2 id="cpu">CPU</h2>
-<ul>
-<li>Deploy frontend app (if you still not deploy it yet)<pre><code class="lang-bash">oc new-project project1
-oc apply -f manifests/frontend.yaml -n project1
-oc delete deployment frontend-v2 -n project1
-FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-curl -k $FRONTEND_URL
-</code></pre>
-</li>
-<li><p>Review <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
-<ul>
-<li>Scale out when average CPU utilization is greater than 80% of CPU limit</li>
-<li>Maximum pods is 3</li>
-<li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
-<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: frontend-v1-cpu
-  namespace: project1
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: frontend-v1
-  minReplicas: 1
-  maxReplicas: 3
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          averageUtilization: 80
-          type: Utilization
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
-</code></pre>
-</li>
-</ul>
-</li>
-<li><p>Create <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
-</li>
-</ul>
-<pre><code class="lang-bash">oc create -f manifests/frontend-v1-cpu-hpa.yaml -n project1
-</code></pre>
-<ul>
-<li><p>Check HPA status</p>
-<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-cpu -n project1
-</code></pre>
-</li>
-<li><p>Generate load with load test tool (siege)</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-siege -c 40 $FRONTEND_URL
-</code></pre>
-</li>
-</ul>
-<p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
-<ul>
-<li>40 threads</li>
-<li>Duration 3 minutes</li>
-<li>Ramp up 30 sec</li>
-<li>Ramp down 30 sec</li>
-</ul>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-oc run load-test -n project1 -i \
---image=loadimpact/k6 --rm=true --restart=Never \
---  run -  &lt; manifests/load-test-k6.js \
--e URL=$FRONTEND_URL -e THREADS=40 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
-</code></pre>
-<p>Remark: k6 will run as pod name <code>load-test</code> for 4 minutes if you want to force stop before 4 minutes just delete <code>load-test</code> pod</p>
-<pre><code class="lang-bash">oc delete pod load-test -n project1
-</code></pre>
-<ul>
-<li><p>Wait for HPA to trigger</p>
-<p><img src="images/hpa-cpu-status.png" alt=""></p>
-</li>
-<li><p>Check Developer Console</p>
-<p><img src="images/hpa-cpu-dev-console.png" alt=""></p>
-</li>
-<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
-</li>
-</ul>
-<h2 id="memory">Memory</h2>
-<ul>
-<li>Review <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><ul>
-<li>Scale out when average memory utilization is greater than 60M of memory limit</li>
-<li>Maximum pods is 3</li>
-<li>Scale down to min replicas if utilization is lower than threshold for 60 sec<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: frontend-v1-memory
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: frontend-v1
-  minReplicas: 1
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageValue: 50Mi
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
-</code></pre>
-</li>
-</ul>
-</li>
-<li>Create <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><pre><code class="lang-bash">oc delete -f manifests/frontend-v1-cpu-hpa.yaml -n project1
-oc create -f manifests/frontend-v1-memory-hpa.yaml -n project1
-</code></pre>
-</li>
-<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-memory -n project1
-</code></pre>
-</li>
-<li>Generate load with load test tool (siege)<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -jsonpath=&apos;{.spec.host}&apos;)
-siege -c 40 $FRONTEND_URL
-</code></pre>
-</li>
-<li><p>Wait for HPA to trigger</p>
-<p><img src="images/memory-hpa-status.png" alt=""></p>
-</li>
-<li><p>Check memory utilization from Developer console</p>
-<p><img src="images/memory-hpa-utilization.png" alt=""></p>
-</li>
-<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
-</li>
-</ul>
-<h2 id="custom-metrics">Custom Metrics</h2>
 
                                 
                                 </section>
@@ -569,14 +496,6 @@ siege -c 40 $FRONTEND_URL
 
             
                 
-                <a href="openshift-route.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift Route">
-                    <i class="fa fa-angle-left"></i>
-                </a>
-                
-                
-                <a href="health.html" class="navigation navigation-next " aria-label="Next page: Health Check">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -585,7 +504,7 @@ siege -c 40 $FRONTEND_URL
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"next":{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2021-04-03T03:38:07.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T03:39:02.727Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Infrastructure","level":"1.2","depth":1,"ref":"","articles":[{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"README.md","mtime":"2021-04-03T04:02:40.916Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:03:35.833Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
