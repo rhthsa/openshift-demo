@@ -30,4 +30,9 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g gitbook-cli mermaid-cli gh-pages
     - run: gitbook install && gitbook build
-    - run: gh-pages --dist '_book'
+    - run: git checkout gh-pages
+    - run: git pull origin gh-pages --rebase
+    - run: git rm -rf .
+    - run: git add _book
+    - run: git commit -a -m "Github Actions Update Gitbook"
+    - run: git push origin gh-pages
