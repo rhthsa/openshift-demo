@@ -28,11 +28,12 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install -g gitbook-cli mermaid-cli gh-pages
+    - run: npm install -g gitbook-cli
     - run: gitbook install && gitbook build
     - run: git checkout -b gh-pages
     - run: git pull origin gh-pages --rebase
     - run: git rm -rf .
-    - run: git add _book
+    - run: mv _book docs
+    - run: git add docs
     - run: git commit -a -m "Github Actions Update Gitbook"
     - run: git push origin gh-pages
