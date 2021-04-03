@@ -1,0 +1,534 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Hibernate cluster for cost saving for OpenShift on Cloud Providers · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter active" data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Hibernate cluster for cost saving for OpenShift on Cloud Providers</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</a></li>
+<li><a href="#steps-1-2-3">Steps 1-2-3</a></li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>OpenShift 4.6 or 4.7</li>
+<li>Cluster-admin user access</li>
+<li>Red Hat Advanced Cluster Management</li>
+<li>Cloud Provider Credentials</li>
+</ul>
+<h2 id="introduction">Introduction</h2>
+<p>Original article from <a href="https://www.openshift.com/blog/hibernate-for-cost-savings-for-advanced-cluster-management-provisioned-clusters-with-subscriptions" target="_blank">Hibernate for cost savings for Advanced Cluster Management Provisioned Clusters with Subscriptions</a></p>
+<p>OpenShift 4 has the ability to suspend and resume clusters on Cloud Providers. Red Hat Advanced Cluster Management extends this capability through its Cluster Lifecycle Management (Hive), where you can have a policy to hibernate the clusters to save the cost saving in non-working hours (ex. 16 hours in a day is 16/24 = 66% saving)</p>
+<h2 id="how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</h2>
+<p>We will walkthrough high-level process how ACM can define the herbernate policy for the cluster on Clouds</p>
+<ol>
+<li>Clone the cluster-hibernate repository to your environment</li>
+<li>Create the Running/Hibernate manifest files and put them in your Channel</li>
+<li>Create the Subscription to local hub cluster with your desire time windows</li>
+</ol>
+<p>Sample picture
+<img src="images/service-mesh-sample-app.png" alt="your sample picture"></p>
+<h2 id="steps-1-2-3">Steps 1-2-3</h2>
+<p>Steps:</p>
+<ul>
+<li>a</li>
+<li>b<ul>
+<li>c</li>
+</ul>
+</li>
+<li>d</li>
+</ul>
+<p>Code Block</p>
+<pre><code class="lang-bash">uname -a
+</code></pre>
+<pre><code class="lang-yaml">---
+sample: yaml
+spec:
+  key1: value1
+  item_list:
+    - name: item1
+      property: prop1
+    - name: item2
+      property: prop2
+</code></pre>
+<p>Sample inline yaml to oc apply</p>
+<pre><code class="lang-bash">cat &lt;&lt;EOF | oc create -f -
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: image-registry-storage
+  namespace: openshift-image-registry
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: thin
+  volumeMode: Filesystem
+EOF
+</code></pre>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"next":{"title":"Container Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Deployment with Helm","level":"1.4.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"OpenShift Route","level":"1.4.2","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]}]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-hibernate.md","mtime":"2021-04-03T03:38:07.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T03:39:02.727Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

@@ -1,0 +1,955 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>OpenShift Networking · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="infrastructure-backup-etcd.html" />
+    
+    
+    <link rel="prev" href="infrastructure-cluster-logging.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >OpenShift Networking</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="infrastructure-networking">Infrastructure Networking</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#infrastructure-networking">Infrastructure Networking</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#openshift-network-policy-based-sdn">OpenShift Network Policy Based SDN</a><ul>
+<li><a href="#switch-your-project">Switch Your Project</a></li>
+<li><a href="#execute-the-creation-script">Execute the Creation Script</a></li>
+<li><a href="#examine-the-created-infrastructure">Examine the created infrastructure</a></li>
+<li><a href="#test-connectivity-should-work">Test Connectivity should work</a></li>
+<li><a href="#restricting-access">Restricting Access</a></li>
+<li><a href="#test-connectivity-2-should-fail">Test Connectivity #2 should fail</a></li>
+<li><a href="#allow-access">Allow Access</a></li>
+<li><a href="#test-connectivity-3-should-work-again">Test Connectivity #3 should work again</a></li>
+<li><a href="#test-connectivity-4-while-chaning-networkpolicy">Test Connectivity #4 while chaning NetworkPolicy</a></li>
+</ul>
+</li>
+<li><a href="#egress-ip-address-assignment-for-project-egress-traffic">Egress IP address assignment for project egress traffic</a><ul>
+<li><a href="#configuring-automatically-assigned-egress-ip-addresses-for-a-namespace">Configuring automatically assigned egress IP addresses for a namespace</a></li>
+</ul>
+</li>
+<li><a href="#network-logging">Network Logging</a></li>
+<li><a href="#container-platform-network-segmentation">Container Platform Network Segmentation</a><ul>
+<li><a href="#multi-cluster-level">Multi-Cluster Level</a></li>
+<li><a href="#cluster-namespace-separation-level">Cluster Namespace separation level</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>OpenShift 4.6 on VMware 6.7 U3+ or 7.0</li>
+</ul>
+<h2 id="openshift-network-policy-based-sdn">OpenShift Network Policy Based SDN</h2>
+<p>OpenShift has a software defined network (SDN) inside the platform that is based
+on Open vSwitch. This SDN is used to provide connectivity between application
+components inside of the OpenShift environment. It comes with default network
+ranges pre-configured, although you can make changes to these should they
+conflict with your existing infrastructure, or for whatever other reason you may
+have.</p>
+<p>The OpenShift Network Policy SDN plug-in allows projects to truly isolate their
+network infrastructure inside OpenShift&#x2019;s software defined network. While you
+have seen projects isolate resources through OpenShift&#x2019;s RBAC, the network policy
+SDN plugin is able to isolate pods in projects using pod and namespace label selectors.</p>
+<p>The network policy SDN plugin was introduced in OpenShift 3.7, and more
+information about it and its configuration can be found in the
+link:<a href="https://docs.openshift.com/container-platform/3.11/architecture/networking/sdn.html[networking" target="_blank">https://docs.openshift.com/container-platform/3.11/architecture/networking/sdn.html[networking</a>
+documentation^]. Additionally, other vendors are working with the upstream
+Kubernetes community to implement their own SDN plugins, and several of these
+are supported by the vendors for use with OpenShift. These plugin
+implementations make use of appc/CNI, which is outside the scope of this lab.</p>
+<h3 id="switch-your-project">Switch Your Project</h3>
+<p>Before continuing, make sure you are using a project that actually exists. If
+the last thing you did in the previous lab was delete a project, this will
+cause errors in the scripts in this lab.</p>
+<pre><code>oc project default
+</code></pre><h3 id="execute-the-creation-script">Execute the Creation Script</h3>
+<p>Only users with project or cluster administration privileges can manipulate <em>Project</em>
+networks.</p>
+<p>Then, execute a script that we have prepared for you. It will create two
+<em>Projects</em> and then deploy a <em>DeploymentConfig</em> with a <em>Pod</em> for you:</p>
+<pre><code class="lang-yaml">oc new-project netproj-a
+oc label namespace netproj-a app=iperf3-client
+oc new-project netproj-b
+oc label namespace netproj-b app=iperf3-server
+
+cat &lt;&lt;EOF | oc create -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf3-server-deployment
+  namespace: netproj-b
+  labels:
+    app: iperf3-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iperf3-server
+  template:
+    metadata:
+      labels:
+        app: iperf3-server
+    spec:
+      containers:
+      - name: iperf3-server
+        image: networkstatic/iperf3
+        args: [&apos;-s&apos;]
+        ports:
+          - name: server
+            containerPort: 5201
+            protocol: TCP
+          - name: server-udp
+            containerPort: 5201
+            protocol: UDP
+      terminationGracePeriodSeconds: 0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: iperf3-server
+  namespace: netproj-b
+spec:
+  selector:
+    app: iperf3-server
+  ports:
+  - protocol: TCP
+    port: 5201
+    targetPort: server
+    name: server
+  - protocol: UDP
+    port: 5201
+    targetPort: server-udp
+    name: server-udp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: iperf3-clients
+  namespace: netproj-a
+  labels:
+    app: iperf3-client
+spec:
+  selector:
+    matchLabels:
+      app: iperf3-client
+  template:
+    metadata:
+      labels:
+        app: iperf3-client
+    spec:
+      containers:
+      - name: iperf3-client
+        image: networkstatic/iperf3
+        command: [&apos;/bin/sh&apos;, &apos;-c&apos;, &apos;sleep infinity&apos;]
+      terminationGracePeriodSeconds: 0
+EOF
+</code></pre>
+<h3 id="examine-the-created-infrastructure">Examine the created infrastructure</h3>
+<p>Two <em>Projects</em> were created for you, <code>netproj-a</code> and <code>netproj-b</code>. Execute the
+following command to see the created resources:</p>
+<pre><code class="lang-bash">oc get pods -n netproj-a
+</code></pre>
+<p>After a while you will see something like the following:</p>
+<pre><code class="lang-bash">NAME                             READY   STATUS    RESTARTS   AGE
+iperf3-clients-7c566cfdc-7dtn5   1/1     Running   0          14m
+</code></pre>
+<p>Similarly:</p>
+<pre><code class="lang-bash">oc get pods -n netproj-b
+</code></pre>
+<p>After a while you will see something like the following:</p>
+<pre><code class="lang-bash">NAME                                      READY   STATUS    RESTARTS   AGE
+iperf3-server-deployment-79c44f8b-6bkrn   1/1     Running   0          14m
+</code></pre>
+<p>We will run commands inside the pod in the <code>netproj-a</code> <em>Project</em> that will
+connect to TCP port 5201 of the pod in the <code>netproj-b</code> <em>Project</em>.</p>
+<h3 id="test-connectivity-should-work">Test Connectivity (should work)</h3>
+<p>Now that you have some projects and pods, let&apos;s test the connectivity between
+the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the <code>netproj-b</code> <em>Project</em>.</p>
+<p>To test connectivity between the two pods, run:</p>
+<pre><code class="lang-bash">export client=$(oc get pod -n netproj-a | grep iperf3-clients | cut -d&apos; &apos; -f1)
+
+oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
+</code></pre>
+<p>You will see something like the following:</p>
+<pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
+[  5] local 10.131.0.55 port 58320 connected to 172.30.101.62 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   119 MBytes   997 Mbits/sec    0    491 KBytes
+[  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    1    691 KBytes
+[  5]   2.00-3.00   sec   119 MBytes  1.00 Gbits/sec    1   1.21 MBytes
+[  5]   3.00-4.00   sec   119 MBytes  1.00 Gbits/sec    1   1.21 MBytes
+[  5]   4.00-5.00   sec   119 MBytes   999 Mbits/sec    1   1.55 MBytes
+[  5]   5.00-6.00   sec   119 MBytes  1.00 Gbits/sec    0   1.71 MBytes
+[  5]   6.00-7.00   sec   119 MBytes  1.00 Gbits/sec    0   1.71 MBytes
+[  5]   7.00-8.00   sec   119 MBytes   997 Mbits/sec    0   1.71 MBytes
+[  5]   8.00-9.00   sec   119 MBytes  1.00 Gbits/sec    1   1.71 MBytes
+[  5]   9.00-10.00  sec   119 MBytes  1.00 Gbits/sec    1   1.79 MBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  1.16 GBytes  1000 Mbits/sec    6             sender
+[  5]   0.00-10.00  sec  1.16 GBytes  1000 Mbits/sec                  receiver
+
+iperf Done.
+</code></pre>
+<p>Note that the last line says <code>worked</code>. This means that the pod in the
+<code>netproj-a</code> <em>Project</em> was able to connect to the pod in the <code>netproj-b</code>
+<em>Project</em>.</p>
+<p>This worked because, by default, with the network policy SDN, all pods in all
+projects can connect to each other.</p>
+<h3 id="restricting-access">Restricting Access</h3>
+<p>With the Network Policy based SDN, it&apos;s possible to restrict access in a
+project by creating a <code>NetworkPolicy</code> custom resource (CR).</p>
+<p>For example, the following restricts all access to all pods in a <em>Project</em>
+where this <code>NetworkPolicy</code> CR is applied. This is the equivalent of a <code>DenyAll</code>
+default rule on a firewall:</p>
+<pre><code class="lang-yaml">kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-by-default
+spec:
+  podSelector: null
+  ingress:
+    - from:
+        - podSelector: {}
+</code></pre>
+<p>Note that the <code>podSelector</code> is empty, which means that this will apply to all
+pods in this <em>Project</em>. Also note that the <code>ingress</code> list is empty, which
+means that there are no allowed <code>ingress</code> rules defined by this
+<code>NetworkPolicy</code> CR.</p>
+<p>To restrict access to the pod in the <code>netproj-b</code> <em>Project</em> simply apply the
+above NetworkPolicy CR with:</p>
+<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -n netproj-b -f -
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: deny-by-default
+spec:
+  podSelector: null
+  ingress:
+    - from:
+        - podSelector: {}
+EOF
+</code></pre>
+<h3 id="test-connectivity-2-should-fail">Test Connectivity #2 (should fail)</h3>
+<p>Since the &quot;block all by default&quot; <code>NetworkPolicy</code> CR has been applied,
+connectivity between the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the
+<code>netproj-b</code> <em>Project</em> should now be blocked.</p>
+<p>Test by running:</p>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
+</code></pre>
+<p>You will see something like the following:</p>
+<pre><code class="lang-bash">iperf3: error - unable to connect to server: Connection timed out
+command terminated with exit code 1
+</code></pre>
+<p>Note the last line that says <code>FAILED!</code>. This means that the pod in the
+<code>netproj-a</code> <em>Project</em> was unable to connect to the pod in the <code>netproj-b</code>
+<em>Project</em> (as expected).</p>
+<h3 id="allow-access">Allow Access</h3>
+<p>With the Network Policy based SDN, it&apos;s possible to allow access to
+individual or groups of pods in a project by creating multiple
+<code>NetworkPolicy</code> CRs.</p>
+<p>The following allows access to port 5000 on TCP for all pods in the project
+with the label <code>app: iperf3-server</code>. The pod in the <code>netproj-b</code> project has this label.</p>
+<p>The ingress section specifically allows this access from all projects that
+have the label <code>app: iperf3-client</code>.</p>
+<pre><code class="lang-bash"># allow access to TCP port 5201 for pods with the label &quot;run: ose&quot; specifically
+# from projects with the label &quot;name: netproj-a&quot;.
+cat &lt;&lt;EOF | oc create -n netproj-b -f -
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-tcp-5201-from-netproj-a-namespace
+  namespace: netproj-b
+spec:
+  podSelector:
+    matchLabels:
+      app: iperf3-server
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 5201
+    from:
+    - namespaceSelector:
+        matchLabels:
+          app: iperf3-client
+EOF
+</code></pre>
+<p>Note that the <code>podSelector</code> is where the local project&apos;s pods are matched
+using a specific label selector.</p>
+<p>All <code>NetworkPolicy</code> CRs in a project are combined to create the allowed
+ingress access for the pods in the project. In this specific case the &quot;deny
+all&quot; policy is combined with the &quot;allow TCP 5201&quot; policy.</p>
+<h3 id="test-connectivity-3-should-work-again">Test Connectivity #3 (should work again)</h3>
+<p>Since the &quot;allow access from <code>netproj-a</code> on port 5000&quot; NetworkPolicy has been applied,
+connectivity between the pod in the <code>netproj-a</code> <em>Project</em> and the pod in the
+<code>netproj-b</code> <em>Project</em> should be allowed again.</p>
+<p>Test by running:</p>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 10 -b 1G&apos;
+</code></pre>
+<p>You will see something like the following:</p>
+<pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
+[  5] local 10.131.0.55 port 34702 connected to 172.30.101.62 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   119 MBytes   999 Mbits/sec    2    274 KBytes
+[  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    0    300 KBytes
+[  5]   2.00-3.00   sec   119 MBytes  1.00 Gbits/sec    0    362 KBytes
+[  5]   3.00-4.00   sec   119 MBytes  1.00 Gbits/sec    0    385 KBytes
+[  5]   4.00-5.00   sec   119 MBytes   999 Mbits/sec    0    397 KBytes
+[  5]   5.00-6.00   sec   119 MBytes  1.00 Gbits/sec    0    403 KBytes
+[  5]   6.00-7.00   sec   119 MBytes   999 Mbits/sec    1    412 KBytes
+[  5]   7.00-8.00   sec   119 MBytes  1.00 Gbits/sec    0    448 KBytes
+[  5]   8.00-9.00   sec   119 MBytes  1.00 Gbits/sec    1    459 KBytes
+[  5]   9.00-10.00  sec   119 MBytes   999 Mbits/sec    0    463 KBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-10.00  sec  1.16 GBytes  1000 Mbits/sec    4             sender
+[  5]   0.00-10.03  sec  1.16 GBytes   997 Mbits/sec                  receiver
+
+iperf Done.
+</code></pre>
+<p>Note the last line that says <code>worked</code>. This means that the pod in the
+<code>netproj-a</code> <em>Project</em> was able to connect to the pod in the <code>netproj-b</code>
+<em>Project</em> (as expected).</p>
+<h3 id="test-connectivity-4-while-chaning-networkpolicy">Test Connectivity #4 while chaning NetworkPolicy</h3>
+<p>To show NetworkPolicy is non-disruptive to the application connections while updating the network policies. We will run a test for 30 seconds and try to update network policies in between the test</p>
+<p>Verify that UDP 5201 is still closed by running:</p>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;
+</code></pre>
+<p>The UDP connection should be failed</p>
+<pre><code class="lang-bash">iperf3: error - unable to read from stream socket: Resource temporarily unavailable
+Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
+command terminated with exit code 1
+</code></pre>
+<p>Run the test again as TCP 5201 for 30 seconds.</p>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -t 30 -b 1G&apos;
+</code></pre>
+<p>And update network policy while the test is still running eg. also add UDP port 5201 in OpenShift console</p>
+<pre><code class="lang-bash">spec:
+  podSelector:
+    matchLabels:
+      app: iperf3-server
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 5201
+        - protocol: UDP
+          port: 5201
+      from:
+        - namespaceSelector:
+            matchLabels:
+              app: iperf3-client
+  policyTypes:
+    - Ingress
+</code></pre>
+<p>TCP test result should be able to complete without connection reset or disconnect.</p>
+<pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
+[  5] local 10.131.0.55 port 56720 connected to 172.30.101.62 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   119 MBytes  1000 Mbits/sec    1    878 KBytes
+[  5]   1.00-2.00   sec   119 MBytes  1.00 Gbits/sec    0   1.04 MBytes
+[  5]   2.00-3.00   sec   119 MBytes   999 Mbits/sec    0   1.09 MBytes
+[  5]   3.00-4.00   sec   119 MBytes  1.00 Gbits/sec    0   1.54 MBytes
+[  5]   4.00-5.00   sec   119 MBytes  1.00 Gbits/sec    0   1.62 MBytes
+[  5]   5.00-6.00   sec   119 MBytes   997 Mbits/sec    0   1.97 MBytes
+[  5]   6.00-7.00   sec   118 MBytes   989 Mbits/sec    0   1.97 MBytes
+[  5]   7.00-8.00   sec   121 MBytes  1.01 Gbits/sec    1   2.07 MBytes
+[  5]   8.00-9.00   sec   119 MBytes   999 Mbits/sec    0   2.17 MBytes
+[  5]   9.00-10.00  sec   119 MBytes  1.00 Gbits/sec    1   2.40 MBytes
+[  5]  10.00-11.00  sec   119 MBytes  1.00 Gbits/sec    0   2.52 MBytes
+[  5]  11.00-12.00  sec   119 MBytes   999 Mbits/sec    1   2.52 MBytes
+[  5]  12.00-13.00  sec   119 MBytes  1000 Mbits/sec    1   2.52 MBytes
+[  5]  13.00-14.00  sec   119 MBytes  1.00 Gbits/sec    1   2.52 MBytes
+[  5]  14.00-15.00  sec   119 MBytes   999 Mbits/sec    0   2.52 MBytes
+[  5]  15.00-16.00  sec   119 MBytes  1.00 Gbits/sec    0   2.52 MBytes
+[  5]  16.00-17.00  sec   119 MBytes  1.00 Gbits/sec    0   2.52 MBytes
+[  5]  17.00-18.00  sec   119 MBytes   999 Mbits/sec    0   2.64 MBytes
+[  5]  18.00-19.00  sec   119 MBytes  1.00 Gbits/sec    0   2.64 MBytes
+[  5]  19.00-20.00  sec   119 MBytes  1.00 Gbits/sec    0   2.77 MBytes
+[  5]  20.00-21.00  sec   119 MBytes   999 Mbits/sec    0   2.77 MBytes
+[  5]  21.00-22.00  sec   119 MBytes  1.00 Gbits/sec    0   2.77 MBytes
+[  5]  22.00-23.00  sec   119 MBytes  1.00 Gbits/sec    0   2.77 MBytes
+[  5]  23.00-24.00  sec   119 MBytes   997 Mbits/sec    0   2.77 MBytes
+[  5]  24.00-25.01  sec   119 MBytes   988 Mbits/sec    0   2.77 MBytes
+[  5]  25.01-26.00  sec   120 MBytes  1.02 Gbits/sec    0   2.77 MBytes
+[  5]  26.00-27.00  sec   119 MBytes   999 Mbits/sec    1   2.77 MBytes
+[  5]  27.00-28.00  sec   119 MBytes  1.00 Gbits/sec    1   2.77 MBytes
+[  5]  28.00-29.01  sec   119 MBytes   985 Mbits/sec    0   2.77 MBytes
+[  5]  29.01-30.00  sec   120 MBytes  1.01 Gbits/sec    1   2.77 MBytes
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-30.00  sec  3.49 GBytes  1000 Mbits/sec    9             sender
+[  5]   0.00-30.02  sec  3.49 GBytes   999 Mbits/sec                  receiver
+
+iperf Done.
+</code></pre>
+<p>Re-run UDP test again to confirm UDP 5201 has been allowed.</p>
+<pre><code class="lang-bash">oc exec $client -n netproj-a -- /bin/sh -c &apos;iperf3 -c iperf3-server.netproj-b.svc.cluster.local -u -t 10 -b 1G&apos;
+</code></pre>
+<p>iperf3 UDP test is now working</p>
+<pre><code class="lang-bash">Connecting to host iperf3-server.netproj-b.svc.cluster.local, port 5201
+[  5] local 10.131.0.55 port 39507 connected to 172.30.4.76 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec  26.0 MBytes   218 Mbits/sec  19520
+[  5]   1.00-2.00   sec  30.2 MBytes   253 Mbits/sec  22663
+[  5]   2.00-3.00   sec  33.4 MBytes   279 Mbits/sec  25072
+[  5]   3.00-4.00   sec  30.0 MBytes   253 Mbits/sec  22486
+[  5]   4.00-5.00   sec  34.6 MBytes   291 Mbits/sec  25986
+[  5]   5.00-6.00   sec  35.3 MBytes   296 Mbits/sec  26455
+[  5]   6.00-7.00   sec  35.7 MBytes   299 Mbits/sec  26766
+[  5]   7.00-8.00   sec  33.6 MBytes   281 Mbits/sec  25183
+[  5]   8.00-9.00   sec  37.6 MBytes   317 Mbits/sec  28229
+[  5]   9.00-10.00  sec  36.7 MBytes   308 Mbits/sec  27537
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-10.00  sec   333 MBytes   279 Mbits/sec  0.000 ms  0/249897 (0%)  sender
+[  5]   0.00-10.01  sec   286 MBytes   240 Mbits/sec  0.025 ms  35426/249897 (14%)  receiver
+
+iperf Done.
+</code></pre>
+<h2 id="egress-ip-address-assignment-for-project-egress-traffic">Egress IP address assignment for project egress traffic</h2>
+<p>As a cluster administrator, you can configure the OpenShift SDN default Container Network Interface (CNI) network provider to assign one or more egress IP addresses to a project.</p>
+<p>By configuring an egress IP address for a project, all outgoing external connections from the specified project will share the same, fixed source IP address. External resources can recognize traffic from a particular project based on the egress IP address. An egress IP address assigned to a project is different from the egress router, which is used to send traffic to specific destinations.</p>
+<p>Egress IP addresses are implemented as additional IP addresses on the primary network interface of the node and must be in the same subnet as the node&#x2019;s primary IP address.</p>
+<p>High availability of nodes is automatic. If a node that hosts an egress IP address is unreachable and there are nodes that are able to host that egress IP address, then the egress IP address will move to a new node. When the unreachable node comes back online, the egress IP address automatically moves to balance egress IP addresses across nodes.</p>
+<h3 id="configuring-automatically-assigned-egress-ip-addresses-for-a-namespace">Configuring automatically assigned egress IP addresses for a namespace</h3>
+<p>In OpenShift Container Platform you can enable automatic assignment of an egress IP address for a specific namespace across one or more nodes.</p>
+<ol>
+<li>Test ping from pod in netproj-a to VM outside OpenShift, the source IP Address is the Node IP Address<pre><code class="lang-bash"> [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
+ tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+ listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
+ 08:37:18.756559 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 1, length 64
+ 08:37:18.756627 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP echo reply, id 3, seq 1, length 64
+ 08:37:19.757960 IP 198.18.1.18 &gt; tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 2, length 64
+ 08:37:19.758014 IP tools1.dcloud.cisco.com &gt; 198.18.1.18: ICMP echo reply, id 3, seq 2, length 64
+</code></pre>
+</li>
+<li>Update the NetNamespace object with the egress IP address using the following JSON:<pre><code class="lang-bash"> oc patch netnamespace netproj-a --type=merge -p \
+ &apos;{&quot;egressIPs&quot;: [&quot;198.18.1.241&quot;]}&apos;
+</code></pre>
+ You can set egressIPs to two or more IP addresses on different nodes to provide high availability. If multiple egress IP addresses are set, pods use the first IP in the list for egress, but if the node hosting that IP address fails, pods switch to using the next IP in the list after a short delay.</li>
+<li><p>Manually assign the egress IP to the node hosts. Set the egressIPs parameter on the HostSubnet object on the node host. Using the following JSON, include as many IPs as you want to assign to that node host:</p>
+<pre><code class="lang-bash"> for node in $(oc get nodes | grep &apos;\-worker&apos; | cut -d&apos; &apos; -f1); do
+ oc patch hostsubnet $node --type=merge -p &apos;{&quot;egressCIDRs&quot;: [&quot;198.18.1.0/24&quot;]}&apos;
+ done
+</code></pre>
+<p> In the previous example, all egress traffic for project1 will be routed to the node hosting the specified egress IP, and then connected (using NAT) to that IP address.</p>
+</li>
+<li>Test ping from the same POD in netproj-a again, now the source IP Address is now egressIP assigned to netproj-a<pre><code class="lang-bash"> [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
+ tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+ listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
+ 09:08:33.841050 IP 198.18.1.241 &gt; registry0.example.com: ICMP echo request, id 7, seq 130, length 64
+ 09:08:33.841131 IP registry0.example.com &gt; 198.18.1.241: ICMP echo reply, id 7, seq 130, length 64
+ 09:08:34.861757 IP 198.18.1.241 &gt; registry0.example.com: ICMP echo request, id 7, seq 131, length 64
+ 09:08:34.861815 IP registry0.example.com &gt; 198.18.1.241: ICMP echo reply, id 7, seq 131, length 64
+</code></pre>
+</li>
+</ol>
+<h2 id="network-logging">Network Logging</h2>
+<p>The network access logging will be done with envoy sidecar proxy, the details will be in OpenShift Service Mesh section.</p>
+<h2 id="container-platform-network-segmentation">Container Platform Network Segmentation</h2>
+<p>For the network segregation requirement on Container Platform, we can consider multiple choices of strategy for the network segregation levels supported in OpenShift design architectures. The following are the options that we could do to helps network segmentations are enforced at each level</p>
+<h3 id="multi-cluster-level">Multi-Cluster Level</h3>
+<p>The highest level of separation is to dedicate one cluster per environment per network zone, e.g. 1 Cluster for Private Zone(Internal Only), 1 Cluster for Extranet Zone and 1 Cluster for DMZ Zone (Internet facing). By seprating clusters per network zone, you can ensure that everything is separated from each environemnt. The deployment can be done in a Pipeline to deploy to each cluster in each stage.</p>
+<p>Pros:</p>
+<ul>
+<li>Highest level of separation. Resources, RBAC, NetworkPolicy, Storage, etc. are per cluster. You can also dedicate a cluster per enduser team as well</li>
+<li>Least scope of security breach will be limited within a cluster</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>Consume more resources for Control Plane, Storage, Networking, Monitoring, Logging, etc. per cluster</li>
+<li>High maintenance and operations for Multi-Cluster Management, if you don&apos;t prepare Multi-Cluster Management tools. Example ArgoCD, Red Hat Advanced Cluster Management</li>
+</ul>
+<h3 id="cluster-namespace-separation-level">Cluster Namespace separation level</h3>
+<p>In the Container Platform, many technology and components are supporting separation of resources within a cluster. The components that can be used for separation are</p>
+<ul>
+<li>Container Runtime, CGroups, SELinux:
+Container Host level for Application resource segration on container host</li>
+<li>Project/Namespace:
+We can do the resource seprating by RBAC, Resource Quotas</li>
+<li>Node Seletor:
+To select node for sepecific resources</li>
+<li>Router/Ingress Sharding:
+We can dedicate Router/Ingress Controller to be the ingestion point in each network zone</li>
+</ul>
+<p>Pros:</p>
+<ul>
+<li>Resource efficientcy: by using the same cluster to shared control plane and infrastructure components</li>
+<li>Less management: less number of clusters to manage and upgrade</li>
+<li>Focused on Environment: by reducing overall resources, you can focused to have an identical, but smaller, OpenShift Cluster for Testing and Development environment. This can help you to have a test bed for testing integration, operation, BCP or upgrade.</li>
+</ul>
+<p>Cons:</p>
+<ul>
+<li>More Router/Ingress Infra nodes</li>
+<li>End user can&apos;t get full cluster-admin control when compare with dedicated cluster per team approach, but OpenShift can somehow compensate by having Operators with multi tenants support, such as OpenShift Service Mesh, the user can create their own service mesh control plane</li>
+</ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="infrastructure-cluster-logging.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift Cluster Logging">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="infrastructure-backup-etcd.html" class="navigation navigation-next " aria-label="Next page: OpenShift state backup with etcd snapshot">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"next":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-networking.md","mtime":"2021-04-03T03:38:07.089Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T03:39:02.727Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
