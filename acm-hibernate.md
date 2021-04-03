@@ -3,10 +3,10 @@
 <!-- TOC -->
 
 - [RHACM Hibernate OpenShift on Cloud Providers for Cost Saving](#rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving)
-  - [Prerequisites](#prerequisites)
-  - [Introduction](#introduction)
-  - [How ACM acheive Hibernate policies for OpenShift](#how-acm-acheive-hibernate-policies-for-openshift)
-  - [Steps 1-2-3](#steps-1-2-3)
+    - [Prerequisites](#prerequisites)
+    - [Introduction](#introduction)
+    - [How ACM acheive Hibernate policies for OpenShift](#how-acm-acheive-hibernate-policies-for-openshift)
+    - [Steps 1-2-3](#steps-1-2-3)
 
 <!-- /TOC -->
 
