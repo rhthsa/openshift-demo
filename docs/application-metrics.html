@@ -1,0 +1,736 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>User Workload Monitoring · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="ci-cd.html" />
+    
+    
+    <link rel="prev" href="openshift-service-mesh.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >User Workload Monitoring</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="user-workload-metrics">User Workload Metrics</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#user-workload-metrics">User Workload Metrics</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#service-monitoring">Service Monitoring</a></li>
+<li><a href="#custom-grafana-dashboard">Custom Grafana Dashboard</a></li>
+<li><a href="#custom-alert">Custom Alert</a></li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><p>Setup <a href="manifests/user-workload-monitoring.yaml">User Workload Monitoring</a></p>
+<pre><code class="lang-bash">oc apply -f  manifests/user-workload-monitoring.yaml
+</code></pre>
+<p>Remark: You also need to setup and configure <a href="infrastructure-monitoring-alerts.html">cluster monitoring</a> or use following <a href="manifests/cluster-monitoring-config.yaml">simple configuration</a>. You may need to change storageClassName based on your cluster configuration</p>
+<pre><code class="lang-bash">oc apply -f  manifests/cluster-monitoring-config.yaml
+</code></pre>
+</li>
+<li><p>Verify monitoring stack</p>
+<pre><code class="lang-bash">oc  get pod -n openshift-user-workload-monitoring
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">NAME                                   READY   STATUS    RESTARTS   AGE
+prometheus-operator-5fc7d894dc-9nlhc   2/2     Running   0          9m3s
+prometheus-user-workload-0             4/4     Running   1          5m45s
+prometheus-user-workload-1             4/4     Running   1          6m1s
+thanos-ruler-user-workload-0           3/3     Running   5          8m55s
+thanos-ruler-user-workload-1           3/3     Running   0          11s
+</code></pre>
+</li>
+</ul>
+<h2 id="service-monitoring">Service Monitoring</h2>
+<ul>
+<li><p>Deploy application with custom metrics</p>
+<ul>
+<li><p>Backend application provides metrics by /metrics and /metrics/applications</p>
+<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+oc apply -f manifests/backend.yaml -n project1
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+</code></pre>
+</li>
+<li><p>Test backend application metrics</p>
+<pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) -- curl -L  http://localhost:8080/metrics
+oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) -- curl -L http://localhost:8080/metrics/application
+</code></pre>
+</li>
+<li><p>Sample output</p>
+<pre><code class="lang-bash"># TYPE vendor_memory_committedNonHeap_bytes gauge
+vendor_memory_committedNonHeap_bytes 3.1780976E7
+# HELP vendor_memory_maxNonHeap_bytes Displays the maximum amount of used non-heap memory in bytes.
+# TYPE vendor_memory_maxNonHeap_bytes gauge
+vendor_memory_maxNonHeap_bytes -1.0
+# HELP vendor_memory_usedNonHeap_bytes Displays the amount of used non-heap memory in bytes.
+# TYPE vendor_memory_usedNonHeap_bytes gauge
+vendor_memory_usedNonHeap_bytes 3.1780976E7
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Create <a href="manifests/backend-service-monitor.yaml">Service Monitoring</a> to monitor backend service</p>
+<pre><code class="lang-bash">  oc apply -f manifests/backend-service-monitor.yaml -n project1
+</code></pre>
+<p>  Remark: Role <strong>monitor-edit</strong> is required for create <strong>ServiceMonitor</strong> and <strong>PodMonitor</strong> resources. Following example is granting role montior-edit to user1 for project1</p>
+<pre><code class="lang-bash">  oc adm policy add-role-to-user  monitoring-edit user1 -n project1
+</code></pre>
+</li>
+<li><p>Developer Console monitoring metrics  </p>
+<ul>
+<li><p>Select application metrics</p>
+<p><img src="images/dev-console-custom-metrics.png" alt=""></p>
+</li>
+<li><p>Application metrics </p>
+<ul>
+<li><p>Request counted</p>
+<p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
+</li>
+<li><p>Concurrent requests</p>
+<p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="custom-grafana-dashboard">Custom Grafana Dashboard</h2>
+<!-- https://access.redhat.com/solutions/5335491 -->
+<p>Use Grafana Operator (Community Edition) to deploy Grafana and configure datasource to Thanos Querier</p>
+<ul>
+<li><p>Create project</p>
+<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;Custom Grafana&quot; --description=&quot;Custom Grafana&quot;
+</code></pre>
+</li>
+<li><p>Install Grafana Operator to project application-monitor</p>
+<ul>
+<li>Install Grafana Operator from OperatorHub</li>
+</ul>
+<p><img src="images/grafana-operator-01.png" alt=""></p>
+<ul>
+<li>Install to application-monitor project</li>
+</ul>
+<p><img src="images/grafana-operator-02.png" alt=""></p>
+</li>
+<li><p>Create <a href="manifests/grafana.yaml">Grafana instance</a></p>
+<pre><code class="lang-bash">oc create -f manifests/grafana.yaml -n application-monitor
+oc get pods -n application-monitor
+#Sample Output
+NAME                                 READY   STATUS    RESTARTS   AGE
+grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
+grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
+</code></pre>
+</li>
+<li><p>Add cluster role <code>cluster-monitoring-view</code> to Grafana ServiceAccount</p>
+<pre><code class="lang-bash">oc adm policy add-cluster-role-to-user cluster-monitoring-view \
+-z grafana-serviceaccount -n application-monitor
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/grafana-datasource.yaml">Grafana DataSource</a> with serviceaccount grafana-serviceaccount&apos;s token and connect to thanos-querier</p>
+<pre><code class="lang-bash">TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
+cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$TOKEN&quot;&quot;&apos;&quot;&apos;/&apos;|oc apply -n application-monitor -f -
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/grafana-dashboard.yaml">Grafana Dashboard</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/grafana-dashboard.yaml -n application-monitor
+</code></pre>
+</li>
+<li><p>Login to Grafana Dashboard with following URL</p>
+<pre><code class="lang-bash">echo &quot;Grafana URL =&gt; https://$(oc get route grafana-route -o jsonpath=&apos;{.spec.host}&apos; -n application-monitor)&quot;
+</code></pre>
+<p>or use link provided by Developer Console</p>
+<p><img src="images/custom-grafana-route.png" alt=""></p>
+<p>Login with user <code>admin</code> and password <code>openshift</code></p>
+</li>
+</ul>
+<ul>
+<li><p>Generate workload</p>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+while [ 1 ];
+do
+  curl $FRONTEND_URL
+  printf &quot;\n&quot;
+  sleep .2
+done
+</code></pre>
+<p>Remark: You need to configure frontend app to connect to backend app</p>
+<pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+</code></pre>
+</li>
+<li><p>Grafana Dashboard</p>
+<p><img src="images/grafana-dashboard.png" alt=""></p>
+</li>
+</ul>
+<h2 id="custom-alert">Custom Alert</h2>
+<ul>
+<li><p>Check <code>PrometheusRule</code> <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a></p>
+<pre><code class="lang-yaml">apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backend-app-alert
+  namespace: project1
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: backend-app
+    rules:
+    - alert: ConcurrentBackend
+      expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)&gt;15
+      # wait just 1 minute for demo purpose
+      for: 1m
+      labels:
+        severity: &apos;warning&apos;
+      annotations:
+        message: &apos;Total concurrent request is  request/sec&apos;
+    - alert: HighLatency
+      expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds&gt;5
+      labels:
+        severity: &apos;critical&apos;
+      annotations:
+        message: &apos; response time is  sec&apos;
+</code></pre>
+<p><a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
+<ul>
+<li>ConcurrentBackend
+severity warning when total concurrent reqeusts is greater than 15</li>
+<li>HighLatency
+servierity critical when response time is greateer than 5 sec  </li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>Create <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> </p>
+<pre><code class="lang-bash">oc apply -f manifests/backend-custom-alert.yaml
+</code></pre>
+<p>Remark: Role <code>monitoring-rules-view</code> is required for view <code>PrometheusRule</code> resource and role <code>monitoring-rules-edit</code> is required to  create, modify, and deleting <code>PrometheusRule</code> </p>
+<p>Following example is granting role monitoring-rules-view and monitoring-rules-edit to user1 for project1</p>
+<pre><code class="lang-bash">oc adm policy add-role-to-user  monitoring-rules-view user1 -n project1
+oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
+</code></pre>
+</li>
+<li><p>For simplified our test, set backend app to 2 pod</p>
+<pre><code class="lang-bash">oc delete deployment backend-v2 -n project1
+oc scale deployment backend-v1 --replicas=2 -n project1
+</code></pre>
+</li>
+<li><p>Test <code>ConcurrentBackend</code> alert with 25 concurrent requests</p>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+siege -c 25 $FRONTEND_URL
+</code></pre>
+<p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
+<ul>
+<li>25 threads</li>
+<li>Duration 2 minutes</li>
+<li>Ramp up 30 sec</li>
+<li>Ramp down 30 sec</li>
+</ul>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+oc run load-test -n project1 -i \
+--image=loadimpact/k6 --rm=true --restart=Never \
+--  run -  &lt; manifests/load-test-k6.js \
+-e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
+</code></pre>
+<p>Check for alert in Developer Console by select Menu <code>Monitoring</code> then select <code>Alerts</code></p>
+<p><img src="images/alert-concurrent-backend.png" alt=""></p>
+</li>
+<li><p>Test <code>HighLatency</code> alert</p>
+<ul>
+<li><p>Set backend with 6 sec response tim</p>
+<ul>
+<li>By CLI<pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
+</code></pre>
+</li>
+<li><p>By Developer Console</p>
+<ul>
+<li><p>Select <code>Topology</code> then select backend-v1 and select dropdown menu <code>Edit Deployment</code></p>
+<p><img src="images/dev-console-edit-deployment.png" alt=""></p>
+</li>
+<li><p>Select <code>Environment</code> and set APP_BACKEND to <a href="https://httpbin.org/delay/6" target="_blank">https://httpbin.org/delay/6</a></p>
+<p><img src="images/dev-console-edit-environment.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Request to frontend app</p>
+<pre><code class="lang-bash">curl $FRONTEND_URL
+</code></pre>
+</li>
+<li><p>Check for alert in Developer Console </p>
+<p><img src="images/alert-high-latency.png" alt=""></p>
+</li>
+<li><p>Console overview status</p>
+<p><img src="images/console-overview-status.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="openshift-service-mesh.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift Service Mesh">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="ci-cd.html" class="navigation navigation-next " aria-label="Next page: CI/CD with Azure DevOps">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.7","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-03T04:07:38.633Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:08:14.858Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

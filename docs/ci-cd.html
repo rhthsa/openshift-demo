@@ -1,0 +1,739 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>CI/CD with Azure DevOps · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="application-metrics.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >CI/CD with Azure DevOps</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="cicd-with-azure-devops">CI/CD with Azure DevOps</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#ci/cd">CI/CD</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#azure-devops">Azure DevOps</a></li>
+<li><a href="#deploy-back-app">Deploy Back App</a></li>
+<li><a href="#deploy-front-app">Deploy Front App</a></li>
+<li><a href="#prepare-harbor-on-kubernetes/openshift">Prepare Harbor On Kubernetes/OpenShift</a></li>
+<li><a href="#prepare-azure-devops-service-connection">Prepare Azure DevOps Service Connection</a></li>
+<li><a href="#azure-pipelines">Azure pipelines</a></li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>Openshift 4.6 Cluster</li>
+<li>Oepnshift User with Admin Permission</li>
+<li>Azure DevOps Project</li>
+<li>Harbor Container Registry</li>
+<li>Postman / K6 for Test</li>
+</ul>
+<h2 id="azure-devops">Azure DevOps</h2>
+<ul>
+<li><p>Azure Devops Project</p>
+<p><a href="https://dev.azure.com/user/project" target="_blank">https://dev.azure.com/user/project</a></p>
+</li>
+<li><p>Azure Repo</p>
+<p>  <code>user</code>: chatapazar</p>
+<p>  <code>PAT</code>: xxx</p>
+<p>  <code>demo.Front Repository</code>: <a href="https://user@dev.azure.com/user/demo.Front/_git/demo.Front" target="_blank">https://user@dev.azure.com/user/demo.Front/_git/demo.Front</a></p>
+<p>  <code>demo.Back Repository</code> : <a href="https://user@dev.azure.com/user/demo.Front/_git/demo.Back" target="_blank">https://user@dev.azure.com/user/demo.Front/_git/demo.Back</a></p>
+</li>
+<li><p>Azure Artifact</p>
+<p>  create new feed</p>
+<p>  <code>name</code>: my-very-private-feed</p>
+<p>  leave all default</p>
+</li>
+</ul>
+<h2 id="deploy-back-app">Deploy Back App</h2>
+<p>deploy source code from azure repo with openshift s2i</p>
+<p>login, new project call &apos;test&apos;</p>
+<pre><code>oc login
+oc new-project test
+</code></pre><p>prepare secret for azure repo</p>
+<pre><code>oc create secret generic azure-repo --from-literal=username=chatapazar --from-literal=password=xxx --type=kubernetes.io/basic-auth
+oc secrets link builder azure-repo
+</code></pre><p>deploy back app <a href="ci-cd/back.yaml">back.yaml</a></p>
+<pre><code>oc create -f back.yaml
+oc expose svc/back
+</code></pre><h2 id="deploy-front-app">Deploy Front App</h2>
+<p>set current project to test</p>
+<pre><code>oc project test
+</code></pre><p>create secret for harbor</p>
+<pre><code>oc create secret docker-registry myharbor --docker-username=chatapazar --docker-server=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com --docker-password=xxx
+oc secrets link default myharbor --for=pull --namespace=test
+</code></pre><p>For private Container Registry and Self Sign Cert, if use CA go to create imagestream</p>
+<p>get ca.crt with openssl</p>
+<pre><code>openssl s_client -connect ocr.apps.cluster-b3e9.b3e9.example.opentlc.com:443 -showcerts &lt;/dev/null 2&gt;/dev/null|openssl x509 -outform PEM &gt; ca.crt
+</code></pre><p>or
+get cert with firefox (ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/v2 --&gt; select both PEM &amp; PEM chain)</p>
+<p>create configmap and add trust ca to openshift (both PEM &amp; PEM chain</p>
+<pre><code>oc create configmap harbor-registry --from-file=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com=ca1.crt -n openshift-config
+oc patch image.config.openshift.io/cluster --patch &apos;{&quot;spec&quot;:{&quot;additionalTrustedCA&quot;:{&quot;name&quot;:&quot;harbor-registry&quot;}}}&apos; --type=merge
+
+oc create configmap registry-config --from-file=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com=ca.crt -n openshift-config
+oc patch image.config.openshift.io/cluster --patch &apos;{&quot;spec&quot;:{&quot;additionalTrustedCA&quot;:{&quot;name&quot;:&quot;registry-config&quot;}}}&apos; --type=merge
+</code></pre><p>create imagestream</p>
+<pre><code>oc import-image test/front-blue:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 --confirm
+oc import-image test/front-green:latest --from=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 --confirm
+</code></pre><p>update imagestream, if you need change version of image in openshift</p>
+<pre><code>oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 test/front-blue:latest
+oc tag ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/test/testdemoapp.front:20201230.32 test/front-green:latest
+</code></pre><p>deploy front-blue, front-green and expose route to front-blue <a href="ci-cd/front-blue.yaml">front-blue.yaml</a>, <a href="ci-cd/front-green.yaml">front-green.yaml</a></p>
+<pre><code>oc create -f front-blue.yaml
+oc create -f front-green.yaml
+oc patch dc front-green -p &quot;{\&quot;spec\&quot;:{\&quot;replicas\&quot;:0}}&quot; -n test
+
+oc expose service front-blue -l name=front --name=front
+</code></pre><p>Environment of front app, can change in front-blue.yaml and front-green.yaml</p>
+<pre><code>ITERATION_COUNT=1000
+BACKEND_URL=http://back:8080/api/values/back
+ASPNETCORE_URLS=http://*:8080
+</code></pre><h2 id="canary-deployment">Canary Deployment</h2>
+<p>create imagestream for canary</p>
+<pre><code>oc import-image test/front-main:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/test/testdemoapp.front:20210105.5 --confirm
+oc import-image test/front-sub:latest --from=ocr.apps.cluster-852b.852b.example.opentlc.com/test/testdemoapp.front:20210105.5 --confirm
+</code></pre><p>create front-main dc</p>
+<pre><code>oc project test
+oc create -f front-main.yaml
+</code></pre><p>create front-sub dc</p>
+<pre><code>oc create -f front-sub.yaml
+</code></pre><p>create route canary</p>
+<pre><code>oc create -f canary.yaml
+</code></pre><p>test canary
+manual run release canary in azure devops</p>
+<pre><code>curl http://canary-test.apps.cluster-852b.852b.example.opentlc.com/api/values/information
+</code></pre><h2 id="prepare-harbor-on-kubernetesopenshift">Prepare Harbor On Kubernetes/OpenShift</h2>
+<p>create new project &apos;harbor&apos;</p>
+<pre><code>oc new-project harbor
+oc adm policy add-scc-to-group anyuid system:authenticated
+</code></pre><p>install harbor with helm: <a href="https://computingforgeeks.com/install-harbor-image-registry-on-kubernetes-openshift-with-helm-chart/" target="_blank">https://computingforgeeks.com/install-harbor-image-registry-on-kubernetes-openshift-with-helm-chart/</a></p>
+<pre><code>helm install harbor harbor/harbor \
+--set persistence.persistentVolumeClaim.registry.size=10Gi \
+--set persistence.persistentVolumeClaim.chartmuseum.size=5Gi \
+--set persistence.persistentVolumeClaim.database.size=5Gi \
+--set externalURL=https://ocr.apps.cluster-b3e9.b3e9.example.opentlc.com \
+--set expose.ingress.hosts.core=ocr.apps.cluster-b3e9.b3e9.example.opentlc.com \
+--set expose.ingress.hosts.notary=notary.apps.cluster-b3e9.b3e9.example.opentlc.com \
+--set harborAdminPassword=H@rb0rAdm \
+-n harbor
+</code></pre><ul>
+<li>change externalURL to <a href="https://ocr.{openshift-clustername}" target="_blank">https://ocr.{openshift-clustername}</a></li>
+<li>change expose.ingress.hosts.core to ocr.{openshift-clustername}</li>
+<li>change expose.ingress.hosts.notary to notary.{openshift-clustername}</li>
+<li>create project test</li>
+<li>create user for access harbor</li>
+</ul>
+<h2 id="prepare-azure-devops-service-connection">Prepare Azure DevOps Service Connection</h2>
+<p>Service Connection: openshift</p>
+<p>select new service connection, select type Openshift</p>
+<ul>
+<li>Authentication method: Token Based Authentication</li>
+<li>Server URL: such as <a href="https://api.cluster-b3e9.b3e9.example.opentlc.com:6443" target="_blank">https://api.cluster-b3e9.b3e9.example.opentlc.com:6443</a></li>
+<li>accept untrusted SSL: checked</li>
+<li>api token: such as sha256~fF0TCW0az6FMJ6232dJAxdhX4lqZo-bkYdbfFKwv_Zw</li>
+<li>service connection name: openshift</li>
+<li>grant access permission to all pipelines: checked</li>
+</ul>
+<p>Service Connection: harbor</p>
+<p>select new service connection, select type docker registry</p>
+<ul>
+<li>registry type: Others</li>
+<li>Docker Registry: such as <a href="https://ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/" target="_blank">https://ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/</a></li>
+<li>Docker ID: harbor user</li>
+<li>Docker Password: harbor password</li>
+<li>service connection name: harbor</li>
+<li>grant access permission to all pipelines: checked</li>
+</ul>
+<p>Service Connection: fortify</p>
+<p>select new service connection, select type fortify </p>
+<ul>
+<li>authen mode: basic authen</li>
+<li>api url: <a href="https://api.trial.fortify.com" target="_blank">https://api.trial.fortify.com</a></li>
+<li>portal url: <a href="https://trial.fortify.com" target="_blank">https://trial.fortify.com</a></li>
+<li>username: chatapazar@gmail.com</li>
+<li>PAT: xxx</li>
+<li>Tenant ID: xxx</li>
+<li>connection name: fortify</li>
+</ul>
+<h2 id="azure-pipelines">Azure pipelines</h2>
+<p>Pipelines: <a href="ci-cd/sample-pipeline.yml">sample-pipeline.yml</a>, <a href="ci-cd/sample-pipeline-redhat-image.yml">sample-pipeline-redhat-image.yml</a></p>
+<p>current step in ci or pipeline</p>
+<ul>
+<li>install .net sdk 2.2 for test project (app use 2.1, test use 2.2 ???)</li>
+<li>restore package/library with azure artifacts</li>
+<li>build</li>
+<li>unit test --&gt; publish to Azure DevOps</li>
+<li>code coverage with cobertura --&gt; publish to Azure DevOps</li>
+<li>publish</li>
+<li>Option: scan code with fortify (use fortify on demand, don&apos;t have fortify scs license file)</li>
+<li>Option: login registry.redhat.io for pull ubi8/dotnet-21-runtime --&gt; sample-pipeline-redhat-image.yml</li>
+<li>build image</li>
+<li>install trivy, scan image with trivy, publish resutl to Azure DevOps (test)</li>
+<li>harbor login, with self sign of harbor, need copy ca.crt to docker 
+(such as /etc/docker/certs.d/ocr.apps.cluster-b3e9.b3e9.example.opentlc.com/ca.crt ) in Azure DevOps agent 
+and manual login, recommended use CA in Prod</li>
+<li>push image to harbor </li>
+</ul>
+<p>Releases: <a href="ci-cd/blue-green.json">blue-green.json</a>, <a href="ci-cd/canary.json">canary.json</a></p>
+<p>trigger from ci/pipeline or manual</p>
+<p>stage 1: switch to new version</p>
+<ul>
+<li>setup oc command</li>
+<li>check current deployment and destination deployment</li>
+<li>switch from blue to green or green to blue</li>
+<li>switch route to new version</li>
+</ul>
+<p>stage 2: scale down previous version</p>
+<ul>
+<li>can add approval for confirm </li>
+<li>setup oc command</li>
+<li>scale down previous version</li>
+</ul>
+<p>Test with postman script of Test</p>
+<h2 id="canary-deployment">Canary Deployment</h2>
+<p>change in front route with yaml </p>
+<pre><code>spec:
+  host: front-test.apps.cluster-852b.852b.example.opentlc.com
+  to:
+    kind: Service
+    name: front-blue
+    weight: 90
+  alternateBackends:
+    - kind: Service
+      name: front-green
+      weight: 10
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
+</code></pre><p>or oc pathc</p>
+<pre><code>oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;weight&quot;:60}}}&apos; -n project1 
+oc patch route frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/alternateBackends/0/weight&quot;,&quot;value&quot;:40}]&apos; -n project1
+</code></pre><h2 id="use-openshift-internal-registry">Use Openshift Internal Registry</h2>
+<pre><code>oc create imagestream demofront -n test
+oc create imagestream demoapp -n test
+
+oc login with plugin
+docker login -u opentlc-mgr -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/test/demofront:xxx
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/test/demoapp:xxx
+
+oc tag test/demofront:xxx test/demofront:latest
+oc tag test/demoapp:xxx test/demoapp:latest
+</code></pre><ul>
+<li>create imagestream</li>
+<li>login openshift</li>
+<li>login docker to openshift internal registry with token</li>
+<li>push image</li>
+<li>tag image stream</li>
+</ul>
+<h2 id="step-demo">Step Demo</h2>
+<ul>
+<li>preset architecture prod vs demo</li>
+<li>preset ocp console / usage / login / user management</li>
+<li>preset harbor / usage / project / user management / scan manual/auto / set cve block pull / set cve whitelist / set auto scan on push</li>
+<li>present pipeline / release</li>
+<li>scan code with fortify</li>
+<li>scan image in pipeline , change show image from red hat , run with red hat image</li>
+<li>blue green / deploy</li>
+<li>canary --&gt; example --&gt; see again in service mesh , network deploy section</li>
+<li>detail of <a href="openshift-route.html">openshift route deployment streategy</a>   </li>
+</ul>
+<h2 id="openshift-internal-registry">openshift internal registry</h2>
+<ul>
+<li>add permission to user for internal registry<pre><code>oc adm policy add-role-to-user system:registry &lt;intended_user&gt; -n &lt;namespace/project&gt;
+oc adm policy add-role-to-user system:image-builder &lt;intended_user&gt; -n &lt;namespace/project&gt;
+## or for cluster-wide access...
+oc adm policy add-cluster-role-to-user system:registry &lt;intended_user&gt;
+oc adm policy add-cluster-role-to-user system:image-builder &lt;intended_user&gt;
+</code></pre>example<pre><code>oc login (with user1)
+oc new-project user1
+oc login (with user2)
+oc new-project user2
+oc login (with admin)
+oc adm policy add-role-to-user system:registry user1 -n user1
+oc adm policy add-role-to-user system:image-builder user2 -n user2
+</code></pre></li>
+<li>test rbac internal registry<pre><code>oc login (with user1)
+docker login -u user1 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull hello-world
+docker tag  hello-world:latest default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+docker push default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view imagestream in openshift project user1
+docker rmi -f $(docker images -a -q)
+docker images
+docker logout default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+oc login (with user2)
+docker login -u user2 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view result error
+docker logout default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+oc login (with user1)
+docker login -u user1 -p $(oc whoami -t) default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com
+docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.example.opentlc.com/user1/hello-world:latest
+#view result success
+</code></pre></li>
+<li>prune image <a href="https://docs.openshift.com/container-platform/4.4/applications/pruning-objects.html#pruning-images_pruning-objects" target="_blank">https://docs.openshift.com/container-platform/4.4/applications/pruning-objects.html#pruning-images_pruning-objects</a></li>
+</ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="application-metrics.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: User Workload Monitoring">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"CI/CD with Azure DevOps","level":"1.4.7","depth":2,"previous":{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd.md","mtime":"2021-04-03T04:07:38.633Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:08:14.858Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

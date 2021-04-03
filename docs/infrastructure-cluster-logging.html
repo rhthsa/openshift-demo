@@ -1,0 +1,701 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>OpenShift Cluster Logging · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="infrastructure-networking.html" />
+    
+    
+    <link rel="prev" href="infrastructure-monitoring-alerts.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >OpenShift Cluster Logging</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="openshift-infrastructure-nodes">OpenShift Infrastructure Nodes</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#openshift-infrastructure-nodes">OpenShift Infrastructure Nodes</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#openshift-cluster-logging">OpenShift Cluster Logging</a><ul>
+<li><a href="#deploying-openshift-logging">Deploying OpenShift Logging</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>OpenShift 4.6 on VMware 6.7 U3+ or 7.0</li>
+<li>VMware Cloud Native Storage to support CNS CSI</li>
+<li>done the OpenShift Infra Nodes provisioning</li>
+</ul>
+<h2 id="openshift-cluster-logging">OpenShift Cluster Logging</h2>
+<p>In this lab you will explore the logging aggregation capabilities of OpenShift.</p>
+<p>An extremely important function of OpenShift is collecting and aggregating logs from the environments and the application pods it is running. OpenShift ships with an elastic log aggregation solution: EFK. (ElasticSearch, Fluentd and Kibana)</p>
+<p>The cluster logging components are based upon Elasticsearch, Fluentd, and Kibana (EFK). The collector, Fluentd, is deployed to each node in the OpenShift cluster. It collects all node and container logs and writes them to Elasticsearch (ES). Kibana is the centralized, web UI where users and administrators can create rich visualizations and dashboards with the aggregated data. Administrators can see and search through all logs. Application owners and developers can allow access to logs that belong to their projects. The EFK stack runs on top of OpenShift.</p>
+<p><strong>Warning</strong>
+This lab requires that you have completed the infra-nodes lab. The logging stack will be installed on the infra nodes that were created in that lab.</p>
+<h3 id="deploying-openshift-logging">Deploying OpenShift Logging</h3>
+<p>OpenShift Container Platform cluster logging is designed to be used with the default configuration, which is tuned for small to medium sized OpenShift Container Platform clusters. The installation instructions that follow include a sample Cluster Logging Custom Resource (CR), which you can use to create a cluster logging instance and configure your cluster logging deployment.</p>
+<p>If you want to use the default cluster logging install, you can use the sample CR directly.</p>
+<p>If you want to customize your deployment, make changes to the sample CR as needed. The following describes the configurations you can make when installing your cluster logging instance or modify after installtion. See the Configuring sections for more information on working with each component, including modifications you can make outside of the Cluster Logging Custom Resource.</p>
+<p><strong>Create the openshift-logging namespace</strong>
+OpenShift Logging will be run from within its own namespace openshift-logging. This namespace does not exist by default, and needs to be created before logging may be installed. The namespace is represented in yaml format as:</p>
+<pre><code class="lang-yaml">apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-logging
+  annotations:
+    openshift.io/node-selector: &quot;&quot;
+  labels:
+    openshift.io/cluster-logging: &quot;true&quot;
+    openshift.io/cluster-monitoring: &quot;true&quot;
+</code></pre>
+<p>To create the namespace, run the following command:</p>
+<pre><code class="lang-yaml">cat &lt;&lt;EOF | oc create -f -
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-logging
+  annotations:
+    openshift.io/node-selector: &quot;&quot;
+  labels:
+    openshift.io/cluster-logging: &quot;true&quot;
+    openshift.io/cluster-monitoring: &quot;true&quot;
+EOF
+</code></pre>
+<p><strong>Install the Elasticsearch and Cluster Logging Operators in the cluster</strong></p>
+<p>In order to install and configure the EFK stack into the cluster, additional operators need to be installed. These can be installed from the Operator Hub from within the cluster via the GUI.</p>
+<p>When using operators in OpenShift, it is important to understand the basics of some of the underlying principles that make up the Operators. CustomResourceDefinion (CRD) and CustomResource (CR) are two Kubernetes objects that we will briefly describe.CRDs are generic pre-defined structures of data. The operator understands how to apply the data that is defined by the CRD. In terms of programming, CRDs can be thought as being similar to a class. CustomResource (CR) is an actual implementations of the CRD, where the structured data has actual values. These values are what the operator will use when configuring it&#x2019;s service. Again, in programming terms, CRs would be similar to an instantiated object of the class.</p>
+<p>The general pattern for using Operators is first, install the Operator, which will create the necessary CRDs. After the CRDs have been created, we can create the CR which will tell the operator how to act, what to install, and/or what to configure. For installing openshift-logging, we will follow this pattern.</p>
+<p>To begin, log-in to the OpenShift Cluster&#x2019;s GUI.</p>
+<p>Then follow the following steps:</p>
+<ul>
+<li><p>Install the Elasticsearch Operator:</p>
+<ul>
+<li>In the OpenShift console, click Operators &#x2192; OperatorHub.</li>
+<li>Choose Elasticsearch Operator from the list of available Operators, and click Install.</li>
+<li>On the Create Operator Subscription page, select Update Channel 4.6, leave all other defaults and then click Subscribe.
+This makes the Operator available to all users and projects that use this OpenShift Container Platform cluster.</li>
+</ul>
+</li>
+<li><p>Install the Cluster Logging Operator:
+<strong>Note</strong>
+The Cluster Logging operator needs to be installed in the openshift-logging namespace. Please ensure that the openshift-logging namespace was created from the previous steps</p>
+<ul>
+<li>In the OpenShift console, click Operators &#x2192; OperatorHub.</li>
+<li>Choose Cluster Logging from the list of available Operators, and click Install.</li>
+<li>On the Create Operator Subscription page, Under ensure Installation Mode that A specific namespace on the cluster is selected, and choose openshift-logging. In addition, select Update Channel 4.6 and leave all other defaults and then click Subscribe.</li>
+</ul>
+</li>
+<li><p>Verify the operator installations:</p>
+<ul>
+<li>Switch to the Operators &#x2192; Installed Operators page.</li>
+<li>Make sure the openshift-logging project is selected.</li>
+<li>In the Status column you should see green checks with either InstallSucceeded or Copied and the text Up to date.
+<strong>Note</strong>
+During installation an operator might display a Failed status. If the operator then installs with an InstallSucceeded message, you can safely ignore the Failed message.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Create the Loggging CustomResource (CR) instance</strong></p>
+<p>Now that we have the operators installed, along with the CRDs, we can now kick off the logging install by creating a Logging CR. This will define how we want to install and configure logging.</p>
+<ol>
+<li>In the OpenShift Console, switch to the the Administration &#x2192; Custom Resource Definitions page.</li>
+<li>On the Custom Resource Definitions page, click ClusterLogging.</li>
+<li>On the Custom Resource Definition Overview page, select View Instances from the Actions menu
+ <strong>Note</strong>
+ If you see a 404 error, don&#x2019;t panic. While the operator installation succeeded, the operator itself has not finished installing and the CustomResourceDefinition may not have been created yet. Wait a few moments and then refresh the page.</li>
+<li>On the Cluster Loggings page, click Create Cluster Logging.</li>
+<li>In the YAML editor, replace the code with the following:
+ <strong>Note: you need to change storageclass that available in your environment</strong><pre><code class="lang-yaml"> apiVersion: &quot;logging.openshift.io/v1&quot;
+ kind: &quot;ClusterLogging&quot;
+ metadata:
+   name: &quot;instance&quot;
+   namespace: &quot;openshift-logging&quot;
+ spec:
+   managementState: &quot;Managed&quot;
+   logStore:
+     type: &quot;elasticsearch&quot;
+     elasticsearch:
+       nodeCount: 3
+       storage:
+         storageClassName: thin
+         size: 100Gi
+       redundancyPolicy: &quot;SingleRedundancy&quot;
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+       resources:
+         request:
+           memory: 4G
+   visualization:
+     type: &quot;kibana&quot;
+     kibana:
+       replicas: 1
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+   curation:
+     type: &quot;curator&quot;
+     curator:
+       schedule: &quot;30 3 * * *&quot;
+       nodeSelector:
+         node-role.kubernetes.io/infra: &quot;&quot;
+   collection:
+     logs:
+       type: &quot;fluentd&quot;
+       fluentd: {}
+</code></pre>
+</li>
+<li>Then click Create.</li>
+</ol>
+<p><strong>Verify the Loggging install</strong></p>
+<p>Now that Logging has been created, let&#x2019;s verify that things are working.</p>
+<ol>
+<li>Switch to the Workloads &#x2192; Pods page.</li>
+<li>Select the openshift-logging project.</li>
+</ol>
+<p>You should see pods for cluster logging (the operator itself), Elasticsearch, and Fluentd, and Kibana.</p>
+<p>Alternatively, you can verify from the command line by using the following command:</p>
+<pre><code class="lang-bash">oc get pods -n openshift-logging
+</code></pre>
+<p>You should eventually see something like:</p>
+<pre><code class="lang-bash">NAME                                            READY   STATUS    RESTARTS   AGE
+cluster-logging-operator-cb795f8dc-xkckc        1/1     Running   0          32m
+elasticsearch-cdm-b3nqzchd-1-5c6797-67kfz       2/2     Running   0          14m
+elasticsearch-cdm-b3nqzchd-2-6657f4-wtprv       2/2     Running   0          14m
+elasticsearch-cdm-b3nqzchd-3-588c65-clg7g       2/2     Running   0          14m
+fluentd-2c7dg                                   1/1     Running   0          14m
+fluentd-9z7kk                                   1/1     Running   0          14m
+fluentd-br7r2                                   1/1     Running   0          14m
+fluentd-fn2sb                                   1/1     Running   0          14m
+fluentd-pb2f8                                   1/1     Running   0          14m
+fluentd-zqgqx                                   1/1     Running   0          14m
+kibana-7fb4fd4cc9-bvt4p                         2/2     Running   0          14m
+</code></pre>
+<p>The Fluentd Pods are deployed as part of a DaemonSet, which is a mechanism to ensure that specific Pods run on specific Nodes in the cluster at all times:</p>
+<pre><code class="lang-bash">oc get daemonset -n openshift-logging
+</code></pre>
+<p>You will see something like:</p>
+<pre><code class="lang-bash">NAME      DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+fluentd   9         9         9       9            9           kubernetes.io/os=linux   94s
+</code></pre>
+<p>You should expect 1 fluentd Pod for every Node in your cluster. Remember that Masters are still Nodes and fluentd will run there, too, to slurp the various logs.</p>
+<p>You will also see the storage for ElasticSearch has been automatically provisioned. If you query the PersistentVolumeClaim objects in this project you will see the new storage.</p>
+<pre><code class="lang-bash">oc get pvc -n openshift-logging
+</code></pre>
+<p>You will see something like:</p>
+<pre><code class="lang-bash">NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS
+MODES   STORAGECLASS                  AGE
+elasticsearch-elasticsearch-cdm-ggzilasv-1   Bound    pvc-f3239564-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+        ocs-storagecluster-ceph-rbd   15m
+elasticsearch-elasticsearch-cdm-ggzilasv-2   Bound    pvc-f324a252-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+        ocs-storagecluster-ceph-rbd   15m
+elasticsearch-elasticsearch-cdm-ggzilasv-3   Bound    pvc-f326aa7d-389c-11ea-bab2-06ca7918708a   100Gi      RWO
+        ocs-storagecluster-ceph-rbd   15m
+</code></pre>
+<p><strong>Note</strong>
+Much like with the Metrics solution, we defined the appropriate NodeSelector in the Logging configuration (CR) to ensure that the Logging components only landed on the infra nodes. That being said, the DaemonSet ensures FluentD runs on all nodes. Otherwise we would not capture all of the container logs.</p>
+<p><strong>Accessing Kibana</strong>
+As mentioned before, Kibana is the front end and the way that users and admins may access the OpenShift Logging stack. To reach the Kibana user interface, first determine its public access URL by querying the Route that got set up to expose Kibana&#x2019;s Service:</p>
+<p>To find and access the Kibana route:</p>
+<ol>
+<li>In the OpenShift console, click on the Networking &#x2192; Routes page.</li>
+<li>Select the openshift-logging project.</li>
+<li>Click on the Kibana route.</li>
+<li>In the Location field, click on the URL presented.</li>
+<li>Click through and accept the SSL certificates</li>
+</ol>
+<p>Alternatively, this can be obtained from the command line:</p>
+<pre><code class="lang-bash">oc get route -n openshift-logging
+</code></pre>
+<p>You will see something like:</p>
+<pre><code class="lang-bash">NAME     HOST/PORT                                                           PATH   SERVICES   PORT    TERMINATION          WILDCARD
+kibana   kibana-openshift-logging.{{ ROUTE_SUBDOMAIN }}          kibana     &lt;all&gt;   reencrypt/Redirect   None
+</code></pre>
+<p>There is a special authentication proxy that is configured as part of the EFK installation that results in Kibana requiring OpenShift credentials for access.</p>
+<p>Because you&#x2019;ve already authenticated to the OpenShift Console as a cluster-admin user, you will see an administrative view of what Kibana has to show you (which you authorized by clicking the button).</p>
+<p><strong>Queries with Kibana</strong>
+Once the Kibana web interface is up, we are now able to do queries. Kibana offers a the user a powerful interface to query all logs that come from the cluster.</p>
+<p>By default, Kibana will show all logs that have been received within the the last 15 minutes. This time interval may be changed in the upper right hand corner. The log messages are shown in the middle of the page. All log messages that are received are indexed based on the log message content. Each message will have fields associated that are associated to that log message. To see the fields that make up an individual message, click on the arrow on the side of each message located in the center of the page. This will show the message fields that are contained.</p>
+<p>First, set the default index pattern to .all. On the left hand side towards the top, in the drop down menu select the .all index pattern.</p>
+<p>To select fields to show for messages, look on left hand side fore the Available Fields label. Below this are fields that can be selected and shown in the middle of the screen. Find the hostname field below the Available Fields and click add. Notice now, in the message pain, each message&#x2019;s hostname is displayed. More fields may be added. Click the add button for kubernetes.pod_name and also for message.</p>
+<p>To create a query for logs, the Add a filter + link right below the search box may be used. This will allow us to build queries using the fields of the messages. For example, if we wanted to see all log messages from the openshift-logging namespace, we can do the following:</p>
+<ol>
+<li>Click on Add a filter +.</li>
+<li>In the Fields input box, start typing kubernetes.namespace_name. Notice all of the available fields that we can use to build the query</li>
+<li>Next, select is.</li>
+<li>In the Value field, type in openshift-logging</li>
+<li>Click the &quot;Save&quot; button</li>
+</ol>
+<p>Now, in the center of the screen you will see all of the logs from all the pods in the openshift-logging namespace.</p>
+<p>Of course, you may add more filters to refine the query.</p>
+<p>One other neat option that Kibana allows you to do is save queries to use for later. To save a query do the following:</p>
+<ol>
+<li>click on Save at the top of the screen.</li>
+<li>Type in the name you would like to save it as. In this case, let&#x2019;s type in openshift-logging Namespace</li>
+</ol>
+<p>Once this has been saved, it can be used at a later time by hitting the Open button and selecting this query.</p>
+<p>Please take time to explore the Kibana page and get experience by adding and doing more queries. This will be helpful when using a production cluster, you will be able to get the exact logs that you are looking for in a single place.</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="infrastructure-monitoring-alerts.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift Platform Monitoring and Alert">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="infrastructure-networking.html" class="navigation navigation-next " aria-label="Next page: OpenShift Networking">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-cluster-logging.md","mtime":"2021-04-03T04:07:38.661Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:08:14.858Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+

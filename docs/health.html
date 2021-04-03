@@ -1,0 +1,711 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Health Check · OpenShift Demo</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        <meta name="author" content="Red Hat Thailand SA">
+        
+        
+    
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search-plus/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="openshift-service-mesh.html" />
+    
+    
+    <link rel="prev" href="hpa.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" >
+            
+                <span>
+            
+                    
+                    Infrastructure
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.2.1" data-path="infrastructure-authentication-providers.html">
+            
+                <a href="infrastructure-authentication-providers.html">
+            
+                    
+                    OpenShift Authentication Providers with AD
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.2" data-path="infrastructure-infra-nodes.html">
+            
+                <a href="infrastructure-infra-nodes.html">
+            
+                    
+                    OpenShift MachineSet and Infrastructure Nodes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.3" data-path="infrastructure-monitoring-alerts.html">
+            
+                <a href="infrastructure-monitoring-alerts.html">
+            
+                    
+                    OpenShift Platform Monitoring and Alert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.4" data-path="infrastructure-cluster-logging.html">
+            
+                <a href="infrastructure-cluster-logging.html">
+            
+                    
+                    OpenShift Cluster Logging
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.5" data-path="infrastructure-networking.html">
+            
+                <a href="infrastructure-networking.html">
+            
+                    
+                    OpenShift Networking
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.6" data-path="infrastructure-backup-etcd.html">
+            
+                <a href="infrastructure-backup-etcd.html">
+            
+                    
+                    OpenShift state backup with etcd snapshot
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" >
+            
+                <span>
+            
+                    
+                    Multi-cluster Management with Advanced Cluster Management (RHACM)
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
+            
+                <a href="acm-hibernate.html">
+            
+                    
+                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" >
+            
+                <span>
+            
+                    
+                    Container Applications
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+            
+                <a href="helm.html">
+            
+                    
+                    Application Deployment with Helm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+            
+                <a href="openshift-route.html">
+            
+                    
+                    OpenShift Route
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+            
+                <a href="hpa.html">
+            
+                    
+                    Horizontal Pod Autoscaler
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.4.4" data-path="health.html">
+            
+                <a href="health.html">
+            
+                    
+                    Health Check
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+            
+                <a href="openshift-service-mesh.html">
+            
+                    
+                    OpenShift Service Mesh
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+            
+                <a href="application-metrics.html">
+            
+                    
+                    User Workload Monitoring
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+            
+                <a href="ci-cd.html">
+            
+                    
+                    CI/CD with Azure DevOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Health Check</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div class="search-plus" id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="pod-health-check">Pod Health Check</h1>
+<!-- TOC -->
+<ul>
+<li><a href="#pod-health-check">Pod Health Check</a><ul>
+<li><a href="#prerequisite">Prerequisite</a></li>
+<li><a href="#readiness-livenss-and-startup-probe">Readiness, Livenss and Startup Probe</a></li>
+<li><a href="#configure-and-test-probes">Configure and Test Probes</a><ul>
+<li><a href="#command-line">Command Line</a></li>
+<li><a href="#developer-console">Developer Console</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<!-- /TOC -->
+<h2 id="prerequisite">Prerequisite</h2>
+<p>Deploy frontend app (if you still not deploy it yet)</p>
+<pre><code class="lang-bash">  oc apply -f manifests/frontend.yaml -n project1
+  oc delete deployment frontend-v2 -n project1
+</code></pre>
+<h2 id="readiness-livenss-and-startup-probe">Readiness, Livenss and Startup Probe</h2>
+<p>Kubernetes provide 3 types of probe to check pod&apos;s health</p>
+<ul>
+<li>Readiness, check that pod is ready for process request or not. If success, service will allow traffic to this pod.</li>
+<li>Liveness, check that pod is dead or alive. Pod will be restarted if liveness probe is failed.</li>
+<li>Startup, for dealing with long startup time pod. Set probe with same as liveness with a duration to failureThreshold * periodSecond. Liveness probe will takeover Startup probe after startup is success.</li>
+</ul>
+<p>Frontend application provides health check with following URI</p>
+<table>
+<thead>
+<tr>
+<th>URI</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/health/live</td>
+<td style="text-align:left">Livenness probe URL</td>
+</tr>
+<tr>
+<td>/health/ready</td>
+<td style="text-align:left">Readiness probe URL</td>
+</tr>
+</tbody>
+</table>
+<p>For demo purpose we can set readiness and liveness by following URI</p>
+<table>
+<thead>
+<tr>
+<th>URI</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/stop</td>
+<td style="text-align:left">Set liveness to false</td>
+</tr>
+<tr>
+<td>/start</td>
+<td style="text-align:left">Set liveness to true</td>
+</tr>
+<tr>
+<td>/not_ready</td>
+<td style="text-align:left">Set readiness to false</td>
+</tr>
+<tr>
+<td>/ready</td>
+<td style="text-align:left">Set readiness to true</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Test frontend app readiness<ul>
+<li>Connect to pod<pre><code class="lang-bash">POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk &apos;{print $1}&apos;)
+oc -n project1 rsh $POD
+</code></pre>
+</li>
+<li>Test frontend app<pre><code class="lang-bash">curl http://localhost:8080/
+</code></pre>
+</li>
+<li>Test readiness probe<pre><code class="lang-bash">curl http://localhost:8080/health/ready
+</code></pre>
+</li>
+<li>Set pod to not ready state <pre><code class="lang-bash">curl http://localhost:8080/not_ready
+</code></pre>
+</li>
+<li>Test frontend readiness probe and test app again. You will get 503 Service Unavailable response code.<pre><code class="lang-bash">curl -v http://localhost:8080/health/ready
+curl -v http://localhost:8080/
+</code></pre>
+</li>
+<li>Set pod  to ready state<pre><code class="lang-bash">curl http://localhost:8080/ready
+</code></pre>
+<h2 id="configure-and-test-probes">Configure and Test Probes</h2>
+<h3 id="command-line">Command Line</h3>
+</li>
+</ul>
+</li>
+<li><p>Test frontend app liveness</p>
+<ul>
+<li>Connect to pod<pre><code class="lang-bash">POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk &apos;{print $1}&apos;)
+oc -n project1 rsh $POD
+</code></pre>
+</li>
+<li>Test frontend app<pre><code class="lang-bash">curl http://localhost:8080/
+</code></pre>
+</li>
+<li>Test liveness probe<pre><code class="lang-bash">curl http://localhost:8080/health/live
+</code></pre>
+</li>
+<li>Set pod to not ready state <pre><code class="lang-bash">curl http://localhost:8080/stop
+</code></pre>
+</li>
+<li>Test frontend liveness probe and test app again. You will get 503 Service Unavailable response code.<pre><code class="lang-bash">curl -v http://localhost:8080/health/live
+curl -v http://localhost:8080/
+</code></pre>
+</li>
+<li>Set pod  to ready state<pre><code class="lang-bash">curl http://localhost:8080/start
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Configure Readiness, Liveness and Startup probe</p>
+<pre><code class="lang-bash">  oc rollout  pause deployment/frontend-v1 -n project1
+  oc set probe deployment/frontend-v1 --readiness --get-url=http://:8080/health/ready --initial-delay-seconds=8 --failure-threshold=1 --period-seconds=3 --timeout-seconds=5 -n project1
+  oc set probe deployment/frontend-v1 --liveness --get-url=http://:8080/health/live --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=10 --timeout-seconds=5  -n project1
+  oc set probe deployment/frontend-v1 --startup --get-url=http://:8080/health/live --initial-delay-seconds=5  --period-seconds=10 -n project1
+  oc rollout resume deployment/frontend-v1 -n project1
+  watch oc get pods -n project1
+</code></pre>
+</li>
+<li>Check pod status. New pod is created and previous pod is terminated.<pre><code class="lang-bash">  NAME                           READY   STATUS              RESTARTS   AGE
+  frontend-v1-5d8c4ccc8c-rhzwt   0/1     ContainerCreating   0          3s
+  frontend-v1-c5d4648f9-fkc84    1/1     Running             0          49s
+</code></pre>
+</li>
+<li>Scale frontend-v1 to 3 pods<pre><code class="lang-bash">  oc scale deployment/frontend-v1 --replicas=3
+</code></pre>
+</li>
+<li>Test Liveness Probe<ul>
+<li>Test live probe by set one frontend pod to return 503 for liveness probe<pre><code class="lang-bash">  POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk &apos;{print $1}&apos;)
+  oc exec -n project1 $POD -- curl -s http://localhost:8080/stop
+  printf &quot;\n%s is dead\n&quot; $POD
+</code></pre>
+</li>
+<li>Check pod&apos;s events<pre><code class="lang-bash">  oc describe pod $POD -n project1
+  # Sample output
+  Events:
+  Type     Reason          Age    From               Message
+  ----     ------          ----   ----               -------
+  Normal   Scheduled       3m57s  default-scheduler  Successfully assigned project1/frontend-v1-5d8c4ccc8c-j9b6d to ip-10-0-148-247.ap-southeast-1.compute.internal
+  Normal   AddedInterface  3m55s  multus             Add eth0 [10.131.0.112/23]
+  Normal   Pulling         3m54s  kubelet            Pulling image &quot;quay.io/voravitl/frontend-js:v1&quot;
+  Normal   Pulled          3m51s  kubelet            Successfully pulled image &quot;quay.io/voravitl/frontend-js:v1&quot; in 2.988138314s
+  Normal   Created         3m51s  kubelet            Created container frontend
+  Normal   Started         3m51s  kubelet            Started container frontend
+  Warning  Unhealthy       24s    kubelet            Liveness probe failed: HTTP probe failed with statuscode: 503
+  Normal   Killing         24s    kubelet            Container frontend failed liveness probe, will be restarted
+</code></pre>
+</li>
+<li>Check that pod is restarted <pre><code class="lang-bash">  oc get pods -n project1
+  ## Sample output
+  NAME                           READY   STATUS    RESTARTS   AGE
+  frontend-v1-5d8c4ccc8c-j9b6d   1/1     Running   1          5m28s
+  frontend-v1-5d8c4ccc8c-lx4xb   1/1     Running   0          4m3s
+  frontend-v1-5d8c4ccc8c-qvxwp   1/1     Running   0          4m3s
+</code></pre>
+</li>
+</ul>
+</li>
+<li>Test Readiness Probe<ul>
+<li>Test live probe by set one frontend pod to return 503 for liveness probe<pre><code class="lang-bash">  POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk &apos;{print $1}&apos;)
+  oc exec -n project1 $POD -- curl -s http://localhost:8080/not_ready
+  printf &quot;\n%s is not ready\n&quot; $POD
+</code></pre>
+</li>
+<li>Check pod status<pre><code class="lang-bash">oc get pods -n project1
+## Sample output
+NAME                           READY   STATUS    RESTARTS   AGE
+frontend-v1-5d8c4ccc8c-j9b6d   0/1     Running   1          5m28s
+frontend-v1-5d8c4ccc8c-lx4xb   1/1     Running   0          4m3s
+frontend-v1-5d8c4ccc8c-qvxwp   1/1     Running   0          4m3s
+</code></pre>
+</li>
+<li>Check pod&apos;s events<pre><code class="lang-bash">oc describe pod/$POD -n project1
+# Sample Output
+Events:
+Type     Reason          Age    From               Message
+----     ------          ----   ----               -------
+Normal   Scheduled       3m57s  default-scheduler  Successfully assigned project1/frontend-v1-5d8c4ccc8c-j9b6d to ip-10-0-148-247.ap-southeast-1.compute.internal
+Normal   AddedInterface  3m55s  multus             Add eth0 [10.131.0.112/23]
+Normal   Pulling         3m54s  kubelet            Pulling image &quot;quay.io/voravitl/frontend-js:v1&quot;
+Normal   Pulled          3m51s  kubelet            Successfully pulled image &quot;quay.io/voravitl/frontend-js:v1&quot; in 2.988138314s
+Normal   Created         3m51s  kubelet            Created container frontend
+Normal   Started         3m51s  kubelet            Started container frontend
+Warning  Unhealthy       24s    kubelet            Liveness probe failed: HTTP probe failed with statuscode: 503
+Normal   Killing         24s    kubelet            Container frontend failed liveness probe, will be restarted
+</code></pre>
+</li>
+</ul>
+</li>
+<li>Check that pod is removed from service<pre><code class="lang-bash">  oc describe svc/frontend-v1 -n project1
+</code></pre>
+</li>
+<li>Test readiness probe. Notice that all responses will not come from not ready pod.<pre><code class="lang-bash">  while [  1  ];
+  do
+      curl -k https://$(oc get route/frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+      printf &quot;\n&quot;
+      sleep 10
+  done
+</code></pre>
+</li>
+<li>Use another terminal to set not ready pod back to ready. Notice that response now including all 3 pods.<pre><code class="lang-bash">  POD=$(oc get pods --no-headers -n project1 | grep frontend |head -n 1| awk &apos;{print $1}&apos;)
+  oc exec -n project1 $POD -- curl -s http://localhost:8080/ready
+  printf &quot;\n%s is ready\n&quot; $POD
+</code></pre>
+</li>
+<li><p>Check developer console</p>
+<p>  <img src="images/pod-not-ready-dev-console.png" alt=""></p>
+</li>
+</ul>
+<h3 id="developer-console">Developer Console</h3>
+<ul>
+<li>Remove  probes from previous steps<pre><code class="lang-bash">oc set probe deployment/frontend-v1 --remove --readiness --liveness --startup -n project1
+watch oc get pods -n project1
+</code></pre>
+</li>
+<li>Login to OpenShift Web Admin Console and change to Developer Console</li>
+<li><p>Select topology then select frontend-v1 deployment, then select &quot;Add Health Checks&quot;</p>
+<p><img src="images/dev-console-add-health-checks.png" alt=""></p>
+</li>
+<li><p>Add health checks</p>
+<p><img src="images/dev-console-add-health-checks-02.png" alt=""></p>
+</li>
+</ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="hpa.html" class="navigation navigation-prev " aria-label="Previous page: Horizontal Pod Autoscaler">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="openshift-service-mesh.html" class="navigation navigation-next " aria-label="Next page: OpenShift Service Mesh">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Health Check","level":"1.4.4","depth":2,"next":{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"previous":{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"health.md","mtime":"2021-04-03T04:07:38.633Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-03T04:08:14.858Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/jquery.mark.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search-plus/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-copy-code-button/toggle.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-mermaid-gb3/book/plugin.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    <script src="gitbook/gitbook-plugin-mermaid-gb3/mermaid/mermaid.min.js"></script>
+
+    </body>
+</html>
+
