@@ -30,10 +30,12 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install -g gitbook-cli
     - run: gitbook install && gitbook build
+    - run: ls
+    - run: mv _book docs
     - run: git checkout -b gh-pages
     - run: git pull origin gh-pages --rebase
     - run: git rm -rf .
-    - run: mv _book docs
+    - run: ls
     - run: git add docs
     - run: git commit -a -m "Github Actions Update Gitbook"
     - run: git push origin gh-pages
