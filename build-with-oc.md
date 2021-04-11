@@ -87,7 +87,8 @@
   oc new-app https://gitlab.com/ocp-demo/frontend-js \
   --name=frontend
   ```
-  Check build log
+
+  - Check build log
 
   ```bash
   oc logs bc/frontend --follow
@@ -217,10 +218,13 @@
 
 - Create route
   - Expose service
+  
     ```bash
     oc expose svc $APP_NAME
     ```
+
   - Create route with edge TLS
+  
     ```bash
     oc create route edge $APP_NAME --service=$APP_NAME --port=8080
     ```

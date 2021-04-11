@@ -2,18 +2,18 @@
 <!-- TOC -->
 
 - [OpenShift Service Mesh](#openshift-service-mesh)
-    - [Overview](#overview)
-    - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
-    - [Create Istio Gateway](#create-istio-gateway)
-    - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
-    - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
-    - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
-    - [Traffic Analysis](#traffic-analysis)
-    - [Distributed Tracing](#distributed-tracing)
-    - [Traffic Mirroring Dark Launch](#traffic-mirroring-dark-launch)
-    - [Envoy Access Log](#envoy-access-log)
-    - [Circuit Breaker](#circuit-breaker)
-    - [Secure with mTLS](#secure-with-mtls)
+  - [Overview](#overview)
+  - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
+  - [Create Istio Gateway](#create-istio-gateway)
+  - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
+  - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
+  - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
+  - [Traffic Analysis](#traffic-analysis)
+  - [Distributed Tracing](#distributed-tracing)
+  - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
+  - [Envoy Access Log](#envoy-access-log)
+  - [Circuit Breaker](#circuit-breaker)
+  - [Secure with mTLS](#secure-with-mtls)
 
 <!-- /TOC -->
 
@@ -85,13 +85,19 @@ Sample application
   
   ```bash
   oc get pods -n project1
-  #Sample output
+  ```
+
+  Sample output
+  
+  ```bash
   NAME                           READY   STATUS        RESTARTS   AGE
   frontend-v1-577b98f48c-6j5zg   2/2     Running       0          15s
   frontend-v1-c5d4648f9-7jfk2    1/1     Terminating   0          13m
   frontend-v2-5cd968bc59-cwsd8   2/2     Running       0          14s
   frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
   ```
+  
+  Check developer console
 
   ![](images/pod-with-sidecar.png)
 
@@ -210,12 +216,16 @@ Sample application
     SUBDOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
     cat manifests/frontend-virtual-service.yaml | sed 's/SUBDOMAIN/'$SUBDOMAIN'/'|oc apply -n project1 -f -
     ```
+
   - Check that route is automatically created
   
     ```bash
     oc get route -n istio-system | grep istio-system-frontend-gateway
-    
-    # Sample outout
+    ```
+
+    Sample outout
+
+    ```bash
     istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2com                                   istio-ingressgateway   http2                        None
     ```
 <!-- - Create Route (configured with Istio Gateway) for frontend app
@@ -563,11 +573,14 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   ```bash
   oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk '{print $1}') -c istio-proxy -n project1
   ```
-- Sample output
+  
+  Sample output
+
   ```log
   [2020-12-25T10:33:04.848Z] "GET / HTTP/1.1" 200 - "-" "-" 0 103 5750 5749 "-" "-" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "backend:8080" "10.128.2.133:8080" outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
   [2020-12-25T10:33:04.846Z] "GET / HTTP/1.1" 200 - "-" "-" 0 184 5756 5755 "184.22.250.124,10.131.0.4" "curl/7.64.1" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "frontend.apps.cluster-1138.1138.example.opentlc.com" "127.0.0.1:8080" inbound|8080|http|frontend-v1.project1.svc.cluster.local 127.0.0.1:56540 10.128.2.131:8080 10.131.0.4:0 outbound_.8080_.v1_.frontend.project1.svc.cluster.local default
   ```
+
 ## Circuit Breaker
 - Configure our application to contains only frontend-v1 and backend-v1 and scale backend to 3 pods.
 
@@ -596,10 +609,14 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   ```bash
   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
   curl http://$FRONTEND_ISTIO_ROUTE
+  ```
 
-  # Sample output - Check for field Host that is backend pod that processed for this request
+  Sample output - Check for field Host that is backend pod that processed for this request
+
+  ```bash
   Frontend version: 1.0.0 => [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
   ```
+
 - Loop 6 times. Result from backend will be round robin.
   - Create bash function
 
@@ -620,8 +637,11 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   
   ```bash
   loop_frontend 6
+  ```
 
-  # Sample output
+  Sample output
+  
+  ```bash
   Host:backend-v1-f4dbf777f-vjhcl=> Status:200
   Host:backend-v1-f4dbf777f-vjhcl=> Status:200
   Host:backend-v1-f4dbf777f-tgssd=> Status:200
@@ -629,15 +649,20 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   Host:backend-v1-f4dbf777f-vjhcl=> Status:200
   Host:backend-v1-f4dbf777f-tgssd=> Status:200
   ```
+
 - By default, Envoy will automatically retry if it get response with code 503
 
   - Force one backend pod to return 503 
 
     - by command line.
-    ```
-    oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -s http://localhost:8080/not_ready
+    
+      ```bash
+      oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -s http://localhost:8080/not_ready
+      ```
 
-    # Sample output
+    Sample output
+    
+    ```bash
     Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Readiness: false
     ```
     
@@ -649,8 +674,11 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   
     ```bash
     oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/
-    
-    # Sample Output
+    ```
+
+    Sample Output
+
+    ```bash
     *   Trying ::1...
     * TCP_NODELAY set
     * Connected to localhost (::1) port 8080 (#0)
@@ -673,8 +701,11 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
     
     ```bash
     loop_frontend 10
+    ```
 
-    # Sample Output
+    Sample Output
+
+    ```bash
     Host:backend-v1-f4dbf777f-tgssd=> Status:200
     Host:backend-v1-f4dbf777f-tgssd=> Status:200
     Host:backend-v1-f4dbf777f-tgssd=> Status:200
@@ -715,8 +746,11 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   
   ```bash
   oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/stop
+  ```
 
-  # Sample output
+  Sample output
+  
+  ```
   *   Trying ::1...
   * TCP_NODELAY set
   * Connected to localhost (::1) port 8080 (#0)
@@ -735,12 +769,16 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   * Connection #0 to host localhost left intact
   Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Liveness: false
   ```
+
 - Verify that backend pod return 504
 
   ```bash
   oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/
-    
-  # Sample output
+  ```
+
+  Sample output
+
+  ```
   *   Trying ::1...
   * TCP_NODELAY set
   * Connected to localhost (::1) port 8080 (#0)
@@ -759,12 +797,16 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   * Connection #0 to host localhost left intact
   Backend version:v1, Response:504, Host:backend-v1-f4dbf777f-h7rwg, Status:504, Message: Application liveness is set to false
   ```  
+
 - Test again with cURL. You will get 504 just one times.
   
   ```bash
   loop_frontend 15
+  ```
 
-  # Sample output
+  Sample output
+
+  ```bash
   Host:backend-v1-f4dbf777f-h7rwg=> Status:504
   Host:backend-v1-f4dbf777f-vjhcl=> Status:200
   Host:backend-v1-f4dbf777f-tgssd=> Status:200

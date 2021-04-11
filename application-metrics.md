@@ -118,7 +118,11 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```bash
   oc create -f manifests/grafana.yaml -n application-monitor
   oc get pods -n application-monitor
-  #Sample Output
+  ```
+  
+  Sample Output
+  
+  ```bash
   NAME                                 READY   STATUS    RESTARTS   AGE
   grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
   grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s

@@ -129,9 +129,14 @@ For demo purpose we can set readiness and liveness by following URI
       printf "\n%s is dead\n" $POD
       ```
   - Check pod's events
+  
       ```bash
       oc describe pod $POD -n project1
-      # Sample output
+      ```
+      
+      Sample output
+
+      ```bash
       Events:
       Type     Reason          Age    From               Message
       ----     ------          ----   ----               -------
@@ -144,15 +149,22 @@ For demo purpose we can set readiness and liveness by following URI
       Warning  Unhealthy       24s    kubelet            Liveness probe failed: HTTP probe failed with statuscode: 503
       Normal   Killing         24s    kubelet            Container frontend failed liveness probe, will be restarted
       ```
-  - Check that pod is restarted 
+
+  - Check that pod is restarted
+  
       ```bash
       oc get pods -n project1
-      ## Sample output
+      ```
+
+      Sample output
+
+      ```bash
       NAME                           READY   STATUS    RESTARTS   AGE
       frontend-v1-5d8c4ccc8c-j9b6d   1/1     Running   1          5m28s
       frontend-v1-5d8c4ccc8c-lx4xb   1/1     Running   0          4m3s
       frontend-v1-5d8c4ccc8c-qvxwp   1/1     Running   0          4m3s
       ```
+
 - Test Readiness Probe
   - Test live probe by set one frontend pod to return 503 for liveness probe
       ```bash
@@ -163,16 +175,25 @@ For demo purpose we can set readiness and liveness by following URI
   - Check pod status
     ```bash
     oc get pods -n project1
-    ## Sample output
+    ```
+    
+    Sample output
+
+    ```bash
     NAME                           READY   STATUS    RESTARTS   AGE
     frontend-v1-5d8c4ccc8c-j9b6d   0/1     Running   1          5m28s
     frontend-v1-5d8c4ccc8c-lx4xb   1/1     Running   0          4m3s
     frontend-v1-5d8c4ccc8c-qvxwp   1/1     Running   0          4m3s
     ```
+
   - Check pod's events
     ```bash
     oc describe pod/$POD -n project1
-    # Sample Output
+    ```
+    
+    Sample Output
+
+    ```
     Events:
     Type     Reason          Age    From               Message
     ----     ------          ----   ----               -------
@@ -185,6 +206,7 @@ For demo purpose we can set readiness and liveness by following URI
     Warning  Unhealthy       24s    kubelet            Liveness probe failed: HTTP probe failed with statuscode: 503
     Normal   Killing         24s    kubelet            Container frontend failed liveness probe, will be restarted
     ```
+
 - Check that pod is removed from service
     ```bash
     oc describe svc/frontend-v1 -n project1
