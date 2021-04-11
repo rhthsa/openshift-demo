@@ -10,6 +10,8 @@
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
   * [Hibernate cluster for cost saving for OpenShift on Cloud Providers](acm-hibernate.md)
 * Container Applications
+  * [Application Build & Deployment with oc](build-with-oc.md)
+  * [Application Build & Deployment with odo](build-with-odo.md)  
   * [Application Deployment with Helm](helm.md) 
   * [OpenShift Route](openshift-route.md)
   * [Horizontal Pod Autoscaler](hpa.md)

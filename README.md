@@ -2,6 +2,8 @@
 
 ![](images/OpenShiftContainerPlatform.png)
 
+## [Gitbook](https://rhthsa.github.io/openshift-demo/)
+
 ## Table of Contents
 - [OpenShift Authentication Providers with AD](infrastructure-authentication-providers.md)
   - OpenShift External Authentication Provider
@@ -21,7 +23,9 @@
   - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
 - [Custom Alert](custom-alert.md)
-- Application Deployment
+- Application Build & Deployment
+  - [Command Line with oc](build-with-oc.md)
+  - [Command Line with odo](build-with-odo.md)
   - [Helm](helm.md) 
 - [OpenShift Route](openshift-route.md)
   - Blue/Green Deployment
