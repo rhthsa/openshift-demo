@@ -20,6 +20,7 @@
   - Egress IPs
   - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
+- [Custom Alert](custom-alert.md)
 - Application Deployment
   - [Helm](helm.md) 
 - [OpenShift Route](openshift-route.md)
