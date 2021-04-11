@@ -262,7 +262,33 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+        <li class="chapter " data-level="1.4.1" data-path="build-with-oc.html">
+            
+                <a href="build-with-oc.html">
+            
+                    
+                    Application Build & Deployment with oc
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="build-with-odo.html">
+            
+                <a href="build-with-odo.html">
+            
+                    
+                    Application Build & Deployment with odo
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="helm.html">
             
                 <a href="helm.html">
             
@@ -275,7 +301,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.2" data-path="openshift-route.html">
+        <li class="chapter " data-level="1.4.4" data-path="openshift-route.html">
             
                 <a href="openshift-route.html">
             
@@ -288,7 +314,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+        <li class="chapter " data-level="1.4.5" data-path="hpa.html">
             
                 <a href="hpa.html">
             
@@ -301,7 +327,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.4" data-path="health.html">
+        <li class="chapter " data-level="1.4.6" data-path="health.html">
             
                 <a href="health.html">
             
@@ -314,7 +340,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.4.5" data-path="openshift-service-mesh.html">
+        <li class="chapter active" data-level="1.4.7" data-path="openshift-service-mesh.html">
             
                 <a href="openshift-service-mesh.html">
             
@@ -327,7 +353,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+        <li class="chapter " data-level="1.4.8" data-path="application-metrics.html">
             
                 <a href="application-metrics.html">
             
@@ -340,7 +366,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+        <li class="chapter " data-level="1.4.9" data-path="ci-cd.html">
             
                 <a href="ci-cd.html">
             
@@ -415,7 +441,7 @@
 <li><a href="#ab-with-istio-virtual-service">A/B with Istio Virtual Service</a></li>
 <li><a href="#traffic-analysis">Traffic Analysis</a></li>
 <li><a href="#distributed-tracing">Distributed Tracing</a></li>
-<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring Dark Launch</a></li>
+<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</a></li>
 <li><a href="#envoy-access-log">Envoy Access Log</a></li>
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 <li><a href="#secure-with-mtls">Secure with mTLS</a></li>
@@ -481,13 +507,15 @@ oc patch deployment/frontend-v2 -p &apos;{&quot;spec&quot;:{&quot;template&quot;
 <ul>
 <li><p>Check for sidecar in frontend-v1 and frontend-v2 pods</p>
 <pre><code class="lang-bash">oc get pods -n project1
-#Sample output
-NAME                           READY   STATUS        RESTARTS   AGE
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">NAME                           READY   STATUS        RESTARTS   AGE
 frontend-v1-577b98f48c-6j5zg   2/2     Running       0          15s
 frontend-v1-c5d4648f9-7jfk2    1/1     Terminating   0          13m
 frontend-v2-5cd968bc59-cwsd8   2/2     Running       0          14s
 frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
 </code></pre>
+<p>Check developer console</p>
 <p><img src="images/pod-with-sidecar.png" alt=""></p>
 </li>
 </ul>
@@ -599,9 +627,9 @@ cat manifests/frontend-virtual-service.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDO
 </li>
 <li><p>Check that route is automatically created</p>
 <pre><code class="lang-bash">oc get route -n istio-system | grep istio-system-frontend-gateway
-
-# Sample outout
-istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2com                                   istio-ingressgateway   http2                        None
+</code></pre>
+<p>Sample outout</p>
+<pre><code class="lang-bash">istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2com                                   istio-ingressgateway   http2                        None
 </code></pre>
 <p>&lt;!-- - Create Route (configured with Istio Gateway) for frontend app</p>
 </li>
@@ -922,14 +950,17 @@ curl $FRONTEND_ISTIO_ROUTE
       name: /dev/stdout
 </code></pre>
 </li>
-<li>Check access log<pre><code class="lang-bash">oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk &apos;{print $1}&apos;) -c istio-proxy -n project1
+<li><p>Check access log</p>
+<pre><code class="lang-bash">oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk &apos;{print $1}&apos;) -c istio-proxy -n project1
 </code></pre>
-</li>
-<li>Sample output<pre><code class="lang-log">[2020-12-25T10:33:04.848Z] &quot;GET / HTTP/1.1&quot; 200 - &quot;-&quot; &quot;-&quot; 0 103 5750 5749 &quot;-&quot; &quot;-&quot; &quot;0c3ce34a-f5a0-9340-b84f-3631cd8eb444&quot; &quot;backend:8080&quot; &quot;10.128.2.133:8080&quot; outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
+<p>Sample output</p>
+<pre><code class="lang-log">[2020-12-25T10:33:04.848Z] &quot;GET / HTTP/1.1&quot; 200 - &quot;-&quot; &quot;-&quot; 0 103 5750 5749 &quot;-&quot; &quot;-&quot; &quot;0c3ce34a-f5a0-9340-b84f-3631cd8eb444&quot; &quot;backend:8080&quot; &quot;10.128.2.133:8080&quot; outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
 [2020-12-25T10:33:04.846Z] &quot;GET / HTTP/1.1&quot; 200 - &quot;-&quot; &quot;-&quot; 0 184 5756 5755 &quot;184.22.250.124,10.131.0.4&quot; &quot;curl/7.64.1&quot; &quot;0c3ce34a-f5a0-9340-b84f-3631cd8eb444&quot; &quot;frontend.apps.cluster-1138.1138.example.opentlc.com&quot; &quot;127.0.0.1:8080&quot; inbound|8080|http|frontend-v1.project1.svc.cluster.local 127.0.0.1:56540 10.128.2.131:8080 10.131.0.4:0 outbound_.8080_.v1_.frontend.project1.svc.cluster.local default
 </code></pre>
-<h2 id="circuit-breaker">Circuit Breaker</h2>
 </li>
+</ul>
+<h2 id="circuit-breaker">Circuit Breaker</h2>
+<ul>
 <li><p>Configure our application to contains only frontend-v1 and backend-v1 and scale backend to 3 pods.</p>
 <pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
 oc patch deployment/frontend-v1 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
@@ -954,9 +985,9 @@ oc get pods -n project1
 <li><p>Test with cURL</p>
 <pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
 curl http://$FRONTEND_ISTIO_ROUTE
-
-# Sample output - Check for field Host that is backend pod that processed for this request
-Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
+</code></pre>
+<p>Sample output - Check for field Host that is backend pod that processed for this request</p>
+<pre><code class="lang-bash">Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
 </code></pre>
 </li>
 <li><p>Loop 6 times. Result from backend will be round robin.</p>
@@ -978,9 +1009,9 @@ Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Bod
 <li>Run function with input paramter 6</li>
 </ul>
 <pre><code class="lang-bash">loop_frontend 6
-
-# Sample output
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
 Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:200
@@ -992,13 +1023,14 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 <ul>
 <li><p>Force one backend pod to return 503 </p>
 <ul>
-<li>by command line.
-```
-oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s <a href="http://localhost:8080/not_ready" target="_blank">http://localhost:8080/not_ready</a></li>
+<li><p>by command line.</p>
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/not_ready
+</code></pre>
+</li>
 </ul>
-<h1 id="sample-output">Sample output</h1>
-<p>Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Readiness: false
-```</p>
+<p>Sample output</p>
+<pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Readiness: false
+</code></pre>
 <ul>
 <li><p>by Web Console</p>
 <p><img src="images/dev-console-terminal-set-pod-not-ready.png" alt=""></p>
@@ -1007,9 +1039,9 @@ oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut
 </li>
 <li><p>Verify response from that pod.</p>
 <pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
-
-# Sample Output
-*   Trying ::1...
+</code></pre>
+<p>Sample Output</p>
+<pre><code class="lang-bash">*   Trying ::1...
 * TCP_NODELAY set
 * Connected to localhost (::1) port 8080 (#0)
 &gt; GET / HTTP/1.1
@@ -1029,9 +1061,9 @@ oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut
 </li>
 <li><p>Test with cURL again. You will get only status 200</p>
 <pre><code class="lang-bash">loop_frontend 10
-
-# Sample Output
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+</code></pre>
+<p>Sample Output</p>
+<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
@@ -1070,9 +1102,9 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </li>
 <li><p>Set one backend pod to return 504 and verify that pod return 504</p>
 <pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/stop
-
-# Sample output
-*   Trying ::1...
+</code></pre>
+<p>Sample output</p>
+<pre><code>*   Trying ::1...
 * TCP_NODELAY set
 * Connected to localhost (::1) port 8080 (#0)
 &gt; GET /stop HTTP/1.1
@@ -1089,13 +1121,12 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 { [103 bytes data]
 * Connection #0 to host localhost left intact
 Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Liveness: false
-</code></pre>
-</li>
+</code></pre></li>
 <li><p>Verify that backend pod return 504</p>
 <pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
-
-# Sample output
-*   Trying ::1...
+</code></pre>
+<p>Sample output</p>
+<pre><code>*   Trying ::1...
 * TCP_NODELAY set
 * Connected to localhost (::1) port 8080 (#0)
 &gt; GET / HTTP/1.1
@@ -1112,13 +1143,12 @@ Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, M
 { [124 bytes data]
 * Connection #0 to host localhost left intact
 Backend version:v1, Response:504, Host:backend-v1-f4dbf777f-h7rwg, Status:504, Message: Application liveness is set to false
-</code></pre>
-</li>
+</code></pre></li>
 <li><p>Test again with cURL. You will get 504 just one times.</p>
 <pre><code class="lang-bash">loop_frontend 15
-
-# Sample output
-Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:504
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:504
 Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
@@ -1191,7 +1221,7 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.5","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.6","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.4","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-04-11T05:29:00.843Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T05:29:40.789Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.6","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-04-11T06:09:11.616Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T06:09:58.622Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

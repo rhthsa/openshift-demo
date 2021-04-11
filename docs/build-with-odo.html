@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Application Deployment with Helm · OpenShift Demo</title>
+        <title>Application Build & Deployment with odo · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="openshift-route.html" />
+    <link rel="next" href="helm.html" />
     
     
-    <link rel="prev" href="build-with-odo.html" />
+    <link rel="prev" href="build-with-oc.html" />
     
 
     </head>
@@ -275,7 +275,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.2" data-path="build-with-odo.html">
+        <li class="chapter active" data-level="1.4.2" data-path="build-with-odo.html">
             
                 <a href="build-with-odo.html">
             
@@ -288,7 +288,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.4.3" data-path="helm.html">
+        <li class="chapter " data-level="1.4.3" data-path="helm.html">
             
                 <a href="helm.html">
             
@@ -414,7 +414,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Application Deployment with Helm</a>
+        <a href="." >Application Build & Deployment with odo</a>
     </h1>
 </div>
 
@@ -429,39 +429,141 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="deploy-backend-app-with-helm-chart">Deploy Backend app with Helm Chart</h1>
-<ul>
-<li>Deploy backend app using helm chart =&gt; <a href="manifests/backend-chart">backend-chart</a></li>
-<li><p>Test with dry run</p>
-<pre><code class="lang-bash">  oc project project1
-  helm install --dry-run test ./manifests/backend-chart
-</code></pre>
-</li>
-<li><p>Install chart</p>
-<pre><code class="lang-bash">  helm install backend-helm --namespace=project1 ./manifests/backend-chart
-</code></pre>
-</li>
-<li><p>Sample Output</p>
-<pre><code class="lang-bash">  1 ./manifests/backend-chart
-  NAME: backend-helm
-  LAST DEPLOYED: Tue Feb 16 17:32:46 2021
-  NAMESPACE: project1
-  STATUS: deployed
-  REVISION: 1
-  TEST SUITE: None
-  NOTES:
-  1. Get the application URL by running these commands:
-  http://backend-helm:8080
-</code></pre>
-</li>
-<li><p>Check Helm Chart in Developer Console Topology view</p>
+                                <h1 id="build-container-image-with-openshift-do">Build Container Image with OpenShift DO</h1>
+<pre><code>   ___                   ____  _     _  __ _     ____   ___  
+  / _ \ _ __   ___ _ __ / ___|| |__ (_)/ _| |_  |  _ \ / _ \ 
+ | | | | &apos;_ \ / _ \ &apos;_ \\___ \| &apos;_ \| | |_| __| | | | | | | |
+ | |_| | |_) |  __/ | | |___) | | | | |  _| |_  | |_| | |_| |
+  \___/| .__/ \___|_| |_|____/|_| |_|_|_|  \__| |____/ \___/ 
+       |_|
+</code></pre><ul>
+<li><a href="#build-container-image-with-openshift-do">Build Container Image with OpenShift DO</a><ul>
+<li><a href="#odo-catalog">ODO Catalog</a></li>
+<li><a href="#sample-java">Sample Java</a></li>
+</ul>
 </li>
 </ul>
-<p><img src="images/developer-console-helm-topology.png" alt="Helm Topology"></p>
+<h2 id="odo-catalog">ODO Catalog</h2>
 <ul>
-<li>Helm Chart details</li>
+<li><p>list odo catalog</p>
+<pre><code class="lang-bash">odo catalog list components
+</code></pre>
+<p>Catalog</p>
+<pre><code class="lang-bash">Odo Devfile Components:
+NAME                          DESCRIPTION                                                         REGISTRY
+java-maven                    Upstream Maven and OpenJDK 11                                       DefaultDevfileRegistry
+java-openliberty              Open Liberty microservice in Java                                   DefaultDevfileRegistry
+java-quarkus                  Upstream Quarkus with Java+GraalVM                                  DefaultDevfileRegistry
+java-springboot               Spring Boot&#xAE; using Java                                             DefaultDevfileRegistry
+java-vertx                    Upstream Vert.x using Java                                          DefaultDevfileRegistry
+java-wildfly                  Upstream WildFly                                                    DefaultDevfileRegistry
+java-wildfly-bootable-jar     Java stack with WildFly in bootable Jar mode, OpenJDK 11 and...     DefaultDevfileRegistry
+nodejs                        Stack with NodeJS 12                                                DefaultDevfileRegistry
+python                        Python Stack with Python 3.7                                        DefaultDevfileRegistry
+python-django                 Python3.7 with Django                                               DefaultDevfileRegistry
+
+Odo S2I Components:
+NAME       PROJECT       TAGS                                                             SUPPORTED
+java       openshift     latest,openjdk-11-el7,openjdk-11-ubi8,openjdk-8-el7              YES
+nodejs     openshift     12-ubi8,14-ubi8,latest                                           YES
+dotnet     openshift     2.1-el7,2.1-ubi8,3.1-el7,3.1-ubi8                                NO
+golang     openshift     1.13.4-ubi7,1.14.7-ubi8,latest                                   NO
+httpd      openshift     2.4-el7,2.4-el8,latest                                           NO
+java       openshift     openjdk-8-ubi8                                                   NO
+nginx      openshift     1.14-el8,1.16-el7,1.16-el8,1.18-ubi7,1.18-ubi8,latest            NO
+nodejs     openshift     10-ubi7,10-ubi8,12-ubi7,14-ubi7                                  NO
+perl       openshift     5.26-el7,5.26-ubi8,5.30-el7,5.30-ubi8,latest                     NO
+php        openshift     7.2-ubi8,7.3-ubi7,7.3-ubi8,7.4-ubi8,latest                       NO
+python     openshift     2.7-ubi7,2.7-ubi8,3.6-ubi8,3.8-ubi7,3.8-ubi8,latest              NO
+ruby       openshift     2.5-ubi7,2.5-ubi8,2.6-ubi7,2.6-ubi8,2.7-ubi7,2.7-ubi8,latest     NO
+</code></pre>
+<h2 id="sample-java">Sample Java</h2>
+</li>
+<li><p>Create project</p>
+<pre><code class="lang-bash">odo project create odo-demo
+</code></pre>
+</li>
+<li><p>Create Application</p>
+<ul>
+<li><p>From binary</p>
+<pre><code class="lang-bash">git clone https://gitlab.com/ocp-demo/backend_quarkus &amp;&amp; cd backend_quarkus
+cd code
+mvn clean package -DskipTests=true -Dquarkus.package.uber-jar=true
+odo create java backend --s2i --binary target/*.jar
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">Validation
+&#x2713;  Validating component [75ms]
+
+Please use `odo push` command to create the component with source deployed
+</code></pre>
+</li>
+<li><p>From source code</p>
+<pre><code class="lang-bash">odo create nodejs frontend --s2i --git https://gitlab.com/ocp-demo/frontend-js
+</code></pre>
+<p>Check for odo configuration</p>
+<pre><code class="lang-yaml">kind: LocalConfig
+apiversion: odo.dev/v1alpha1
+ComponentSettings:
+Type: nodejs
+SourceLocation: https://gitlab.com/ocp-demo/frontend-js
+SourceType: git
+Ports:
+- 8080/TCP
+Application: app
+Project: demo
+Name: frontend
+</code></pre>
+</li>
 </ul>
-<p><img src="images/developer-console-helm-chart.png" alt="Helm Chart"></p>
+</li>
+<li><p>Deploy</p>
+<pre><code class="lang-bash">odo push
+</code></pre>
+<p>Sample outout</p>
+<pre><code class="lang-bash"> Validation
+ &#x2713;  Checking component [125ms]
+
+ Configuration changes
+ &#x2713;  Initializing component
+ &#x2713;  Creating component [458ms]
+
+ Applying URL changes
+ &#x2713;  URLs are synced with the cluster, no changes are required.
+
+ Pushing to component backend of type binary
+ &#x2713;  Checking files for pushing [19ms]
+ &#x2713;  Waiting for component to start [2m]
+ &#x2713;  Syncing files to the component [2s]
+ &#x2713;  Building component [2s]
+</code></pre>
+</li>
+<li><p>Expose service ( create route)</p>
+<pre><code class="lang-bash">odo url create --port 8080
+</code></pre>
+<p>Sample outout</p>
+<pre><code class="lang-bash">&#x2713;  URL backend-8080 created for component: backend
+
+To apply the URL configuration changes, please use `odo push`
+</code></pre>
+<p>Remark: you need to run <em>odo push</em> to propagate change to OpenShift</p>
+<pre><code class="lang-bash">  &#x2713;  Checking component [150ms]
+
+  Configuration changes
+  &#x2713;  Retrieving component data [213ms]
+  &#x2713;  Applying configuration [184ms]
+
+  Applying URL changes
+  &#x2713;  URL backend-8080: http://backend-8080-app-backend-quarkus.apps.cluster-69f4.69f4.sandbox957.opentlc.com/ created
+
+  Pushing to component backend of type binary
+  &#x2713;  Checking file changes for pushing [10ms]
+  &#x2713;  Waiting for component to start [41ms]
+  &#x2713;  Syncing files to the component [2s]
+  &#x2713;  Building component [3s]
+</code></pre>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -489,12 +591,12 @@
 
             
                 
-                <a href="build-with-odo.html" class="navigation navigation-prev " aria-label="Previous page: Application Build & Deployment with odo">
+                <a href="build-with-oc.html" class="navigation navigation-prev " aria-label="Previous page: Application Build & Deployment with oc">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="openshift-route.html" class="navigation navigation-next " aria-label="Next page: OpenShift Route">
+                <a href="helm.html" class="navigation navigation-next " aria-label="Next page: Application Deployment with Helm">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -505,7 +607,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"next":{"title":"OpenShift Route","level":"1.4.4","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"previous":{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"helm.md","mtime":"2021-04-11T06:09:11.584Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T06:09:58.622Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"next":{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},"previous":{"title":"Application Build & Deployment with oc","level":"1.4.1","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"build-with-odo.md","mtime":"2021-04-11T06:09:11.584Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T06:09:58.622Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

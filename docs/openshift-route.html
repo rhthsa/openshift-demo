@@ -262,7 +262,33 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.4.1" data-path="helm.html">
+        <li class="chapter " data-level="1.4.1" data-path="build-with-oc.html">
+            
+                <a href="build-with-oc.html">
+            
+                    
+                    Application Build & Deployment with oc
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="build-with-odo.html">
+            
+                <a href="build-with-odo.html">
+            
+                    
+                    Application Build & Deployment with odo
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="helm.html">
             
                 <a href="helm.html">
             
@@ -275,7 +301,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.4.2" data-path="openshift-route.html">
+        <li class="chapter active" data-level="1.4.4" data-path="openshift-route.html">
             
                 <a href="openshift-route.html">
             
@@ -288,7 +314,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.3" data-path="hpa.html">
+        <li class="chapter " data-level="1.4.5" data-path="hpa.html">
             
                 <a href="hpa.html">
             
@@ -301,7 +327,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.4" data-path="health.html">
+        <li class="chapter " data-level="1.4.6" data-path="health.html">
             
                 <a href="health.html">
             
@@ -314,7 +340,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.5" data-path="openshift-service-mesh.html">
+        <li class="chapter " data-level="1.4.7" data-path="openshift-service-mesh.html">
             
                 <a href="openshift-service-mesh.html">
             
@@ -327,7 +353,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.6" data-path="application-metrics.html">
+        <li class="chapter " data-level="1.4.8" data-path="application-metrics.html">
             
                 <a href="application-metrics.html">
             
@@ -340,7 +366,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.7" data-path="ci-cd.html">
+        <li class="chapter " data-level="1.4.9" data-path="ci-cd.html">
             
                 <a href="ci-cd.html">
             
@@ -422,13 +448,15 @@
 <p>Deploy 2 version of frontend app. Each deployment and service use label <strong>app</strong> and <strong>version</strong> for select each version. 
 Initial Route will routing all traffic to v1.</p>
 <ul>
-<li>Deploy frontend v1 and v2 and create route (<a href="manifests/frontend.yaml">frontend.yaml</a>)<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+<li><p>Deploy frontend v1 and v2 and create route <a href="manifests/frontend.yaml">frontend.yaml</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
 </code></pre>
 </li>
 </ul>
 <h2 id="bluegreen-deployment">Blue/Green Deployment</h2>
 <ul>
-<li>Test Route<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+<li><p>Test Route</p>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 while [ 1 ];
 do
    curl -k $FRONTEND_URL/version
@@ -437,19 +465,27 @@ do
 done
 </code></pre>
 </li>
-<li>Use another terminal to patch route to frontend v2<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;name&quot;:&quot;frontend-v2&quot;}}}&apos; -n project1
+<li><p>Use another terminal to patch route to frontend v2</p>
+<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;name&quot;:&quot;frontend-v2&quot;}}}&apos; -n project1
 </code></pre>
 </li>
-<li>Check output from cURL that response is from frontend-v2</li>
-<li>Set route back to v1<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;name&quot;:&quot;frontend-v1&quot;}}}&apos; -n project1
+<li><p>Check output from cURL that response is from frontend-v2</p>
+</li>
+<li><p>Set route back to v1</p>
+<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;name&quot;:&quot;frontend-v1&quot;}}}&apos; -n project1
 </code></pre>
 </li>
-<li>Check output from cURL that response is from frontend-v1<h2 id="canary-deployment">Canary Deployment</h2>
+<li><p>Check output from cURL that response is from frontend-v1</p>
 </li>
-<li>Apply route for Canary deployment to v1 and v2 with 80% and 20% ratio (<a href="manifests/route-with-alternate-backend.yaml">route-with-alternate-backend.yaml</a>)<pre><code class="lang-bash">oc apply -f manifests/route-with-alternate-backend.yaml -n project1
+</ul>
+<h2 id="canary-deployment">Canary Deployment</h2>
+<ul>
+<li><p>Apply route for Canary deployment to v1 and v2 with 80% and 20% ratio <a href="manifests/route-with-alternate-backend.yaml">route-with-alternate-backend.yaml</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/route-with-alternate-backend.yaml -n project1
 </code></pre>
 </li>
-<li>Call frontend for 10 times. You will get 8 responses from v1 and 2 responses from v2<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+<li><p>Call frontend for 10 times. You will get 8 responses from v1 and 2 responses from v2</p>
+<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 COUNT=0
 while [ $COUNT -lt 10 ];
 do
@@ -460,11 +496,13 @@ do
 done
 </code></pre>
 </li>
-<li>Update weight to 60% and 40%<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;weight&quot;:60}}}&apos; -n project1 
+<li><p>Update weight to 60% and 40%</p>
+<pre><code class="lang-bash">oc patch route frontend  -p &apos;{&quot;spec&quot;:{&quot;to&quot;:{&quot;weight&quot;:60}}}&apos; -n project1 
 oc patch route frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/alternateBackends/0/weight&quot;,&quot;value&quot;:40}]&apos; -n project1
 </code></pre>
 </li>
-<li>Re-run previous bash script to loop frontend. This times you will get 6 responses from v1 and 4 responses from v2</li>
+<li><p>Re-run previous bash script to loop frontend. This times you will get 6 responses from v1 and 4 responses from v2</p>
+</li>
 </ul>
 <h2 id="restrict-tls-to-v12">Restrict TLS to v1.2</h2>
 <ul>
@@ -481,7 +519,7 @@ oc patch route frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;
 <ul>
 <li>Also test with custom profile, edit <code>tlsProfile:</code> and click <strong>Save</strong></li>
 </ul>
-<pre><code>spec:
+<pre><code class="lang-yaml">spec:
   replicas: 2
   tlsSecurityProfile:
     type: Custom
@@ -490,13 +528,15 @@ oc patch route frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;
         - ECDHE-ECDSA-AES128-GCM-SHA256
         - ECDHE-RSA-AES128-GCM-SHA256
       minTLSVersion: VersionTLS12
-</code></pre><h3 id="test-tlsssl">Test TLS/SSL</h3>
+</code></pre>
+<h3 id="test-tlsssl">Test TLS/SSL</h3>
 <p>To test TLS/SSL encryption enabled on OpenShift ingresscontroller, use <code>https://testssl.sh/</code> testssl.ssh tool to run report for Ingress VIP support of TLS/SSL ciphers and protocols</p>
 <p>Run the test</p>
-<pre><code>docker run --rm -ti drwetter/testssl.sh https://frontend-project1.apps.ocp01.example.com
-</code></pre><p>Sample results</p>
+<pre><code class="lang-bash">docker run --rm -ti drwetter/testssl.sh https://frontend-project1.apps.ocp01.example.com
+</code></pre>
+<p>Sample results</p>
 <p>From OpenShift ingress (default tls profile)</p>
-<pre><code> Start 2020-12-30 03:37:42        --&gt;&gt; 198.18.1.202:443 (frontend-project1.apps.ocp01.example.com) &lt;&lt;--
+<pre><code class="lang-bash"> Start 2020-12-30 03:37:42        --&gt;&gt; 198.18.1.202:443 (frontend-project1.apps.ocp01.example.com) &lt;&lt;--
 
  rDNS (198.18.1.202):    .apps.ocp01.example.com.
  Service detected:       HTTP
@@ -692,7 +732,8 @@ TLSv1.3 (server order)
                               Grade capped to A. HSTS is not offered
 
  Done 2020-12-30 03:39:20 [ 100s] --&gt;&gt; 198.18.1.202:443 (frontend-project1.apps.ocp01.example.com) &lt;&lt;--
-</code></pre><p>From OpenShift ingress (default tls profile)</p>
+</code></pre>
+<p>From OpenShift ingress (default tls profile)</p>
 <pre><code> Start 2020-12-30 03:46:29        --&gt;&gt; 198.18.1.202:443 (frontend-project1.apps.ocp01.example.com) &lt;&lt;--
 
  rDNS (198.18.1.202):    --
@@ -1183,7 +1224,7 @@ TLSv1.3 (no server order, thus listed by strength)
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Route","level":"1.4.2","depth":2,"next":{"title":"Horizontal Pod Autoscaler","level":"1.4.3","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},"previous":{"title":"Application Deployment with Helm","level":"1.4.1","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-route.md","mtime":"2021-04-11T05:29:00.843Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T05:29:40.789Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Route","level":"1.4.4","depth":2,"next":{"title":"Horizontal Pod Autoscaler","level":"1.4.5","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},"previous":{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-route.md","mtime":"2021-04-11T06:09:11.616Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-11T06:09:58.622Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
