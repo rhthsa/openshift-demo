@@ -81,7 +81,6 @@
   - If [user workload monitoring](application-metrics.md) is enabled. Prometheus Rule can be created at project level.
     
     ```bash
-    oc new-project demo
     oc create -f manifests/pod-stuck-alerts.yaml -n demo
     ```
 
@@ -102,9 +101,7 @@
   - Create following deployments. These deployments intentionally put pods into error state.
   
   ```bash
-  oc create -f manifests/pod-stuck/backend-v1.yaml -n demo
-  oc create -f manifests/pod-stuck/backend-v2.yaml -n demo
-  oc create -f manifests/pod-stuck/backend-v3.yaml -n demo
+  oc create -f manifests/pod-stuck -n demo
   ```
   
   - Check for result

@@ -3,15 +3,14 @@ kind: PrometheusRule
 metadata:
   name: pod-stuck
   # If the label is not present, the alerting rule is deployed to Thanos Ruler
-  labels:
-   openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+  # labels:
+  #  openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
 spec:
   groups:
   - name: PodStuck
     rules:
     - alert: PodStuckContainerCreating
       annotations:
-        description: Pod creation failed with ContainerCreating
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
       expr: kube_pod_container_status_waiting_reason{reason="ContainerCreating"}  == 1
       for: 2m
@@ -19,7 +18,6 @@ spec:
         severity: critical
     - alert: PodStuckImagePullBackOff
       annotations:
-        description: Pod creation failed with ImagePullBackOff
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
       expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} == 1 
       for: 2m
@@ -27,7 +25,6 @@ spec:
         severity: critical
     - alert: PodStuckErrImagePull
       annotations:
-        description: Pod creation failed with ErrImagePull
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
       expr: kube_pod_container_status_waiting_reason{reason="ErrImagePull"} == 1 
       for: 30s
@@ -35,7 +32,6 @@ spec:
         severity: critical
     - alert: PodStuckCrashLoopBackOff
       annotations:
-        description: Pod creation failed with ImagePullBackOff
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
       expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1 
       for: 2m
@@ -43,7 +39,6 @@ spec:
         severity: critical
     - alert: PodStuckCreateContainerError
       annotations:
-        description: Pod creation failed with ErrImagePull
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CreateContainerError
       expr: kube_pod_container_status_waiting_reason{reason="CreateContainerError"} == 1 
       for: 2m

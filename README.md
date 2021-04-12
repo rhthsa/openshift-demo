@@ -2,7 +2,8 @@
 
 ![](images/OpenShiftContainerPlatform.png)
 
-## [Gitbook](https://rhthsa.github.io/openshift-demo/)
+## Gitbook
+Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 
 ## Table of Contents
 - [OpenShift Authentication Providers with AD](infrastructure-authentication-providers.md)
@@ -52,7 +53,7 @@
   - Secure with mTLS
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
-  - Configure Service Monitoring
+  - Monitor Custom Metrics
   - Custom Grafana Dashboard
   - Custom Alert
 - [Build Container with OC command](build-with-oc.md)

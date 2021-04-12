@@ -48,14 +48,13 @@
     oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
     ```
 
-  - Test backend application metrics
+  - Test backend's  metrics
   
     ```bash
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl -L  http://localhost:8080/metrics
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') -- curl -L http://localhost:8080/metrics/application
+    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
+    -- curl -L  http://localhost:8080/metrics
     ```
-    
-  - Sample output
+    Sample output
   
     ```bash
     # TYPE vendor_memory_committedNonHeap_bytes gauge
@@ -67,11 +66,32 @@
     # TYPE vendor_memory_usedNonHeap_bytes gauge
     vendor_memory_usedNonHeap_bytes 3.1780976E7
     ```
+
+  - Test backend application level's metrics
+  
+    ```bash
+    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
+    -- curl -L http://localhost:8080/metrics/application
+    ```
+    Sample output
+  
+    ```bash
+    # HELP application_com_example_quarkus_BackendResource_timeBackend_seconds Times how long it takes to invoke the backend method
+    # TYPE application_com_example_quarkus_BackendResource_timeBackend_seconds summary
+    application_com_example_quarkus_BackendResource_timeBackend_seconds_count 889.0
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.5"} 0.213724005
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.75"} 0.213724005
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.95"} 0.213724005
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.98"} 0.213724005
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.99"} 0.213724005
+    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.999"} 0.213724005
+    ```
+
     
-- Create [Service Monitoring](manifests/backend-service-monitor.yaml) to monitor backend service
+- Create [Service Monitoring](manifests/backend-monitor.yaml) to monitor backend service
     
     ```bash
-    oc apply -f manifests/backend-service-monitor.yaml -n project1
+    oc apply -f manifests/backend-monitor.yaml -n project1
     ```
     
     Remark: Role **monitor-edit** is required for create **ServiceMonitor** and **PodMonitor** resources. Following example is granting role montior-edit to user1 for project1
