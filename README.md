@@ -51,6 +51,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Tracing
   - Circuit Breaker
   - Secure with mTLS
+  - Service Level Objective (SLO)
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
   - Monitor Custom Metrics
