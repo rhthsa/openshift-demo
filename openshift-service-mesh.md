@@ -842,26 +842,42 @@ Check following Git for setup mTLS between service and ingress service
 ## Service Level Objective (SLO)
 - We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI
 - Prometheus in Service Mesh's control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service
-    - Successful request for last 5 minutes
-      ```
-      sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m]))
-      ```
-
-      ![](images/prometheus-backend-service-total-request.png)
-    - Total requests for last 5 minutes
-      ```
-      sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))
-      ```
-    - Sample data provided by Prometheus
-      ```
-      istio_requests_total{connection_security_policy="unknown",destination_app="backend",destination_canonical_revision="v1",destination_canonical_service="backend",destination_principal="spiffe://cluster.local/ns/user1/sa/default",destination_service="backend.user1.svc.cluster.local",destination_service_name="backend",destination_service_namespace="user1",destination_version="v1",destination_workload="backend-v1",destination_workload_namespace="user1",instance="10.128.2.42:15090",job="envoy-stats",namespace="user1",pod_name="frontend-v1-66fbd89459-8ksr8",reporter="source",request_protocol="http",response_code="503",response_flags="URX",source_app="frontend",source_canonical_revision="v1",source_canonical_service="frontend",source_principal="spiffe://cluster.local/ns/user1/sa/default",source_version="v1",source_workload="frontend-v1",source_workload_namespace="user1"}
-      ```
-
-- SLO can be calculated by following PromQL and compare this to your desired service level e.g. 99.9%
+    - Success Rate
+      - Successful request for last 5 minutes
+        ```
+        sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m]))
+        ```
+        ![](images/prometheus-backend-service-total-request.png)
+      - Total requests for last 5 minutes
+        ```
+        sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))
+        ```
+      - Sample data provided by Prometheus
+        ```
+        istio_requests_total{connection_security_policy="unknown",destination_app="backend",destination_canonical_revision="v1",destination_canonical_service="backend",destination_principal="spiffe://cluster.local/ns/user1/sa/default",destination_service="backend.user1.svc.cluster.local",destination_service_name="backend",destination_service_namespace="user1",destination_version="v1",destination_workload="backend-v1",destination_workload_namespace="user1",instance="10.128.2.42:15090",job="envoy-stats",namespace="user1",pod_name="frontend-v1-66fbd89459-8ksr8",reporter="source",request_protocol="http",response_code="503",response_flags="URX",source_app="frontend",source_canonical_revision="v1",source_canonical_service="frontend",source_principal="spiffe://cluster.local/ns/user1/sa/default",source_version="v1",source_workload="frontend-v1",source_workload_namespace="user1"}
+        ```
+    - Latency
+      - 99th Percentile of response time in sec of frontend service
+        ```
+        histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="frontend",response_code!~"5*"}[5m])) by (le))/1000
+        ```
+- SLO for success rate can be calculated by following PromQL and compare this to your desired service level e.g. 99.9%
   ```
   sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m])) / sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))*100
   ```
-- Configure Grafana Dashboard in OpenShift Service Mesh's control plane for measuring [Backend Service's SLO](manifests/grafana-dashboard-backend-service.json) with SLO 99%
+- Configure Grafana Dashboard in OpenShift Service Mesh's control plane for measuring [SLO Dashbaord](manifests/grafana-slo-dashboard.json)
+  - Backend Application service %availability
+    ```
+    sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5.*"}[5m])) / sum(increase(istio_requests_total{destination_service_name="backend"}[5m])) *100
+    ```
+  - Frontend 99th percentile response time in second
+    ```
+    histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="frontend",response_code!~"5*"}[5m])) by (le))/1000
+    ```
+  - Backend 99th percentile response time in second
+    ```
+    histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="backend",response_code!~"5*"}[5m])) by (le))/1000
+    ```
 
   ![](images/grafana-dashboard-backend-service.png)
 <!-- 
