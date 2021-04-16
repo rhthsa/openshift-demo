@@ -879,7 +879,7 @@ Check following Git for setup mTLS between service and ingress service
     histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="backend",response_code!~"5*"}[5m])) by (le))/1000
     ```
 
-  ![](images/grafana-dashboard-backend-service.png)
+  ![](images/grafana-dashboard-slo.png)
 <!-- 
 
 -->
