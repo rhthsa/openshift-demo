@@ -446,7 +446,7 @@
 <li><p>Setup <a href="manifests/user-workload-monitoring.yaml">User Workload Monitoring</a></p>
 <pre><code class="lang-bash">oc apply -f  manifests/user-workload-monitoring.yaml
 </code></pre>
-<p>Remark: You also need to setup and configure <a href="infrastructure-monitoring-alerts.html">cluster monitoring</a> or use following <a href="manifests/cluster-monitoring-config.yaml">simple configuration</a>. You may need to change storageClassName based on your cluster configuration</p>
+<p>Remark: You also need to setup and configure <a href="infrastructure-monitoring-alerts.html">cluster monitoring</a> or use following <a href="manifests/cluster-monitoring-config.yaml">simple configuration</a>. You may need to change <em>storageClassName</em> based on your cluster configuration</p>
 <pre><code class="lang-bash">oc apply -f  manifests/cluster-monitoring-config.yaml
 </code></pre>
 </li>
@@ -476,7 +476,7 @@ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </li>
 <li><p>Test backend&apos;s  metrics</p>
 <pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) \
--- curl -L  http://localhost:8080/metrics
+-- curl -Ls  http://localhost:8080/metrics
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash"># TYPE vendor_memory_committedNonHeap_bytes gauge
@@ -491,7 +491,7 @@ vendor_memory_usedNonHeap_bytes 3.1780976E7
 </li>
 <li><p>Test backend application level&apos;s metrics</p>
 <pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) \
--- curl -L http://localhost:8080/metrics/application
+-- curl -Ls http://localhost:8080/metrics/application
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash"># HELP application_com_example_quarkus_BackendResource_timeBackend_seconds Times how long it takes to invoke the backend method
@@ -586,6 +586,8 @@ cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$
 </ul>
 <ul>
 <li><p>Generate workload</p>
+<ul>
+<li><p>bash script to loop request to frontend application.</p>
 <pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 while [ 1 ];
 do
@@ -594,7 +596,21 @@ do
   sleep .2
 done
 </code></pre>
+</li>
+<li><p>k6 load test tool</p>
+<pre><code class="lang-bash">FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk &apos;{print $1}&apos;)
+ oc run load-test-frontend -n project1 \
+-i --image=loadimpact/k6  \
+--rm=true --restart=Never --  run -&lt; manifests/load-test-k6.js \
+-e URL=http://frontend-v1:8080 \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=5m \
+-e RAMEDOWN=30s
+</code></pre>
 <p>Remark: You need to configure frontend app to connect to backend app</p>
+</li>
+</ul>
 <pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
 oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
@@ -751,7 +767,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.9","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-16T10:33:20.521Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-16T10:33:59.019Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.9","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-18T05:56:06.948Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-18T05:56:46.723Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
