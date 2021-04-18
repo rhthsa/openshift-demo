@@ -15,7 +15,7 @@
   oc apply -f  manifests/user-workload-monitoring.yaml
   ```
 
-  Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change storageClassName based on your cluster configuration
+  Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration
 
   ```bash
   oc apply -f  manifests/cluster-monitoring-config.yaml
@@ -52,7 +52,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -L  http://localhost:8080/metrics
+    -- curl -Ls  http://localhost:8080/metrics
     ```
     Sample output
   
@@ -71,7 +71,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -L http://localhost:8080/metrics/application
+    -- curl -Ls http://localhost:8080/metrics/application
     ```
     Sample output
   
@@ -183,16 +183,31 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   
   
 - Generate workload
+  - bash script to loop request to frontend application.
   
-  ```bash
-  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
-  while [ 1 ];
-  do
-    curl $FRONTEND_URL
-    printf "\n"
-    sleep .2
-  done
-  ```
+    ```bash
+    FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+    while [ 1 ];
+    do
+      curl $FRONTEND_URL
+      printf "\n"
+      sleep .2
+    done
+    ```
+
+  - k6 load test tool
+  
+    ```bash
+    FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk '{print $1}')
+     oc run load-test-frontend -n project1 \
+    -i --image=loadimpact/k6  \
+    --rm=true --restart=Never --  run -< manifests/load-test-k6.js \
+    -e URL=http://frontend-v1:8080 \
+    -e THREADS=10 \
+    -e RAMPUP=30s \
+    -e DURATION=5m \
+    -e RAMEDOWN=30s
+    ```
   Remark: You need to configure frontend app to connect to backend app
 
   ```bash
