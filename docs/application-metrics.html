@@ -523,11 +523,13 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 </li>
 <li><p>Application metrics </p>
 <ul>
-<li><p>Request counted</p>
-<p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
+<li><p>PromQL for query number of request for last 1 minute</p>
+<pre><code>rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
+</code></pre><p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
 </li>
-<li><p>Concurrent requests</p>
-<p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
+<li><p>PromQL for query number of concurrent requests</p>
+<pre><code>application_com_example_quarkus_BackendResource_concurrentBackend_current
+</code></pre><p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -608,9 +610,9 @@ done
 -e DURATION=5m \
 -e RAMEDOWN=30s
 </code></pre>
-<p>Remark: You need to configure frontend app to connect to backend app</p>
 </li>
 </ul>
+<p>Remark: You need to configure frontend app to connect to backend app</p>
 <pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
 oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
@@ -767,7 +769,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.9","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-18T05:56:06.948Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-18T05:56:46.723Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.9","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-18T06:09:17.707Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-18T06:10:02.349Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
