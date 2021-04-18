@@ -107,12 +107,20 @@
 
   - Application metrics 
     
-    - Request counted
+    - PromQL for query number of request for last 1 minute
+      
+      ```
+      rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
+      ```
 
       ![](images/dev-console-app-metrics-01.png)
 
-    - Concurrent requests
-    
+    - PromQL for query number of concurrent requests
+      
+      ```
+      application_com_example_quarkus_BackendResource_concurrentBackend_current
+      ```
+
       ![](images/dev-console-app-metrics-02.png)
 
 ## Custom Grafana Dashboard
@@ -208,6 +216,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
     -e DURATION=5m \
     -e RAMEDOWN=30s
     ```
+
   Remark: You need to configure frontend app to connect to backend app
 
   ```bash
