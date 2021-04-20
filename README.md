@@ -59,6 +59,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Custom Alert
 - [Build Container with OC command](build-with-oc.md)
 - [Build Container with OpenShift DO (odo)](build-with-odo.md)
+- [CI/CD with Jenkins](ci-cd-with-jenkins.md)
 - [CI/CD with Azure DevOps](ci-cd.md)
   - Azure DevOps
   - Deploy Back App

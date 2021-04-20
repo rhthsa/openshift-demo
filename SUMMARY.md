@@ -18,4 +18,5 @@
   * [Health Check](health.md)
   * [OpenShift Service Mesh](openshift-service-mesh.md)
   * [User Workload Monitoring](application-metrics.md)
+  * [CI/CD with Jenkins](ci-cd-with-jenkins.md)
   * [CI/CD with Azure DevOps](ci-cd.md)
