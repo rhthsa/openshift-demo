@@ -245,7 +245,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
     - name: backend-app
       rules:
       - alert: ConcurrentBackend
-        expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
+        expr: avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m])>15
         # wait just 1 minute for demo purpose
         for: 1m
         labels:
@@ -253,7 +253,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
         annotations:
           message: 'Total concurrent request is {{ $value }} request/sec'
       - alert: HighLatency
-        expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds>5
+        expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_max_seconds[1m])>5
         labels:
           severity: 'critical'
         annotations:
