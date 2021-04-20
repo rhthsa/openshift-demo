@@ -13,6 +13,7 @@
     - [Jenkins Slave](#jenkins-slave)
     - [Jenkins Pipelines](#jenkins-pipelines)
   - [Checkpoints](#checkpoints)
+  - [Improvement Needs](#improvement-needs)
 
 <!-- /TOC -->
 ## Overall Solution
@@ -230,3 +231,8 @@ Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from
 - Application is deployed with label *version* and  *tag*
   
     ![](images/backend-stage-env.png)
+
+## Improvement Needs
+- Move away from deploymentconfig to deployment
+- Move away from OpenShift's template to kustomize
+- Validate SonarQube result
