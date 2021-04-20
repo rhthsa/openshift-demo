@@ -13,11 +13,16 @@
     - [Jenkins Slave](#jenkins-slave)
     - [Jenkins Pipelines](#jenkins-pipelines)
   - [Checkpoints](#checkpoints)
-  - [Improvement Needs](#improvement-needs)
+  - [Possible improvement](#possible-improvement)
 
 <!-- /TOC -->
 ## Overall Solution
 Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from source code to container image with version control by tag name and deploy application to Development, Staging, UAT and blue/green deployment to Production environment.
+
+Remark:
+
+[*Source code of Quarkus and Jenkins*](https://gitlab.com/ocp-demo/backend_quarkus)
+
 
 
 ### Build and Deploy to Development Environment
@@ -207,7 +212,7 @@ Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from
     
     ![](images/sonarqube-result.png)
 
-- Container images is pushed to Nexus
+- Container images is built and pushed to Nexus
   - Code snippets 
 
     ```javascript
@@ -232,7 +237,7 @@ Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from
   
     ![](images/backend-stage-env.png)
 
-## Improvement Needs
-- Move away from deploymentconfig to deployment
-- Move away from OpenShift's template to kustomize
+## Possible improvement
+- Change from deploymentconfig to deployment
+- Change from OpenShift's template to kustomize
 - Validate SonarQube result
