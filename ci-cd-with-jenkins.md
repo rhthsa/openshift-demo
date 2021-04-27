@@ -95,7 +95,7 @@ Remark:
   - Run [setup_ci_cd_tools.sh](bin/setup_ci_cd_tools.sh) to setup Jenkins, SonarQube and Nexus
   
     ```bash
-    cd ci-cd-jenkins
+    cd bin
     ./setup_ci_cd_tools.sh
     ```
     Sample output
