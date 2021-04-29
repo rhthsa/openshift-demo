@@ -285,10 +285,16 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
   
   - ConcurrentBackend
-    severity warning when total concurrent reqeusts is greater than 15
-  - HighLatency
-    servierity critical when response time is greateer than 5 sec  
 
+    ```
+    Severity warning when total concurrent reqeusts is greater than 15 sustains 1 minute
+    ```
+
+  - HighLatency
+
+    ```
+    Servierity critical when response time is greater than 5 seconds sustains 1 minute
+    ```
 
 - Create [backend-app-alert](manifests/backend-custom-alert.yaml) 
 
@@ -314,11 +320,13 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```
   
 - Test `ConcurrentBackend` alert with 25 concurrent requests
+  - Run load test tool
 
   ```bash
   FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
   siege -c 25 $FRONTEND_URL
   ```
+
   If you don't have siege, run k6 as pod on OpenShift
   - 25 threads
   - Duration 2 minutes
@@ -333,12 +341,12 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   -e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
   ```
 
-  Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
+  - Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
 
-  ![](images/alert-concurrent-backend.png)
+    ![](images/alert-concurrent-backend.png)
 
 - Test `HighLatency` alert
-  - Set backend with 6 sec response tim
+  - Set backend with 6 sec response time
     - By CLI
       ```bash
       oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
@@ -351,6 +359,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
       - Select `Environment` and set APP_BACKEND to https://httpbin.org/delay/6
 
         ![](images/dev-console-edit-environment.png)
+        
   - Request to frontend app
     
     ```bash
