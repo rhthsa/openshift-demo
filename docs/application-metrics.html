@@ -517,6 +517,25 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.99&quot;} 0.213724005
 application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.999&quot;} 0.213724005
 </code></pre>
+<p>Code snippet from Backend Application</p>
+<pre><code class="lang-java">@Counted(
+    name = &quot;countBackend&quot;,
+    description = &quot;Counts how many times the backend method has been invoked&quot;
+    )
+@Timed(
+    name = &quot;timeBackend&quot;,
+    description = &quot;Times how long it takes to invoke the backend method&quot;,
+    unit = MetricUnits.MILLISECONDS
+    )
+@ConcurrentGauge(
+    name = &quot;concurrentBackend&quot;,
+    description = &quot;Concurrent connection&quot;
+    )
+ public Response callBackend(@Context HttpHeaders headers) {
+   ...
+   ...
+ }
+</code></pre>
 </li>
 </ul>
 </li>
@@ -649,8 +668,7 @@ spec:
   - name: backend-app
     rules:
     - alert: ConcurrentBackend
-      expr: avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m])&gt;15
-      # wait just 1 minute for demo purpose
+      expr: sum(avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m]))&gt;15
       for: 1m
       labels:
         severity: &apos;warning&apos;
@@ -658,6 +676,7 @@ spec:
         message: &apos;Total concurrent request is  request/sec&apos;
     - alert: HighLatency
       expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_max_seconds[1m])&gt;5
+      for: 1m
       labels:
         severity: &apos;critical&apos;
       annotations:
@@ -782,7 +801,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.9","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-27T15:20:25.305Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-27T15:21:09.251Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.9","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-29T04:33:24.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-29T04:34:03.546Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
