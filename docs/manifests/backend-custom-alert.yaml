@@ -17,7 +17,7 @@ spec:
       annotations:
         message: 'Total concurrent request is {{ $value }} request/sec'
     - alert: HighLatency
-      expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_max_seconds[1m])>5
+      expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_mean_seconds[1m])>5
       for: 1m
       labels:
         severity: 'critical'
