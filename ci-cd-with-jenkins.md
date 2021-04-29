@@ -17,12 +17,12 @@
 
 <!-- /TOC -->
 ## Overall Solution
+
 Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from source code to container image with version control by tag name and deploy application to Development, Staging, UAT and blue/green deployment to Production environment.
 
 Remark:
 
 [*Source code of Quarkus and Jenkins*](https://gitlab.com/ocp-demo/backend_quarkus)
-
 
 
 ### Build and Deploy to Development Environment
