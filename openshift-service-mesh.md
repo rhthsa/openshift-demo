@@ -138,7 +138,7 @@ Sample application
         name: http2
         protocol: HTTP
         hosts:
-        - '*.apps.SUBDOMAIN'
+        - 'frontend.apps.SUBDOMAIN'
         
     ```
   - Replace SUBDOMAIN with your clsuter sub-domain and Create [gateway](manifests/frontend-gateway.yaml)
@@ -227,7 +227,7 @@ Sample application
     Sample outout
 
     ```bash
-    istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2com                                   istio-ingressgateway   http2                        None
+    istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2                                  istio-ingressgateway   http2                        None
     ```
 <!-- - Create Route (configured with Istio Gateway) for frontend app
   - Review [Route](manifests/frontend-route-istio.yaml), Replace SUBDOMAIN with cluster's subdomain
