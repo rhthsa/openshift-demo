@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backend-app-alert
+  namespace: project1
+  labels:
+    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: backend-app
+    rules:
+    - alert: ConcurrentBackend
+      expr: sum(avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m]))>15
+      for: 1m
+      labels:
+        severity: 'warning'
+      annotations:
+        message: 'Total concurrent request is {{ $value }} request/sec'
+    - alert: HighLatency
+      expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_max_seconds[1m])>5
+      for: 1m
+      labels:
+        severity: 'critical'
+      annotations:
+        message: '{{ $labels.pod }} response time is {{ $value }} sec'
