@@ -87,6 +87,28 @@
     application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.999"} 0.213724005
     ```
 
+    Code snippet from Backend Application
+
+    ```java
+    @Counted(
+        name = "countBackend",
+        description = "Counts how many times the backend method has been invoked"
+        )
+    @Timed(
+        name = "timeBackend",
+        description = "Times how long it takes to invoke the backend method",
+        unit = MetricUnits.MILLISECONDS
+        )
+    @ConcurrentGauge(
+        name = "concurrentBackend",
+        description = "Concurrent connection"
+        )
+     public Response callBackend(@Context HttpHeaders headers) {
+       ...
+       ...
+     }
+    ```
+
     
 - Create [Service Monitoring](manifests/backend-monitor.yaml) to monitor backend service
     
