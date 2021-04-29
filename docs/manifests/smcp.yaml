@@ -27,7 +27,7 @@ spec:
                 memory: 128Mi
           deployment:
             autoScaling:
-              enabled: true
+              enabled: false
           service: {}
     ingress:
         enabled: true
@@ -40,7 +40,7 @@ spec:
                 memory: 128Mi
           deployment:
             autoScaling:
-              enabled: true
+              enabled: false
         service:
           type: ClusterIP
     openshiftRoute:
