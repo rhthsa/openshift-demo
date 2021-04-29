@@ -96,26 +96,44 @@ After install Compliance Operator from Operator
   ```
 
   - Check complaince scan
+  
   ```bash
   oc get compliancescans -n openshift-compliance 
   ```
 
    Sample output
+
   ```bash
   NAME       PHASE     RESULT
   ocp4-cis   RUNNING   NOT-AVAILABLE
   ```
 
   - Check pods
+  
   ```bash
   oc get pods -n openshift-compliance
   ```
+
 - Check result
   - Compliance result
+  
   ```bash
   oc get ComplianceCheckResult -n openshift-compliance
   ```
   - Remidiation
+  
   ```bash
   oc get ComplianceRemediation -n openshift-compliance
+  ```
+  - Check remidiation
+  
+  ```bash
+  oc get rules.compliance -o yaml \
+  ocp4-api-server-encryption-provider-config -n openshift-compliance
+  ```
+  - Applied auto-remidiation
+  
+  ```bash
+  oc patch -n openshift-compliance complianceremediation \
+  ocp4-cis-api-server-encryption-provider-config -p '{"spec":{"apply":true}}' --type='merge'
   ```
