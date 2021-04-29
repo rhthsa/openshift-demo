@@ -274,7 +274,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
         annotations:
           message: 'Total concurrent request is {{ $value }} request/sec'
       - alert: HighLatency
-        expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_max_seconds[1m])>5
+        expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_mean_seconds[1m])>5
         for: 1m
         labels:
           severity: 'critical'
@@ -359,7 +359,6 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
       - Select `Environment` and set APP_BACKEND to https://httpbin.org/delay/6
 
         ![](images/dev-console-edit-environment.png)
-        
   - Request to frontend app
     
     ```bash
