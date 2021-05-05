@@ -15,6 +15,9 @@
   - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
   - [Service Level Objective (SLO)](#service-level-objective-slo)
+  - [Control Plane with High Availability](#control-plane-with-high-availability)
+    - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
+    - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
 
 <!-- /TOC -->
 
@@ -883,3 +886,99 @@ Check following Git for setup mTLS between service and ingress service
 <!-- 
 
 -->
+
+## Control Plane with High Availability
+### OpenShift Service Mesh 1.x
+
+[ServiceMeshControlPlane](manifests/smcp-v1-ha.yaml) with high availability configuration
+
+- Configure Horizontal Pod Autoscaler (HPA) for ingress-gateway
+  - Set request and limit
+  - Set autoscaling to true
+  - Set number of min and max replicas with target CPU utilization to trigger HPA
+
+    ```yaml
+    ingress:
+      enabled: true
+      runtime:
+        container:
+          resources:
+            requests:
+              cpu: 500m
+              memory: 300Mi
+            limits:
+              cpu: 2
+              memory: 1Gi
+        deployment:
+          autoScaling:
+            enabled: true
+            maxReplicas: 4
+            minReplicas: 2
+            targetCPUUtilizationPercentage: 85
+    ```
+
+- For others components 
+  - Set number of replicas to 2
+  
+    ```yaml
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+    ```
+
+  - Set pod anti-affinity to prevent scheduler to place pods to the same node
+    
+    *Remark: namespaces in podAntiAffinity is needed to support multiples control planes in the same OpenShift cluster. Change this to match name of control plane's namespace* 
+
+    ```yaml
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - galley
+                namespaces: istio-system
+    ```
+
+- Check that pods of each deployment run on different nodes
+
+  ```bash
+  oc get pods -o wide -n istio-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,PHASE:.status.phase
+  ```
+
+  Output
+
+  ```bash
+  NAME                                    NODE                                        PHASE
+  grafana-7bdb4fb848-847c8                ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-citadel-6668b5b947-njgbb          ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-citadel-6668b5b947-nk9dz          ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-galley-6dc7f9c496-hkm57           ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-galley-6dc7f9c496-qcw9q           ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-ingressgateway-6bcd484457-25tq7   ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-ingressgateway-6bcd484457-nvfb9   ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-pilot-74d5db759c-m9jxm            ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-pilot-74d5db759c-rcdxj            ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-policy-58ff56d7dc-26wsq           ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-policy-58ff56d7dc-62gwl           ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-sidecar-injector-ffc58c87-4t5gc   ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-sidecar-injector-ffc58c87-rjz7l   ip-10-0-160-48.us-east-2.compute.internal   Running
+  istio-telemetry-646d7cf56c-fz72g        ip-10-0-137-21.us-east-2.compute.internal   Running
+  istio-telemetry-646d7cf56c-lctxg        ip-10-0-160-48.us-east-2.compute.internal   Running
+  jaeger-7b866d475f-nhrp5                 ip-10-0-160-48.us-east-2.compute.internal   Running
+  kiali-75dc58b5f6-bwk7q                  ip-10-0-137-21.us-east-2.compute.internal   Running
+  prometheus-85db9d786b-vzskf             ip-10-0-160-48.us-east-2.compute.internal   Running
+  prometheus-85db9d786b-wgrwz             ip-10-0-137-21.us-east-2.compute.internal   Running
+  ```
+    
+### OpenShift Service Mesh 2.x
+WIP
