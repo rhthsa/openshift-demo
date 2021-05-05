@@ -30,6 +30,12 @@ spec:
             maxReplicas: 4
             minReplicas: 2
             targetCPUUtilizationPercentage: 85
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
     egress:
       enabled: false
   runtime:
