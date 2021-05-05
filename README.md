@@ -23,6 +23,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Egress IPs
   - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
+- [Pod Taint and Toleration](infrastructure-taint-and-toleration.md)
 - [Custom Alert](custom-alert.md)
 - Application Build & Deployment
   - [Command Line with oc](build-with-oc.md)
@@ -52,6 +53,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Circuit Breaker
   - Secure with mTLS
   - Service Level Objective (SLO)
+  - Control Plane with High Availability
 - [User Workload Monitoring](application-metrics.md)
   - Setup User Workload Monitoring
   - Monitor Custom Metrics
