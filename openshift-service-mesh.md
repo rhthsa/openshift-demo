@@ -979,6 +979,18 @@ Check following Git for setup mTLS between service and ingress service
   prometheus-85db9d786b-vzskf             ip-10-0-160-48.us-east-2.compute.internal   Running
   prometheus-85db9d786b-wgrwz             ip-10-0-137-21.us-east-2.compute.internal   Running
   ```
-    
+- Verify HPA for ingress gateway
+  
+  ```bash
+  oc get hpa -n istio-system
+  ```
+
+  Output
+
+  ```bash
+  NAME                   REFERENCE                         TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+  istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4         2          10m
+  ```
+
 ### OpenShift Service Mesh 2.x
 WIP
