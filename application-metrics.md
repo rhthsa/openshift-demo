@@ -87,28 +87,6 @@
     application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.999"} 0.213724005
     ```
 
-    Code snippet from Backend Application
-
-    ```java
-    @Counted(
-        name = "countBackend",
-        description = "Counts how many times the backend method has been invoked"
-        )
-    @Timed(
-        name = "timeBackend",
-        description = "Times how long it takes to invoke the backend method",
-        unit = MetricUnits.MILLISECONDS
-        )
-    @ConcurrentGauge(
-        name = "concurrentBackend",
-        description = "Concurrent connection"
-        )
-     public Response callBackend(@Context HttpHeaders headers) {
-       ...
-       ...
-     }
-    ```
-
     
 - Create [Service Monitoring](manifests/backend-monitor.yaml) to monitor backend service
     
@@ -129,19 +107,23 @@
 
   - Application metrics 
     
-    - PromQL for query number of request for last 1 minute
-      
+    - PromQL for query qequest rate for last 1 minute
+    
       ```
       rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
       ```
 
+      Sample stacked graph
+
       ![](images/dev-console-app-metrics-01.png)
 
-    - PromQL for query number of concurrent requests
+    - PromQL for query concurrent requests
       
       ```
       application_com_example_quarkus_BackendResource_concurrentBackend_current
       ```
+      
+      Sample stacked graph
 
       ![](images/dev-console-app-metrics-02.png)
 
@@ -225,26 +207,45 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
     done
     ```
 
-  - k6 load test tool
-  
+  - k6 load test tool with 10 threads for 5 minutes
+
     ```bash
     FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk '{print $1}')
      oc run load-test-frontend -n project1 \
     -i --image=loadimpact/k6  \
     --rm=true --restart=Never --  run -< manifests/load-test-k6.js \
-    -e URL=http://frontend-v1:8080 \
+    -e URL=http://$FRONTEND_SVC:8080 \
     -e THREADS=10 \
     -e RAMPUP=30s \
     -e DURATION=5m \
-    -e RAMEDOWN=30s
+    -e RAMPDOWN=30s
+    ```
+    
+    Sample output of k6 load test tool
+
+    ```bash
+    data_received..................: 714 kB 2.0 kB/s
+    data_sent......................: 95 kB  264 B/s
+    http_req_blocked...............: avg=17.62µs min=1.74µs   med=2.84µs  max=5.39ms  p(90)=3.85µs  p(95)=4.35µs
+    http_req_connecting............: avg=12.92µs min=0s       med=0s      max=4ms     p(90)=0s      p(95)=0s
+    http_req_duration..............: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+    { expected_response:true }...: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+    http_req_failed................: 0.00%  ✓ 0    ✗ 1163
+    http_req_receiving.............: avg=65.78µs min=36.34µs  med=64.54µs max=402.6µs p(90)=78.39µs p(95)=82.43µshttp_req_tls_handshaking.......: avg=0s      min=0s       med=0s      max=0s      p(90)=0s      p(95)=0s
+    http_req_waiting...............: avg=2.87s   min=215.49ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+    http_reqs......................: 1163   3.222008/s
+    iteration_duration.............: avg=2.87s   min=215.71ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+    iterations.....................: 1163   3.222008/s
+    vus............................: 2      min=1  max=10
+    vus_max........................: 10     min=10 max=10
     ```
 
-  Remark: You need to configure frontend app to connect to backend app
+  **Remark**: You need to configure frontend app to connect to backend app
 
-  ```bash
-  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-  ```
+   ```bash
+   oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+   oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+   ```
   
 - Grafana Dashboard
   
@@ -267,34 +268,28 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
     - name: backend-app
       rules:
       - alert: ConcurrentBackend
-        expr: sum(avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m]))>15
+        expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
+        # wait just 1 minute for demo purpose
         for: 1m
         labels:
           severity: 'warning'
         annotations:
           message: 'Total concurrent request is {{ $value }} request/sec'
       - alert: HighLatency
-        expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_mean_seconds[1m])>5
-        for: 1m
+        expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds>5
         labels:
           severity: 'critical'
         annotations:
-          message: '{{ $labels.pod }} response time is {{ $value }} sec'
-    ```
+          message: '{{ $labels.instance }} response time is {{ $value }} sec'
+  ```
 
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
   
   - ConcurrentBackend
-
-    ```
-    Severity warning when total concurrent reqeusts is greater than 15 sustains 1 minute
-    ```
-
+    severity warning when total concurrent reqeusts is greater than 15
   - HighLatency
+    servierity critical when response time is greateer than 5 sec  
 
-    ```
-    Servierity critical when response time is greater than 5 seconds sustains 1 minute
-    ```
 
 - Create [backend-app-alert](manifests/backend-custom-alert.yaml) 
 
@@ -320,13 +315,11 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   ```
   
 - Test `ConcurrentBackend` alert with 25 concurrent requests
-  - Run load test tool
 
   ```bash
   FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
   siege -c 25 $FRONTEND_URL
   ```
-
   If you don't have siege, run k6 as pod on OpenShift
   - 25 threads
   - Duration 2 minutes
@@ -341,12 +334,12 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   -e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
   ```
 
-  - Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
+  Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
 
-    ![](images/alert-concurrent-backend.png)
+  ![](images/alert-concurrent-backend.png)
 
 - Test `HighLatency` alert
-  - Set backend with 6 sec response time
+  - Set backend with 6 sec response tim
     - By CLI
       ```bash
       oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
