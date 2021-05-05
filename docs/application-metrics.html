@@ -517,25 +517,6 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.99&quot;} 0.213724005
 application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.999&quot;} 0.213724005
 </code></pre>
-<p>Code snippet from Backend Application</p>
-<pre><code class="lang-java">@Counted(
-    name = &quot;countBackend&quot;,
-    description = &quot;Counts how many times the backend method has been invoked&quot;
-    )
-@Timed(
-    name = &quot;timeBackend&quot;,
-    description = &quot;Times how long it takes to invoke the backend method&quot;,
-    unit = MetricUnits.MILLISECONDS
-    )
-@ConcurrentGauge(
-    name = &quot;concurrentBackend&quot;,
-    description = &quot;Concurrent connection&quot;
-    )
- public Response callBackend(@Context HttpHeaders headers) {
-   ...
-   ...
- }
-</code></pre>
 </li>
 </ul>
 </li>
@@ -555,13 +536,15 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 </li>
 <li><p>Application metrics </p>
 <ul>
-<li><p>PromQL for query number of request for last 1 minute</p>
+<li><p>PromQL for query qequest rate for last 1 minute</p>
 <pre><code>rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
-</code></pre><p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
+</code></pre><p>Sample stacked graph</p>
+<p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
 </li>
-<li><p>PromQL for query number of concurrent requests</p>
+<li><p>PromQL for query concurrent requests</p>
 <pre><code>application_com_example_quarkus_BackendResource_concurrentBackend_current
-</code></pre><p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
+</code></pre><p>Sample stacked graph</p>
+<p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
 </li>
 </ul>
 </li>
@@ -631,22 +614,38 @@ do
 done
 </code></pre>
 </li>
-<li><p>k6 load test tool</p>
+<li><p>k6 load test tool with 10 threads for 5 minutes</p>
 <pre><code class="lang-bash">FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk &apos;{print $1}&apos;)
  oc run load-test-frontend -n project1 \
 -i --image=loadimpact/k6  \
 --rm=true --restart=Never --  run -&lt; manifests/load-test-k6.js \
--e URL=http://frontend-v1:8080 \
+-e URL=http://$FRONTEND_SVC:8080 \
 -e THREADS=10 \
 -e RAMPUP=30s \
 -e DURATION=5m \
--e RAMEDOWN=30s
+-e RAMPDOWN=30s
+</code></pre>
+<p>Sample output of k6 load test tool</p>
+<pre><code class="lang-bash">data_received..................: 714 kB 2.0 kB/s
+data_sent......................: 95 kB  264 B/s
+http_req_blocked...............: avg=17.62&#xB5;s min=1.74&#xB5;s   med=2.84&#xB5;s  max=5.39ms  p(90)=3.85&#xB5;s  p(95)=4.35&#xB5;s
+http_req_connecting............: avg=12.92&#xB5;s min=0s       med=0s      max=4ms     p(90)=0s      p(95)=0s
+http_req_duration..............: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+{ expected_response:true }...: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+http_req_failed................: 0.00%  &#x2713; 0    &#x2717; 1163
+http_req_receiving.............: avg=65.78&#xB5;s min=36.34&#xB5;s  med=64.54&#xB5;s max=402.6&#xB5;s p(90)=78.39&#xB5;s p(95)=82.43&#xB5;shttp_req_tls_handshaking.......: avg=0s      min=0s       med=0s      max=0s      p(90)=0s      p(95)=0s
+http_req_waiting...............: avg=2.87s   min=215.49ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+http_reqs......................: 1163   3.222008/s
+iteration_duration.............: avg=2.87s   min=215.71ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
+iterations.....................: 1163   3.222008/s
+vus............................: 2      min=1  max=10
+vus_max........................: 10     min=10 max=10
 </code></pre>
 </li>
 </ul>
-<p>Remark: You need to configure frontend app to connect to backend app</p>
-<pre><code class="lang-bash">oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+<p><strong>Remark</strong>: You need to configure frontend app to connect to backend app</p>
+<pre><code class="lang-bash"> oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+ oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
 </li>
 <li><p>Grafana Dashboard</p>
@@ -668,15 +667,15 @@ spec:
   - name: backend-app
     rules:
     - alert: ConcurrentBackend
-      expr: sum(avg_over_time(application_com_example_quarkus_BackendResource_concurrentBackend_current[1m]))&gt;15
+      expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)&gt;15
+      # wait just 1 minute for demo purpose
       for: 1m
       labels:
         severity: &apos;warning&apos;
       annotations:
         message: &apos;Total concurrent request is  request/sec&apos;
     - alert: HighLatency
-      expr: quantile_over_time(0.9,application_com_example_quarkus_BackendResource_timeBackend_mean_seconds[1m])&gt;5
-      for: 1m
+      expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds&gt;5
       labels:
         severity: &apos;critical&apos;
       annotations:
@@ -684,14 +683,14 @@ spec:
 </code></pre>
 <p><a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
 <ul>
-<li><p>ConcurrentBackend</p>
-<pre><code>Severity warning when total concurrent reqeusts is greater than 15 sustains 1 minute
-</code></pre></li>
-<li><p>HighLatency</p>
-<pre><code>Servierity critical when response time is greater than 5 seconds sustains 1 minute
-</code></pre></li>
+<li>ConcurrentBackend
+severity warning when total concurrent reqeusts is greater than 15</li>
+<li>HighLatency
+servierity critical when response time is greateer than 5 sec  </li>
 </ul>
 </li>
+</ul>
+<ul>
 <li><p>Create <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> </p>
 <pre><code class="lang-bash">oc apply -f manifests/backend-custom-alert.yaml
 </code></pre>
@@ -707,9 +706,6 @@ oc scale deployment backend-v1 --replicas=2 -n project1
 </code></pre>
 </li>
 <li><p>Test <code>ConcurrentBackend</code> alert with 25 concurrent requests</p>
-<ul>
-<li>Run load test tool</li>
-</ul>
 <pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 siege -c 25 $FRONTEND_URL
 </code></pre>
@@ -726,15 +722,12 @@ oc run load-test -n project1 -i \
 --  run -  &lt; manifests/load-test-k6.js \
 -e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
 </code></pre>
-<ul>
-<li><p>Check for alert in Developer Console by select Menu <code>Monitoring</code> then select <code>Alerts</code></p>
+<p>Check for alert in Developer Console by select Menu <code>Monitoring</code> then select <code>Alerts</code></p>
 <p><img src="images/alert-concurrent-backend.png" alt=""></p>
-</li>
-</ul>
 </li>
 <li><p>Test <code>HighLatency</code> alert</p>
 <ul>
-<li><p>Set backend with 6 sec response time</p>
+<li><p>Set backend with 6 sec response tim</p>
 <ul>
 <li>By CLI<pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
 </code></pre>
@@ -807,7 +800,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.9","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-04-29T14:17:27.552Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-29T14:18:06.795Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.9","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-05-05T03:44:10.733Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-05T03:44:52.163Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

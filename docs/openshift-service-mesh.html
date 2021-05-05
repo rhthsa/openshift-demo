@@ -459,6 +459,11 @@
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 <li><a href="#secure-with-mtls">Secure with mTLS</a></li>
 <li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
+<li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
+<li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
+<li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1226,6 +1231,103 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </li>
 </ul>
 <p>--&gt;</p>
+<h2 id="control-plane-with-high-availability">Control Plane with High Availability</h2>
+<h3 id="openshift-service-mesh-1x">OpenShift Service Mesh 1.x</h3>
+<p><a href="manifests/smcp-v1-ha.yaml">ServiceMeshControlPlane</a> with high availability configuration</p>
+<ul>
+<li><p>Configure Horizontal Pod Autoscaler (HPA) for ingress-gateway</p>
+<ul>
+<li>Set request and limit</li>
+<li>Set autoscaling to true</li>
+<li><p>Set number of min and max replicas with target CPU utilization to trigger HPA</p>
+<pre><code class="lang-yaml">ingress:
+  enabled: true
+  runtime:
+    container:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 300Mi
+        limits:
+          cpu: 2
+          memory: 1Gi
+    deployment:
+      autoScaling:
+        enabled: true
+        maxReplicas: 4
+        minReplicas: 2
+        targetCPUUtilizationPercentage: 85
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>For others components </p>
+<ul>
+<li><p>Set number of replicas to 2</p>
+<pre><code class="lang-yaml">    deployment:
+      autoScaling:
+        enabled: false
+      replicas: 2
+</code></pre>
+</li>
+<li><p>Set pod anti-affinity to prevent scheduler to place pods to the same node</p>
+<p><em>Remark: namespaces in podAntiAffinity is needed to support multiples control planes in the same OpenShift cluster. Change this to match name of control plane&apos;s namespace</em> </p>
+<pre><code class="lang-yaml">    pod:
+      tolerations:
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 60
+      affinity:
+        podAntiAffinity:
+          requiredDuringScheduling:
+          - key: istio
+            topologyKey: kubernetes.io/hostname
+            operator: In
+            values:
+            - galley
+            namespaces: istio-system
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Check that pods of each deployment run on different nodes</p>
+<pre><code class="lang-bash">oc get pods -o wide -n istio-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,PHASE:.status.phase
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                    NODE                                        PHASE
+grafana-7bdb4fb848-847c8                ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-citadel-6668b5b947-njgbb          ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-citadel-6668b5b947-nk9dz          ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-galley-6dc7f9c496-hkm57           ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-galley-6dc7f9c496-qcw9q           ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-ingressgateway-6bcd484457-25tq7   ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-ingressgateway-6bcd484457-nvfb9   ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-pilot-74d5db759c-m9jxm            ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-pilot-74d5db759c-rcdxj            ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-policy-58ff56d7dc-26wsq           ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-policy-58ff56d7dc-62gwl           ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-sidecar-injector-ffc58c87-4t5gc   ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-sidecar-injector-ffc58c87-rjz7l   ip-10-0-160-48.us-east-2.compute.internal   Running
+istio-telemetry-646d7cf56c-fz72g        ip-10-0-137-21.us-east-2.compute.internal   Running
+istio-telemetry-646d7cf56c-lctxg        ip-10-0-160-48.us-east-2.compute.internal   Running
+jaeger-7b866d475f-nhrp5                 ip-10-0-160-48.us-east-2.compute.internal   Running
+kiali-75dc58b5f6-bwk7q                  ip-10-0-137-21.us-east-2.compute.internal   Running
+prometheus-85db9d786b-vzskf             ip-10-0-160-48.us-east-2.compute.internal   Running
+prometheus-85db9d786b-wgrwz             ip-10-0-137-21.us-east-2.compute.internal   Running
+</code></pre>
+</li>
+<li><p>Verify HPA for ingress gateway</p>
+<pre><code class="lang-bash">oc get hpa -n istio-system
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                   REFERENCE                         TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4         2          10m
+</code></pre>
+</li>
+</ul>
+<h3 id="openshift-service-mesh-2x">OpenShift Service Mesh 2.x</h3>
+<p>WIP</p>
 
                                 
                                 </section>
@@ -1269,7 +1371,7 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.6","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-04-29T14:17:27.596Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-04-29T14:18:06.795Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.6","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-05-05T03:44:10.773Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-05T03:44:52.163Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
