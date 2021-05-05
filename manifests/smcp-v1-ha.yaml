@@ -1,0 +1,191 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic-install
+spec:
+  version: v1.1
+  policy:
+    mixer:
+      # policyCheckFailOpen allows traffic in cases when the mixer policy service cannot be reached.
+      # Default is false which means the traffic is denied when the client is unable to connect to Mixer. 
+      failOpen: false
+    type: mixer
+  gateways:
+    openshiftRoute:
+      enabled: false
+    ingress:
+      enabled: true
+      runtime:
+        container:
+          resources:
+            requests:
+              cpu: 500m
+              memory: 300Mi
+            limits:
+              cpu: 2
+              memory: 1Gi
+        deployment:
+          autoScaling:
+            enabled: true
+            maxReplicas: 4
+            minReplicas: 2
+            targetCPUUtilizationPercentage: 85
+    egress:
+      enabled: false
+  runtime:
+    components:
+      galley:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - galley
+                namespaces: istio-system
+      pilot:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio-mixer-type
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - pilot
+                namespaces: istio-system
+      security:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - citadel
+                namespaces: istio-system
+      sidecarInjectorWebhook:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - sidecar-injector
+                namespaces: istio-system
+      prometheus:                   
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - prometheus
+                namespaces: istio-system
+      mixer.policy:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio-mixer-type
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - policy
+                namespaces: istio-system
+      mixer.telemetry:
+        deployment:
+          autoScaling:
+            enabled: false
+          replicas: 2
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: istio-mixer-type
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - telemetry
+                namespaces: istio-system
+    tracing:
+      enabled: true
+      jaeger:
+        template: all-in-one
+        sampling: 10000
+  addons:
+    grafana:
+      enabled: true
+    jaeger:
+      install:
+        storage:
+          type: Memory
+    kiali:
+      enabled: true
+
