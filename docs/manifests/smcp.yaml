@@ -4,13 +4,6 @@ metadata:
   name: basic-install
 spec:
   version: v2.0
-  meshConfig:
-    localityLbSetting:
-      enabled: false
-    disablePolicyChecks: false
-  tracing:
-    sampling: 10000
-    type: Jaeger
   gateways:
     openshiftRoute:
       enabled: true
@@ -28,10 +21,12 @@ spec:
                 memory: 512Mi
           deployment:
             autoScaling:
-              maxReplicas: 2
-              minReplicas: 1
+              maxReplicas: 4
+              minReplicas: 2
               targetCPUUtilizationPercentage: 85
               enabled: true
+            podDisruption:
+              enabled: false
             pod:
               tolerations:
               - key: node.kubernetes.io/unreachable
@@ -48,15 +43,11 @@ spec:
         default: info
       logAsJSON: false
   policy:
+    type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
     # istiod:
-    #   #failOpen: false
-    #   disablePolicyChecks: false
-    #   localityLbSetting:
-    #     enabled: false
-    #   outboundTrafficPolicy:
-    #     #mode: ALLOW_ANY
-    #     mode: REGISTRY_ONLY
-    type: Istiod
+    #   enableChecks: false # default false (disablePolicyChecks: true)
+    #   failOpen: false # default false
+    #   sessionAffinity: true
   addons:
     grafana:
       enabled: true
@@ -108,3 +99,6 @@ spec:
       file:
         encoding: TEXT
         name: /dev/stdout
+tracing:
+  sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
+  type: Jaeger
