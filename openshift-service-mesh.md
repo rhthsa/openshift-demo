@@ -993,4 +993,106 @@ Check following Git for setup mTLS between service and ingress service
   ```
 
 ### OpenShift Service Mesh 2.x
-WIP
+
+[ServiceMeshControlPlane](manifests/smcp-ha.yaml) with high availability configuration
+
+- Configure Horizontal Pod Autoscaler (HPA) for ingress-gateway
+  - Set request and limit
+  - Set autoscaling to true
+  - Set number of min and max replicas with target CPU utilization to trigger HPA
+
+    ```yaml
+    ingress:
+      enabled: true
+      runtime:
+        container:
+          resources:
+            requests:
+              cpu: 500m
+              memory: 300Mi
+            limits:
+              cpu: 2
+              memory: 1Gi
+        deployment:
+          autoScaling:
+            enabled: true
+            maxReplicas: 4
+            minReplicas: 2
+            targetCPUUtilizationPercentage: 85
+    ```
+
+- For others components 
+  - Set number of replicas to 2
+  
+    ```yaml
+    pilot:
+      deployment:
+        replicas: 2
+    ```
+
+  - Set Pod Disruption Budget (PDB) with minAvailable to 1
+  
+    ```yaml
+    defaults:
+      deployment:
+        podDisruption:
+          enabled: true
+          minAvailable: 1
+    ```
+
+- Check that pods of each deployment run on different nodes
+
+  ```bash
+  oc get pods -n istio-system
+  ```
+
+  Output
+
+  ```bash
+  grafana-78f656547-gkm92                 2/2     Running   0          54s
+  istio-ingressgateway-667749f4bd-pfl2l   1/1     Running   0          54s
+  istio-ingressgateway-667749f4bd-sfwx4   1/1     Running   0          39s
+  istiod-basic-install-6994d86579-4n8jf   1/1     Running   0          77s
+  istiod-basic-install-6994d86579-b5bgv   1/1     Running   0          77s
+  jaeger-85d4744d8b-krqfl                 2/2     Running   0          54s
+  kiali-784df775f8-xccsw                  1/1     Running   0          28s
+  prometheus-79ff59d59f-6j99k             3/3     Running   0          65s
+  prometheus-79ff59d59f-msrpb             3/3     Running   0          65s
+  ```
+
+- Verify HPA for ingress gateway
+  
+  ```bash
+  oc get hpa -n istio-system
+  ```
+
+  Output
+
+  ```bash
+  NAME                   REFERENCE                         TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+  istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4         2          10m
+  ```
+
+- Verify PDB for istiod
+
+  ```bash
+  oc describe pdb/istiod-basic-install
+  ```
+
+  Output
+
+  ```bash
+  Name:           istiod-basic-install
+  Namespace:      istio-system
+  Min available:  1
+  Selector:       app=istiod,istio.io/rev=basic-install
+  Status:
+      Allowed disruptions:  1
+      Current:              2
+      Desired:              1
+      Total:                2
+  Events:
+    Type    Reason  Age                    From               Message
+    ----    ------  ----                   ----               -------
+    Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
+  ```
