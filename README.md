@@ -62,6 +62,12 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 - [Build Container with OC command](build-with-oc.md)
 - [Build Container with OpenShift DO (odo)](build-with-odo.md)
 - [CI/CD with Jenkins](ci-cd-with-jenkins.md)
+  - Build Quarkus App
+  - Pull artifacts from Nexus
+  - Unit Test
+  - Code Quality
+  - Push container image to Nexus or internal registry
+  - Blue/Green Deployment
 - [CI/CD with Azure DevOps](ci-cd.md)
   - Azure DevOps
   - Deploy Back App
