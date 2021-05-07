@@ -21,3 +21,4 @@
   * [User Workload Monitoring](application-metrics.md)
   * [CI/CD with Jenkins](ci-cd-with-jenkins.md)
   * [CI/CD with Azure DevOps](ci-cd.md)
+  * [EAP on OpenShift](eap-on-ocp.md)

@@ -75,3 +75,4 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Prepare Harbor On Kubernetes/OpenShift
   - Prepare Azure DevOps Service Connection
   - Azure pipelines
+- [EAP on OpenShift](eap-on-ocp.md)
