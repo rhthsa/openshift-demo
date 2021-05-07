@@ -1,3 +1,4 @@
+# https://github.com/maistra/istio-operator/blob/maistra-2.0/pkg/apis/maistra/v2/smcp_new.yaml
 apiVersion: maistra.io/v2
 kind: ServiceMeshControlPlane
 metadata:
