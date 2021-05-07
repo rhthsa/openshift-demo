@@ -1,0 +1,10 @@
+#namePrefix: prod-
+commonLabels:
+  environment: prod
+commonAnnotations:
+  description: This is prod environment
+bases:
+- ../../base
+patches:
+- backend-replicas.yaml
+- custom-env.yaml

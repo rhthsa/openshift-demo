@@ -1,0 +1,10 @@
+#namePrefix: prod-
+commonLabels:
+  environment: stage
+commonAnnotations:
+  description: This is staging environment
+bases:
+- ../../base
+patches:
+- backend-replicas.yaml
+- custom-env.yaml
