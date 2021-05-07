@@ -1,8 +1,8 @@
 #namePrefix: prod-
 commonLabels:
-  environment: stage
+  environment: dev
 commonAnnotations:
-  description: This is staging environment
+  description: This is dev environment
 bases:
 - ../../base
 patches:
