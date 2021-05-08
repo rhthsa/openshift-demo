@@ -4,7 +4,7 @@ metadata:
   name: frontend
   namespace: demo
 spec:
-  replicas: 5
+  replicas: 7
   template:
     spec:
       containers:
