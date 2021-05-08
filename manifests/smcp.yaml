@@ -5,6 +5,9 @@ metadata:
   name: basic-install
 spec:
   version: v2.0
+  # meshConfig:
+  #   outboundTrafficPolicy:
+  #     mode: REGISTRY_ONLY
   gateways:
     openshiftRoute:
       enabled: true
@@ -94,12 +97,16 @@ spec:
   telemetry:
     type: Istiod
   proxy:
+   networking:
+    trafficControl:
+      outbound:
+        policy: ALLOW_ANY # Set to REGISTRY_ONLY for default to block all
     accessLogging:
       envoyService:
         enabled: false
       file:
         encoding: TEXT
-        name: /dev/stdout
+        name: /dev/stdout 
 tracing:
   sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
   type: Jaeger
