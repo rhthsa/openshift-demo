@@ -5,6 +5,6 @@ commonAnnotations:
   description: This is dev environment
 bases:
 - ../../base
-patches:
-- backend-replicas.yaml
-- custom-env.yaml
+patchesStrategicMerge:
+- frontend.yaml
+- backend.yaml
