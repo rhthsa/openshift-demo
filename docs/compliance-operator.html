@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>EAP on OpenShift · OpenShift Demo</title>
+        <title>Compliance · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -62,7 +62,7 @@
 
     
     
-    <link rel="prev" href="ci-cd.html" />
+    <link rel="prev" href="custom-alert.html" />
     
 
     </head>
@@ -222,7 +222,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.9" data-path="compliance-operator.html">
+        <li class="chapter active" data-level="1.2.9" data-path="compliance-operator.html">
             
                 <a href="compliance-operator.html">
             
@@ -416,7 +416,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.4.11" data-path="eap-on-ocp.html">
+        <li class="chapter " data-level="1.4.11" data-path="eap-on-ocp.html">
             
                 <a href="eap-on-ocp.html">
             
@@ -464,7 +464,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >EAP on OpenShift</a>
+        <a href="." >Compliance</a>
     </h1>
 </div>
 
@@ -479,311 +479,276 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="jboss-eap-on-openshift">JBoss EAP on OpenShift</h1>
+                                <h1 id="openshift-compliance-with-compliance-operator">OpenShift Compliance with Compliance Operator</h1>
 <ul>
-<li><a href="#jboss-eap-on-openshift">JBoss EAP on OpenShift</a><ul>
-<li><a href="#binary-build-and-deployment">Binary Build and Deployment</a></li>
-<li><a href="#configure-standalone-cluster">Configure Standalone Cluster</a></li>
+<li><a href="#openshift-compliance-with-compliance-operator">OpenShift Compliance with Compliance Operator</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#compliance-operator">Compliance Operator</a></li>
+<li><a href="#cis-profile">CIS Profile</a></li>
 </ul>
 </li>
 </ul>
-<h2 id="binary-build-and-deployment">Binary Build and Deployment</h2>
+<h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li>Clone <a href="https://gitlab.com/ocp-demo/verify-cluster.git" target="_blank">verify cluster app</a></li>
-<li><p>Pacakge application (WAR) and copy at your local directory</p>
-<pre><code class="lang-bash">mvn clean package
-mkdir -p deployments
-cp target/verify-cluster.war deployments
-</code></pre>
-</li>
-<li><p>Create build config with EAP image stream and use local WAR file</p>
+<li>OpenShift 4.6 or 4.7</li>
+<li>Cluster-admin user access</li>
+</ul>
+<h2 id="compliance-operator">Compliance Operator</h2>
 <ul>
-<li><p>Initial environment variables</p>
-<pre><code class="lang-bash">APP_NAME=verify-cluster
-PROJECT=$(oc project -q)
-IMAGE_STREAM=jboss-eap73-openshift:7.3
-REPLICAS=2
-VERSION=1.0.0
-BINARY_PATH=deployments/verify-cluster.war
-</code></pre>
-</li>
-<li><p>Build EAP container image with deployed application</p>
+<li>Install Compliance Operator from OperatorHub</li>
+<li><p><strong>[Optional]</strong> Verify Compliance Operator</p>
 <ul>
-<li><p>Create build config</p>
-<pre><code class="lang-bash">oc new-build --binary=true \
---name=${APP_NAME} -l app=${APP_NAME} --image-stream=${IMAGE_STREAM}
+<li><p>Check compliance profile</p>
+<pre><code class="lang-bash">oc get profiles.compliance -n openshift-compliance
+</code></pre>
+<p>Output example</p>
+<pre><code class="lang-bash">NAME              AGE
+ocp4-cis          4h52m
+ocp4-cis-node     4h52m
+ocp4-e8           4h52m
+ocp4-moderate     4h52m
+rhcos4-e8         4h52m
+rhcos4-moderate   4h52m
 </code></pre>
 </li>
-<li><p>Start build</p>
-<pre><code class="lang-bash">oc start-build ${APP_NAME} \
---from-file=${BINARY_PATH} \
---follow
+<li><p>Check detail of profile</p>
+<pre><code class="lang-bash">oc get -o yaml profiles.compliance ocp4-cis  -n openshift-compliance
+</code></pre>
+<p>Output example</p>
+<pre><code class="lang-yaml">...
+rules:
+- ocp4-accounts-restrict-service-account-tokens
+- ocp4-accounts-unique-service-account
+- ocp4-api-server-admission-control-plugin-alwaysadmit
+- ocp4-api-server-admission-control-plugin-alwayspullimages
+- ocp4-api-server-admission-control-plugin-namespacelifecycle
+- ocp4-api-server-admission-control-plugin-noderestriction
+...
 </code></pre>
 </li>
-<li><p>Tag image with version</p>
-<pre><code class="lang-bash">oc tag ${APP_NAME}:latest ${APP_NAME}:${VERSION}
-</code></pre>
-</li>
-<li><p>Check build config</p>
-<pre><code class="lang-bash">oc get buildconfig/verify-cluster
-</code></pre>
-<p>output</p>
-<pre><code class="lang-bash">NAME             TYPE     FROM     LATEST
-verify-cluster   Source   Binary   1
+<li><p>Check details of rule</p>
+<pre><code class="lang-bash">oc get -o yaml rules.compliance ocp4-accounts-unique-service-account  -n openshift-compliance
 </code></pre>
 </li>
 </ul>
 </li>
-</ul>
-</li>
-<li><p>Create Deoloyment</p>
+<li><p>Check for default ScanSetting</p>
 <ul>
-<li><p>Start build and deploy with <em>oc new-app</em></p>
-<pre><code class="lang-bash">oc new-app ${APP_NAME}:${VERSION} \
---labels=app=${APP_NAME},deploymentconfig=${APP_NAME},version=${VERSION},app.kubernetes.io/name=jboss
+<li><p>List all ScanSetting</p>
+<pre><code class="lang-bash">oc get scansettings -n openshift-compliance
+</code></pre>
+<p>Result</p>
+<pre><code class="lang-bash">NAME                 AGE
+default              35m
+default-auto-apply   35m
 </code></pre>
 </li>
-<li><p>Check pods</p>
-<pre><code class="lang-bash">oc get pods -l app=$APP_NAME
+<li><p>Check for <em>default</em> ScanSetting</p>
+<pre><code class="lang-bash">oc describe scansettings default -n openshift-compliance
+</code></pre>
+<p>Output example, scheduled at 1AM everyday and apply to both master and worker node and use block storage (RWO) for stored result</p>
+<pre><code class="lang-bash">Raw Result Storage:
+  Pv Access Modes:
+    ReadWriteOnce
+  Rotation:  3
+  Size:      1Gi
+Roles:
+  worker
+  master
+Scan Tolerations:
+  Effect:    NoSchedule
+  Key:       node-role.kubernetes.io/master
+  Operator:  Exists
+  Schedule:    0 1 * * *
+  Events:      &lt;none&gt;
+</code></pre>
+<h2 id="cis-profile">CIS Profile</h2>
+</li>
+</ul>
+</li>
+<li><p>To start scan, create ScanSettingBinding. Scan will be started immediately after save</p>
+<ul>
+<li><p>Use Admin Console to create ScanSettingBinding, default is <em>rhcos4-moderate</em> and use default <em>ScanSetting</em></p>
+<p><img src="images/compliance-default-scansettingbinding.png" alt=""></p>
+</li>
+<li><p>Add <em>opc4-cis</em> profile to profiles list</p>
+<pre><code class="lang-yaml">apiVersion: compliance.openshift.io/v1alpha1
+profiles:
+  - apiGroup: compliance.openshift.io/v1alpha1
+    name: rhcos4-moderate
+    kind: Profile
+  - apiGroup: compliance.openshift.io/v1alpha1
+    name: ocp4-cis
+    kind: Profile 
+settingsRef:
+  apiGroup: compliance.openshift.io/v1alpha1
+  name: default
+  kind: ScanSetting
+kind: ScanSettingBinding
+metadata:
+  name: cis-and-moderate-profile
+  namespace: openshift-compliance
+</code></pre>
+<p>or use CLI</p>
+<pre><code class="lang-bash">oc apply -f manifests/cis-and-moderate-profile.yaml
+</code></pre>
+</li>
+<li><p>Check ComplianceScan tab</p>
+<p><img src="images/compliance-progress-compliancescan.png" alt=""></p>
+</li>
+<li><p>or use CLI</p>
+<pre><code class="lang-bash">oc get compliancescan -n openshift-compliance
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                              READY   STATUS    RESTARTS   AGE
-verify-cluster-565fbb6f86-jt5xl   1/1     Running   0          4m42s
+<pre><code class="lang-bash">NAME                     PHASE     RESULT
+ocp4-cis                 DONE      NON-COMPLIANT
+rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
+rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
 </code></pre>
-</li>
-<li><p>Check on Development Console</p>
-<p>Pods</p>
-<p><img src="images/verify-cluster-dev-console.png" alt=""></p>
-<p>Resources</p>
-<p><img src="images/verify-cluster-resources.png" alt=""></p>
 </li>
 </ul>
 </li>
-<li><p>Create route</p>
-<pre><code class="lang-bash">oc expose svc/${APP_NAME}
-echo &quot;URL: http://$(oc get route ${APP_NAME} -n ${PROJECT} -o jsonpath=&apos;{.spec.host}&apos;)/verify-cluster&quot;
-</code></pre>
-</li>
-<li><p>Test access verify-cluster and press <em>Increment</em>. Notice pod name and number of hits will be increased</p>
-<p><img src="images/verify-cluster-counter.png" alt=""></p>
-</li>
-</ul>
-<h2 id="configure-standalone-cluster">Configure Standalone Cluster</h2>
+<li><p>Check result</p>
 <ul>
-<li><p>Service Account default needs view role to run KUBE_PING</p>
-<pre><code class="lang-bash">oc adm policy add-cluster-role-to-user \
-view system:serviceaccount:$PROJECT:default -n $PROJECT
+<li><p>Count for FAIL </p>
+<pre><code class="lang-bash">oc get compliancecheckresult -n openshift-compliance | grep FAIL | wc -l
 </code></pre>
 </li>
-<li><p>Pause rollout</p>
-<pre><code class="lang-bash">oc rollout pause deployment  ${APP_NAME}
+<li><p>Script for summary result <a href="bin/check-compliance-result.sh">bin/check-compliance-result.sh</a> </p>
+<pre><code class="lang-bash">================== RESULT ==================
+TYPE              NUMBER
+PASS              148
+FAIL              395
+MANUAL            34
+INFO              2
+NOT_APPLICABLE    0
+
+================ SEVERITY =================
+high              29
+low               27
+medium            515
+unknown           14
 </code></pre>
 </li>
-<li><p>Configure JGROUP</p>
-<pre><code class="lang-bash">oc set env deployment ${APP_NAME} \
-JGROUPS_PING_PROTOCOL=kubernetes.KUBE_PING \
-KUBERNETES_NAMESPACE=${PROJECT} \
-KUBERNETES_LABELS=app=${APP_NAME},version=${VERSION}
-oc set env deployment ${APP_NAME} DISABLE_EMBEDDED_JMS_BROKER=true
-</code></pre>
-</li>
-<li><p>Scale replicas</p>
-<pre><code class="lang-bash">oc scale deployment ${APP_NAME} --replicas=${REPLICAS}
-</code></pre>
-</li>
-<li><p>Resume rollout and check pods</p>
-<pre><code class="lang-bash">oc rollout resume deployment  ${APP_NAME}
-oc get pods -l app=$APP_NAME,version=$VERSION
+<li><p>Check for result description for <em>ocp4-cis-api-server-encryption-provider-config</em></p>
+<pre><code class="lang-bash">oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                              READY   STATUS        RESTARTS   AGE
-verify-cluster-75584cb799-rcf5t   1/1     Terminating   0          52s
-verify-cluster-789f5dd9d-qmg9s    1/1     Running       0          34s
-verify-cluster-789f5dd9d-s4q8z    1/1     Running       0          38s
-</code></pre>
-<p>Check log</p>
-<pre><code class="lang-bash">oc logs  $(oc get pods -l app=$APP_NAME,version=$VERSION | tail -n 1 | awk &apos;{print $1}&apos;)
+<pre><code class="lang-bash">...
+Description:  Configure the Encryption Provider
+etcd is a highly available key-value store used by OpenShift deployments
+for persistent storage of all REST API objects. These objects are
+sensitive in nature and should be encrypted at rest to avoid any
+disclosures.
+Id:            xccdf_org.ssgproject.content_rule_api_server_encryption_provider_config
+Instructions:  Run the following command:
+$ oc get apiserver cluster -ojson | jq -r &apos;.spec.encryption.type&apos;
+The output should return aescdc as the encryption type.
+...
+Severity:                  medium
+Status:                    FAILED
+Events:                    &lt;none&gt;
 </code></pre>
 </li>
 </ul>
+</li>
+<li><p>Fix failed policies with <em>ComplianceRemediation</em></p>
 <ul>
-<li><p>Test that sessions is replicated</p>
-<ul>
-<li>Access verify-cluster app</li>
-<li>Increment counter</li>
-<li><p>Delete pod that response your request</p>
-<pre><code class="lang-bash">oc delete pods &lt;pod name&gt;
+<li><p>List <em>ComplianceRemediation</em></p>
+<pre><code class="lang-bash">oc get ComplianceRemediation -n openshift-compliance
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                                                                                STATE
+ocp4-cis-api-server-encryption-provider-cipher                                                      NotApplied
+ocp4-cis-api-server-encryption-provider-config                                                      NotApplied
+rhcos4-moderate-master-audit-rules-dac-modification-chmod                                           NotApplied
+rhcos4-moderate-master-audit-rules-dac-modification-chown                                           NotApplied
+...
 </code></pre>
 </li>
-<li>Refresh page again and check that counter still continue.</li>
+<li><p>Fix failed <em>ocp4-cis-api-server-encryption-provider-config</em> policy with <em>ComplianceRemidiation</em></p>
+<pre><code class="lang-bash">oc patch -n openshift-compliance complianceremediation \
+ocp4-cis-api-server-encryption-provider-config -p &apos;{&quot;spec&quot;:{&quot;apply&quot;:true}}&apos; --type=&apos;merge&apos;
+</code></pre>
+<p>Check result</p>
+<pre><code class="lang-bash">oc get ComplianceRemediation/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                             STATE
+ocp4-cis-api-server-encryption-provider-config   Applied
+</code></pre>
+</li>
 </ul>
 </li>
-<li><p><a href="binary_build.sh">binary_build.sh</a> can be used to automated all steps.</p>
+<li><p>Re-run scan</p>
+<ul>
+<li><p>Annotate <em>ComplianceScans</em> to rescan or use <a href="bin/rerun-compliance-scan.sh">script</a></p>
+<pre><code class="lang-bash">for scan in $(oc get compliancescans -n openshift-compliance -o custom-columns=NAME:.metadata.name --no-headers)
+do
+oc annotate compliancescans $scan compliance.openshift.io/rescan=
+done
+oc get compliancescan -n openshift-compliance
+</code></pre>
+<p>Result</p>
+<pre><code class="lang-bash">compliancescan.compliance.openshift.io/ocp4-cis annotated
+compliancescan.compliance.openshift.io/rhcos4-moderate-master annotated
+compliancescan.compliance.openshift.io/rhcos4-moderate-worker annotated
+NAME                     PHASE     RESULT
+ocp4-cis                 RUNNING   NOT-AVAILABLE
+rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
+rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+</code></pre>
+</li>
+<li><p>Recheck policy <em>ocp4-cis-api-server-encryption-provider-config</em></p>
+<pre><code class="lang-bash">oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">...
+Severity:                  medium
+Status:                    PASS
+Events:                    &lt;none&gt;
+</code></pre>
 </li>
 </ul>
-<!-- - Add eap73 image streams. Image Stream here [Link](https://github.com/jboss-container-images/jboss-eap-7-openshift-image/tree/7.3.x/templates)
+</li>
+<li><p>Change <em>ScanSettingBinding</em> cis-and-moderate-profile to use ScanSetting <em>default-auto-apply</em></p>
+<pre><code class="lang-bash">oc patch -n openshift-compliance ScanSettingBinding cis-and-moderate-profile -p &apos;{&quot;settingsRef&quot;:{&quot;name&quot;:&quot;default-auto-apply&quot;}}&apos; --type=&apos;merge&apos;
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">scansettingbinding.compliance.openshift.io/cis-and-moderate-profile patched
+</code></pre>
+</li>
+<li><p><a href="bin/rerun-compliance-scan.sh">Re-run scan</a></p>
+</li>
+<li><p>Check compliance scan status</p>
+<pre><code class="lang-bash">oc get compliancescans -n openshift-compliance
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                     PHASE     RESULT
+ocp4-cis                 DONE      NON-COMPLIANT
+rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
+rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+</code></pre>
+</li>
+<li><p><a href="bin/check-compliance-result.sh">Recheck result</a></p>
+<pre><code class="lang-bash">================== RESULT ==================
+TYPE              NUMBER
+PASS              150
+FAIL              89
+MANUAL            34
+INFO              2
+NOT_APPLICABLE    0
+INCONSISTENT      304
 
-```bash
-for resource in \
-  eap73-amq-persistent-s2i.json \
-  eap73-amq-s2i.json \
-  eap73-basic-s2i.json \
-  eap73-https-s2i.json \
-  eap73-image-stream.json \
-  eap73-sso-s2i.json \
-  eap73-starter-s2i.json \
-  eap73-third-party-db-s2i.json \
-  eap73-tx-recovery-s2i.json
-do
-  oc replace --force -f \
-https://raw.githubusercontent.com/jboss-container-images/jboss-eap-7-openshift-image/eap73/templates/${resource} -n openshift
-done
-```
+================ SEVERITY =================
+high              29
+low               27
+medium            515
+unknown           14
+</code></pre>
+</li>
+</ul>
 
-
-```
-- Sample S2I from Git
-```bash
-oc new-app --name=verify-cluster \
---template=eap73-openjdk11-basic-s2i \
---param APPLICATION_NAME=verify-cluster \
---param IMAGE_STREAM_NAMESPACE=openshift  \
---param SOURCE_REPOSITORY_REF=master \
---param CONTEXT_DIR=. \
---param SOURCE_REPOSITORY_URL=https://gitlab.com/ocp-demo/verify-cluster
-```
-
-```bash
-oc new-app --name=verify-cluster \
---template=eap73-openjdk11-basic-s2i \
---param SOURCE_REPOSITORY_URL=https://gitlab.com/ocp-demo/verify-cluster
-```
-```bash
-oc new-app --name=verify-cluster \
---image-stream=verify-cluster \
---labels=app=verify-cluster \
---labels=version=1.0.0
-``` -->
-<!-- ### JDG on OpenShift
-```bash
-for resource in datagrid72-image-stream.json \
-  datagrid72-basic.json \
-  datagrid72-https.json \
-  datagrid72-mysql-persistent.json \
-  datagrid72-mysql.json \
-  datagrid72-partition.json \
-  datagrid72-postgresql.json \
-  datagrid72-postgresql-persistent.json
-do
-  oc apply -n openshift -f \
-  https://raw.githubusercontent.com/jboss-container-images/jboss-datagrid-7-openshift-image/1.3/templates/${resource}
-done
-oc -n openshift import-image jboss-datagrid72-openshift:1.3
-oc import-image jboss-datagrid-7/datagrid73-openshift --from=registry.access.redhat.com/jboss-datagrid-7/datagrid73-openshift --confirm
-
-oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/secrets/datagrid-app-secret.json
-
-oc new-app --template=datagrid72-basic --name=rhdg -e USERNAME=developer \
--e PASSWORD=openshift -e CACHE_NAMES=mycache \
--e MYCACHE_CACHE_START=EAGER
-oc exec datagrid-app-2-ngxd7 -- env | grep MYCACHE_CACHE_START
-oc env pods/datagrid-app-1-<id> --list
-oc set env dc/datagrid-app MYCACHE_CACHE_START=LAZY
-```
-
-## EAP 7.3
-- Update Imagestreams
-    - boss-eap73-openshift
-    - jboss-eap73-runtime-openshift
-    - jboss-eap73-openjdk11-openshift
-    - jboss-eap73-openjdk11-runtime-openshift
-```bash
-for resource in \
-  eap73-amq-persistent-s2i.json \
-  eap73-amq-s2i.json \
-  eap73-basic-s2i.json \
-  eap73-https-s2i.json \
-  eap73-image-stream.json \
-  eap73-sso-s2i.json \
-  eap73-starter-s2i.json \
-  eap73-third-party-db-s2i.json \
-  eap73-tx-recovery-s2i.json \
-  eap73-openjdk11-amq-persistent-s2i.json \
-  eap73-openjdk11-amq-s2i.json \
-  eap73-openjdk11-basic-s2i.json \
-  eap73-openjdk11-https-s2i.json \
-  eap73-openjdk11-image-stream.json \
-  eap73-openjdk11-sso-s2i.json \
-  eap73-openjdk11-starter-s2i.json \
-  eap73-openjdk11-third-party-db-s2i.json \
-  eap73-openjdk11-tx-recovery-s2i.json
-do
-  oc replace -n openshift --force -f \
-https://raw.githubusercontent.com/jboss-container-images/jboss-eap-7-openshift-image/eap73/templates/${resource}
-done
-```
-
-## EAP 7.2
-```bash
-for resource in \
-  eap72-amq-persistent-s2i.json \
-  eap72-amq-s2i.json \
-  eap72-basic-s2i.json \
-  eap72-https-s2i.json \
-  eap72-image-stream.json \
-  eap72-sso-s2i.json \
-  eap72-starter-s2i.json \
-  eap72-third-party-db-s2i.json \
-  eap72-tx-recovery-s2i.json
-do
-  oc replace --force -f \
-https://raw.githubusercontent.com/jboss-container-images/jboss-eap-7-openshift-image/eap72/templates/${resource} -n openshift
-```
-
-## Setup JDG on EAP
-
-You need to start EAP with **stanalone-ha.xml**
-
-- JBOSS CLI
-```bash
-./jboss-cli.sh --user=admin --password=admin  \
---controller=http-remoting://127.0.0.1:9990 --connect
-```
-- Add Socket Binding to RHDG server
-```bash
-/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=remote-rhdg-server1:add(host=127.0.0.1,port=11222)
-```
-- Add remote cache
-```bash
-batch
-/subsystem=infinispan/remote-cache-container=rhdg:add(default-remote-cluster=data-grid-cluster)
-/subsystem=infinispan/remote-cache-container=rhdg/remote-cluster=data-grid-cluster:add(socket-bindings=[remote-rhdg-server1])
-run-batch
-```
-- Enable remote cache statistics 
-```bash
-/subsystem=infinispan/remote-cache-container=rhdg:write-attribute(name=statistics-enabled, value=true)
-/subsystem=infinispan/remote-cache-container=rhdg:read-attribute(name=active-connections)
-```
-- Check for statistics
-```bash
-/subsystem=infinispan/remote-cache-container=rhdg/remote-cache=verify-cluster.war:read-resource(include-runtime=true, recursive=true)
-/subsystem=infinispan/remote-cache-container=rhdg/remote-cache=verify-cluster.war:reset-statistics()
-```
-- Create cache container name **demo** for externalized HTTP to for web
-```bash
-batch
-/subsystem=infinispan/cache-container=web/invalidation-cache=demo:add()
-/subsystem=infinispan/cache-container=web/invalidation-cache=demo/store=hotrod:add(remote-cache-container=rhdg,fetch-state=false,purge=false,passivation=false,shared=true)
-/subsystem=infinispan/cache-container=web/invalidation-cache=demo/component=transaction:add(mode=BATCH)
-/subsystem=infinispan/cache-container=web/invalidation-cache=demo/component=locking:add(isolation=REPEATABLE_READ)
-/subsystem=infinispan/cache-container=web:write-attribute(name=default-cache,value=demo)
-run-batch
-```
-- edit label
-```properties
-app.openshift.io/runtime=jboss
-``` -->
                                 
                                 </section>
                             
@@ -810,7 +775,7 @@ app.openshift.io/runtime=jboss
 
             
                 
-                <a href="ci-cd.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: CI/CD with Azure DevOps">
+                <a href="custom-alert.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Custom Alert">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
@@ -822,7 +787,7 @@ app.openshift.io/runtime=jboss
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"EAP on OpenShift","level":"1.4.11","depth":2,"previous":{"title":"CI/CD with Azure DevOps","level":"1.4.10","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"eap-on-ocp.md","mtime":"2021-05-10T08:13:16.059Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-10T08:14:02.564Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.9","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.8","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-05-10T08:13:16.059Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-10T08:14:02.564Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
