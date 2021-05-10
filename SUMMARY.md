@@ -8,6 +8,7 @@
   * [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
   * [Pod Taint and Toleration](infrastructure-taint-and-toleration.md)
   * [Custom Alert](custom-alert.md)
+  * [Compliance](compliance-operator.md)
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
   * [Hibernate cluster for cost saving for OpenShift on Cloud Providers](acm-hibernate.md)
 * Container Applications
