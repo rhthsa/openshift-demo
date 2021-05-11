@@ -113,3 +113,7 @@
 - Check ACS console
   
   ![](images/acs-backend-vul.png)
+
+  Details
+
+  ![](images/acs-backend-vul-info.png)
