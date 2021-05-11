@@ -117,3 +117,9 @@
   Details
 
   ![](images/acs-backend-vul-info.png)
+
+- Scan with CLI
+  
+  ```bash
+  roxctl --insecure-skip-tls-verify image check -e ${ROX_CENTRAL_ADDRESS}:443 --image quay.io/voravitl/backend:vul
+  ```
