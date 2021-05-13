@@ -104,6 +104,6 @@ spec:
       file:
         encoding: TEXT
         name: /dev/stdout 
-tracing:
-  sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
-  type: Jaeger
+  tracing:
+    sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
+    type: Jaeger

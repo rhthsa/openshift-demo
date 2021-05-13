@@ -1,4 +1,4 @@
-apiVersion: maistra.io/v1
+apiVersion: maistra.io/v2
 kind: ServiceMeshControlPlane
 metadata:
   name: basic-install
@@ -65,8 +65,7 @@ spec:
         deployment:
           replicas: 2
         podDisruption:
-          enabled: true
-          minAvailable: 1
+          enabled: false
         pod:
           tolerations:
           - key: node.kubernetes.io/unreachable
@@ -75,10 +74,10 @@ spec:
             tolerationSeconds: 60        
       pilot:
         deployment:
-          replicas: 2
+          replicas: 4
         podDisruption:
           enabled: true
-          minAvailable: 1
+          minAvailable: 2
         pod:
           tolerations:
           - key: node.kubernetes.io/unreachable
@@ -89,7 +88,7 @@ spec:
       deployment:
         podDisruption:
           enabled: true
-          minAvailable: 1
+          #minAvailable: 1
   telemetry:
     type: Istiod
   proxy:
