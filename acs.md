@@ -95,41 +95,43 @@
 
 
 - Install Secure Cluster Services on local cluster
-  - Generate cluster init bundle
-  
-    ```bash
-    CLUSTER_NAME=cluster1
-    roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
-    --output $CLUSTER_NAME-init-bundle.yaml
-    ```
 
-  - Create collectors
+    - Generate cluster init bundle
     
-    ```bash
-    helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
-    -f ${CLUSTER_NAME}-init-bundle.yaml \
-    --set clusterName=${CLUSTER_NAME} \
-    --set imagePullSecrets.allowNone=true
-    ```
+      ```bash
+      CLUSTER_NAME=cluster1
+      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
+      --output $CLUSTER_NAME-init-bundle.yaml
+      ```
+
+    - Create collectors
+      
+      ```bash
+      helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
+      -f ${CLUSTER_NAME}-init-bundle.yaml \
+      --set clusterName=${CLUSTER_NAME} \
+      --set imagePullSecrets.allowNone=true
+      ```
     
 -  Install Secure Cluster Services on Remote cluster
-  - Generate cluster init bundle
   
-    ```bash
-    CLUSTER_NAME=cluster2
-    roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
-    --output $CLUSTER_NAME-init-bundle.yaml
-    ```
+     - Generate cluster init bundle
+     
+       ```bash
+       CLUSTER_NAME=cluster2
+       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
+       --output $CLUSTER_NAME-init-bundle.yaml
+       ```
 
-  - Create collectors
-    
-    ```bash
-    helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
-    -f ${CLUSTER_NAME}-init-bundle.yaml \
-    --set centralEndpoint=${ROX_CENTRAL_ADDRESS} \
-    --set clusterName=${CLUSTER_NAME} \
-    --set imagePullSecrets.allowNone=true
-    ```
+     - Create collectors
+       
+       ```bash
+       helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
+       -f ${CLUSTER_NAME}-init-bundle.yaml \
+       --set centralEndpoint=${ROX_CENTRAL_ADDRESS} \
+       --set clusterName=${CLUSTER_NAME} \
+       --set imagePullSecrets.allowNone=true
+       ```
 
  - Check collector pods
   
