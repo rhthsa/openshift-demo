@@ -128,6 +128,27 @@
 
     ```bash
     oc apply -f manifests/cis-and-moderate-profile.yaml
+    oc describe scansettingbinding/cis-and-moderate-profile -n openshift-compliance
+    ```
+
+    Check for status
+
+    ```bash
+    Status:
+      Conditions:
+        Last Transition Time:  2021-05-12T08:02:50Z
+        Message:               The scan setting binding was successfully processed
+        Reason:                Processed
+        Status:                True
+        Type:                  Ready
+      Output Ref:
+        API Group:  compliance.openshift.io
+        Kind:       ComplianceSuite
+        Name:       cis-and-moderate-profile
+    Events:
+      Type    Reason        Age   From                    Message
+      ----    ------        ----  ----                    -------
+      Normal  SuiteCreated  10s   scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-and-moderate-profile created    
     ```
   
   - Check ComplianceScan tab
