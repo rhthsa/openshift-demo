@@ -74,18 +74,6 @@ spec:
             operator: Exists
             effect: NoExecute
             tolerationSeconds: 60        
-      pilot:
-        deployment:
-          replicas: 1
-        podDisruption:
-          enabled: false
-          minAvailable: 1
-        pod:
-          tolerations:
-          - key: node.kubernetes.io/unreachable
-            operator: Exists
-            effect: NoExecute
-            tolerationSeconds: 60
     defaults:
       deployment:
         podDisruption:
