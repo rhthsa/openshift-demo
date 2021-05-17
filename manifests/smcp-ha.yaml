@@ -71,24 +71,42 @@ spec:
           - key: node.kubernetes.io/unreachable
             operator: Exists
             effect: NoExecute
-            tolerationSeconds: 60        
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - prometheus
+                namespaces: istio-system               
       pilot:
         deployment:
-          replicas: 4
+          replicas: 2
         podDisruption:
-          enabled: true
-          minAvailable: 2
+          enabled: false
+          minAvailable: 1
         pod:
           tolerations:
           - key: node.kubernetes.io/unreachable
             operator: Exists
             effect: NoExecute
             tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - istiod
+                namespaces: istio-system
     defaults:
       deployment:
         podDisruption:
-          enabled: true
-          #minAvailable: 1
+          enabled: false
+          minAvailable: 1
   telemetry:
     type: Istiod
   proxy:

@@ -1030,7 +1030,7 @@ Check following Git for setup mTLS between service and ingress service
         replicas: 2
     ```
 
-  - Set Pod Disruption Budget (PDB) with minAvailable to 1
+  <!-- - Set Pod Disruption Budget (PDB) with minAvailable to 1
   
     ```yaml
     defaults:
@@ -1038,7 +1038,7 @@ Check following Git for setup mTLS between service and ingress service
         podDisruption:
           enabled: true
           minAvailable: 1
-    ```
+    ``` -->
 
 - Check that pods of each deployment run on different nodes
 
@@ -1072,8 +1072,27 @@ Check following Git for setup mTLS between service and ingress service
   NAME                   REFERENCE                         TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
   istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4         2          10m
   ```
+- Check that pods of each deployment run on different nodes
 
-- Verify PDB for istiod
+  ```bash
+  oc get pods -o wide -n istio-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,PHASE:.status.phase
+  ```
+
+  Output
+
+  ```bash
+  NAME                                    NODE                                         PHASE
+  grafana-5bcbbc7877-n4zzm                ip-10-0-152-186.us-east-2.compute.internal   Running
+  istio-ingressgateway-5fbfcc6d7f-8xfnk   ip-10-0-152-186.us-east-2.compute.internal   Running
+  istio-ingressgateway-5fbfcc6d7f-k2wrw   ip-10-0-162-66.us-east-2.compute.internal    Running
+  istiod-basic-install-66859cc44b-db6pw   ip-10-0-162-66.us-east-2.compute.internal    Running
+  istiod-basic-install-66859cc44b-wvnrj   ip-10-0-152-186.us-east-2.compute.internal   Running
+  jaeger-6d9cd754d8-wbsm9                 ip-10-0-152-186.us-east-2.compute.internal   Running
+  prometheus-7dc95494b-klmms              ip-10-0-152-186.us-east-2.compute.internal   Running
+  prometheus-7dc95494b-x8gvf              ip-10-0-162-66.us-east-2.compute.internal    Running
+  ```
+
+<!-- - Verify PDB for istiod
 
   ```bash
   oc describe pdb/istiod-basic-install
@@ -1095,4 +1114,4 @@ Check following Git for setup mTLS between service and ingress service
     Type    Reason  Age                    From               Message
     ----    ------  ----                   ----               -------
     Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
-  ```
+  ``` -->
