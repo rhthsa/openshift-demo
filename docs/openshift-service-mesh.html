@@ -1402,15 +1402,16 @@ istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4  
     replicas: 2
 </code></pre>
 </li>
-<li><p>Set Pod Disruption Budget (PDB) with minAvailable to 1</p>
-<pre><code class="lang-yaml">defaults:
-  deployment:
-    podDisruption:
-      enabled: true
-      minAvailable: 1
-</code></pre>
-</li>
 </ul>
+<!-- - Set Pod Disruption Budget (PDB) with minAvailable to 1
+
+  ```yaml
+  defaults:
+    deployment:
+      podDisruption:
+        enabled: true
+        minAvailable: 1
+  ``` -->
 </li>
 <li><p>Check that pods of each deployment run on different nodes</p>
 <pre><code class="lang-bash">oc get pods -n istio-system
@@ -1435,27 +1436,45 @@ prometheus-79ff59d59f-msrpb             3/3     Running   0          65s
 istio-ingressgateway   Deployment/istio-ingressgateway   0%/85%    2         4         2          10m
 </code></pre>
 </li>
-<li><p>Verify PDB for istiod</p>
-<pre><code class="lang-bash">oc describe pdb/istiod-basic-install
+<li><p>Check that pods of each deployment run on different nodes</p>
+<pre><code class="lang-bash">oc get pods -o wide -n istio-system -o custom-columns=NAME:.metadata.name,NODE:.spec.nodeName,PHASE:.status.phase
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">Name:           istiod-basic-install
-Namespace:      istio-system
-Min available:  1
-Selector:       app=istiod,istio.io/rev=basic-install
-Status:
-    Allowed disruptions:  1
-    Current:              2
-    Desired:              1
-    Total:                2
-Events:
-  Type    Reason  Age                    From               Message
-  ----    ------  ----                   ----               -------
-  Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
+<pre><code class="lang-bash">NAME                                    NODE                                         PHASE
+grafana-5bcbbc7877-n4zzm                ip-10-0-152-186.us-east-2.compute.internal   Running
+istio-ingressgateway-5fbfcc6d7f-8xfnk   ip-10-0-152-186.us-east-2.compute.internal   Running
+istio-ingressgateway-5fbfcc6d7f-k2wrw   ip-10-0-162-66.us-east-2.compute.internal    Running
+istiod-basic-install-66859cc44b-db6pw   ip-10-0-162-66.us-east-2.compute.internal    Running
+istiod-basic-install-66859cc44b-wvnrj   ip-10-0-152-186.us-east-2.compute.internal   Running
+jaeger-6d9cd754d8-wbsm9                 ip-10-0-152-186.us-east-2.compute.internal   Running
+prometheus-7dc95494b-klmms              ip-10-0-152-186.us-east-2.compute.internal   Running
+prometheus-7dc95494b-x8gvf              ip-10-0-162-66.us-east-2.compute.internal    Running
 </code></pre>
 </li>
 </ul>
+<!-- - Verify PDB for istiod
 
+  ```bash
+  oc describe pdb/istiod-basic-install
+  ```
+
+  Output
+
+  ```bash
+  Name:           istiod-basic-install
+  Namespace:      istio-system
+  Min available:  1
+  Selector:       app=istiod,istio.io/rev=basic-install
+  Status:
+      Allowed disruptions:  1
+      Current:              2
+      Desired:              1
+      Total:                2
+  Events:
+    Type    Reason  Age                    From               Message
+    ----    ------  ----                   ----               -------
+    Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
+  ``` -->
                                 
                                 </section>
                             
@@ -1498,7 +1517,7 @@ Events:
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.6","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-05-13T05:56:32.129Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-13T05:57:13.582Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.7","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.8","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.6","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-05-17T01:56:41.534Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-17T01:57:29.767Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
