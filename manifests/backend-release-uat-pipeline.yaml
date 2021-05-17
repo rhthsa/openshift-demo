@@ -1,0 +1,39 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    build: backend-release-uat-pipeline
+  name: backend-release-uat-pipeline
+spec:
+  nodeSelector: {}
+  output: {}
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    contextDir: Jenkinsfile/release-uat
+    git:
+      ref: master
+      uri: https://gitlab.com/ocp-demo/backend_quarkus.git
+    type: Git
+  strategy:
+    jenkinsPipelineStrategy:
+      env:
+      - name: UAT_PROJECT
+        value: uat
+      - name: CICD_PROJECT
+        value: ci-cd
+      - name: NEXUS_SVC
+        value: http://nexus.ci-cd.svc.cluster.local:8081
+      - name: NEXUS_REGISTRY_SVC
+        value: nexus-registry.ci-cd.svc.cluster.local:5000
+      - name: NEXUS_REGISTRY
+        value: nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com
+      - name: BACKEND_URL
+        value: https://httpbin.org/status/201
+      - name: NEXUS_SECRET
+        value: nexus-credential
+      - name: USE_INTERNAL_REGISTRY
+        value: "false"
+      jenkinsfilePath: Jenkinsfile
+    type: JenkinsPipeline
