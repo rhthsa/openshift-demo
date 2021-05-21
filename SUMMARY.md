@@ -15,6 +15,7 @@
   * [Application Build & Deployment with oc](build-with-oc.md)
   * [Application Build & Deployment with odo](build-with-odo.md)  
   * [Application Deployment with Helm](helm.md) 
+  * [Image Streams](imagestreams.md)
   * [OpenShift Route](openshift-route.md)
   * [Horizontal Pod Autoscaler](hpa.md)
   * [Health Check](health.md)

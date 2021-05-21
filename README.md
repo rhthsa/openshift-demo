@@ -30,6 +30,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - [Command Line with oc](build-with-oc.md)
   - [Command Line with odo](build-with-odo.md)
   - [Helm](helm.md) 
+  - [Image Streams](imagestreams.md)
 - [OpenShift Route](openshift-route.md)
   - Blue/Green Deployment
   - Canary Deployment
