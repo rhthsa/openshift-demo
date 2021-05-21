@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Introduction · OpenShift Demo</title>
+        <title>Image Streams · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,6 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="openshift-route.html" />
+    
+    
+    <link rel="prev" href="helm.html" />
     
 
     </head>
@@ -89,7 +93,7 @@
         
         
     
-        <li class="chapter active" data-level="1.1" data-path="./">
+        <li class="chapter " data-level="1.1" data-path="./">
             
                 <a href="./">
             
@@ -323,7 +327,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.4.4" data-path="imagestreams.html">
+        <li class="chapter active" data-level="1.4.4" data-path="imagestreams.html">
             
                 <a href="imagestreams.html">
             
@@ -475,7 +479,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Introduction</a>
+        <a href="." >Image Streams</a>
     </h1>
 </div>
 
@@ -490,109 +494,60 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="openshift-demo">OpenShift Demo</h1>
-<p><img src="images/OpenShiftContainerPlatform.png" alt=""></p>
-<h2 id="gitbook">Gitbook</h2>
-<p>Chick here for <a href="https://rhthsa.github.io/openshift-demo/" target="_blank">Gitbook</a></p>
-<h2 id="table-of-contents">Table of Contents</h2>
+                                <h1 id="image-stream">Image Stream</h1>
 <ul>
-<li><a href="infrastructure-authentication-providers.html">OpenShift Authentication Providers with AD</a><ul>
-<li>OpenShift External Authentication Provider</li>
-<li>LDAP group sync</li>
-<li>Group Policy</li>
-<li>Access and Projects collaboration</li>
+<li><a href="#image-stream">Image Stream</a><ul>
+<li><a href="#automatic-trigger-deployment">Automatic trigger deployment</a></li>
 </ul>
 </li>
-<li><a href="infrastructure-infra-nodes.html">OpenShift MachineSet and Infrastructure Nodes</a><ul>
-<li>MachineSet on VMware</li>
-<li>Infrastructure Node and Moving Cluster Services to Infra Nodes</li>
 </ul>
+<p>Image stream is an abstraction to container image in image registry. Image stream itself does not container any image it just a referece to actual image.</p>
+<p>You can configure builds and deployments to watch an image stream for notifications when new images are added and react by performing a build or deployment, respectively.</p>
+<h2 id="automatic-trigger-deployment">Automatic trigger deployment</h2>
+<ul>
+<li><p>import image with schedule update ( Default is every 15 minutes)</p>
+<pre><code class="lang-bash">oc import-image backend  --scheduled --confirm --all --from quay.io/voravitl/backend
+oc get istag
+</code></pre>
 </li>
-<li><a href="infrastructure-monitoring-alerts.html">OpenShift Platform Monitoring and Alert</a><ul>
-<li>Monitoring Stack</li>
-<li>AlertRules and Alert Receiver</li>
-</ul>
+<li><p>Setup image lookup for backend imagestream</p>
+<pre><code class="lang-bash">oc set image-lookup backend
+oc set image-lookup --list
+</code></pre>
 </li>
-<li><a href="infrastructure-cluster-logging.html">OpenShift Cluster Logging</a></li>
-<li><a href="infrastructure-networking.html">OpenShift Networking</a><ul>
-<li>OpenShift Network Policies Based SDN</li>
-<li>Egress IPs</li>
-<li>Network Access Logs</li>
-</ul>
+<li><p>With image lookup is enabled. Imagestream name can be used in deployment</p>
+<pre><code class="lang-yaml">    spec:
+      containers:
+      - name: backend
+        image: backend:v1
+</code></pre>
 </li>
-<li><a href="infrastructure-backup-etcd.html">OpenShift state backup with etcd snapshot</a></li>
-<li><a href="infrastructure-taint-and-toleration.html">Pod Taint and Toleration</a></li>
-<li><a href="custom-alert.html">Custom Alert</a></li>
-<li><a href="compliance-operator.html">Compliance</a></li>
-<li>Application Build &amp; Deployment<ul>
-<li><a href="build-with-oc.html">Command Line with oc</a></li>
-<li><a href="build-with-odo.html">Command Line with odo</a></li>
-<li><a href="helm.html">Helm</a> </li>
-<li><a href="imagestreams.html">Image Streams</a></li>
-</ul>
+<li><p>Check for latest update interval imagestream</p>
+<pre><code class="lang-bash">oc get istag backend:v1
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME         IMAGE REFERENCE                                                                                    UPDATED
+backend:v1   quay.io/voravitl/backend@sha256:19ef0afb88a1ce5d6a4422c7ab8395eb05b672fc27d5d387d9fcd8e15a44c5d7   30 seconds ago
+</code></pre>
 </li>
-<li><a href="openshift-route.html">OpenShift Route</a><ul>
-<li>Blue/Green Deployment</li>
-<li>Canary Deployment</li>
-<li>Configure TLS version</li>
-</ul>
+<li><p>Deploy application</p>
+<pre><code class="lang-bash">oc apply -f backend.yaml
+</code></pre>
 </li>
-<li><a href="hpa.html">Horizontal Pod Autoscaler</a><ul>
-<li>HPA by CPU</li>
-<li>HPA by Memory</li>
-</ul>
+<li><p>Set trigger</p>
+<pre><code class="lang-bash">oc set triggers deployment/backend --from-image backend:v1 -c backend
+</code></pre>
+<p>Trigger will set following annotation to deployment for container name backend</p>
+<pre><code class="lang-yaml">metadata:
+  name: backend
+  annotations:
+    image.openshift.io/triggers: &apos;[{&quot;from&quot;:{&quot;kind&quot;:&quot;ImageStreamTag&quot;,&quot;name&quot;:&quot;backend:v1&quot;},&quot;fieldPath&quot;:&quot;spec.template.spec.containers[?(@.name==\&quot;backend\&quot;)].image&quot;}]&apos;
+</code></pre>
 </li>
-<li><a href="health.html">Health Check</a><ul>
-<li>Readiness Probe</li>
-<li>Liveness Probe</li>
-<li>Startup Probe</li>
-</ul>
+<li><p>When image on image registry </p>
 </li>
-<li><a href="openshift-service-mesh.html">OpenShift Service Mesh</a><ul>
-<li>Install and configure control plane</li>
-<li>Sidecar injection</li>
-<li>Blue/Green Deployment</li>
-<li>Canary Deployment</li>
-<li>A/B Testing Deployment</li>
-<li>Routing by URI with regular expression</li>
-<li>Traffic Analysis</li>
-<li>Traffic Mirroring</li>
-<li>Tracing</li>
-<li>Circuit Breaker</li>
-<li>Secure with mTLS</li>
-<li>Service Level Objective (SLO)</li>
-<li>Control Plane with High Availability</li>
 </ul>
-</li>
-<li><a href="application-metrics.html">User Workload Monitoring</a><ul>
-<li>Setup User Workload Monitoring</li>
-<li>Monitor Custom Metrics</li>
-<li>Custom Grafana Dashboard</li>
-<li>Custom Alert</li>
-</ul>
-</li>
-<li><a href="build-with-oc.html">Build Container with OC command</a></li>
-<li><a href="build-with-odo.html">Build Container with OpenShift DO (odo)</a></li>
-<li><a href="ci-cd-with-jenkins.html">CI/CD with Jenkins</a><ul>
-<li>Build Quarkus App</li>
-<li>Pull artifacts from Nexus</li>
-<li>Unit Test</li>
-<li>Code Quality</li>
-<li>Push container image to Nexus or internal registry</li>
-<li>Blue/Green Deployment</li>
-</ul>
-</li>
-<li><a href="ci-cd.html">CI/CD with Azure DevOps</a><ul>
-<li>Azure DevOps</li>
-<li>Deploy Back App</li>
-<li>Deploy Front App</li>
-<li>Prepare Harbor On Kubernetes/OpenShift</li>
-<li>Prepare Azure DevOps Service Connection</li>
-<li>Azure pipelines</li>
-</ul>
-</li>
-<li><a href="eap-on-ocp.html">EAP on OpenShift</a></li>
-</ul>
+<p><img src="deployment-trigger.png" alt=""></p>
 
                                 
                                 </section>
@@ -620,6 +575,14 @@
 
             
                 
+                <a href="helm.html" class="navigation navigation-prev " aria-label="Previous page: Application Deployment with Helm">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="openshift-route.html" class="navigation navigation-next " aria-label="Next page: OpenShift Route">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -628,7 +591,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Introduction","level":"1.1","depth":1,"next":{"title":"Infrastructure","level":"1.2","depth":1,"ref":"","articles":[{"title":"OpenShift Authentication Providers with AD","level":"1.2.1","depth":2,"path":"infrastructure-authentication-providers.md","ref":"infrastructure-authentication-providers.md","articles":[]},{"title":"OpenShift MachineSet and Infrastructure Nodes","level":"1.2.2","depth":2,"path":"infrastructure-infra-nodes.md","ref":"infrastructure-infra-nodes.md","articles":[]},{"title":"OpenShift Platform Monitoring and Alert","level":"1.2.3","depth":2,"path":"infrastructure-monitoring-alerts.md","ref":"infrastructure-monitoring-alerts.md","articles":[]},{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},{"title":"OpenShift Networking","level":"1.2.5","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"path":"infrastructure-taint-and-toleration.md","ref":"infrastructure-taint-and-toleration.md","articles":[]},{"title":"Custom Alert","level":"1.2.8","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},{"title":"Compliance","level":"1.2.9","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"README.md","mtime":"2021-05-21T07:46:45.520Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-21T07:47:30.535Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Image Streams","level":"1.4.4","depth":2,"next":{"title":"OpenShift Route","level":"1.4.5","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"previous":{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"imagestreams.md","mtime":"2021-05-21T07:46:45.572Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-21T07:47:30.535Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

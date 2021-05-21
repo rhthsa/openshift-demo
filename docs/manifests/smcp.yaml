@@ -73,7 +73,7 @@ spec:
           - key: node.kubernetes.io/unreachable
             operator: Exists
             effect: NoExecute
-            tolerationSeconds: 60        
+            tolerationSeconds: 60
     defaults:
       deployment:
         podDisruption:
