@@ -4,6 +4,13 @@ metadata:
   name: basic-install
 spec:
   version: v2.0
+  security:
+    dataPlane:
+      mtls: true
+      automtls: true
+    controlPlane:
+      mtls: true
+      automtls: true
   gateways:
     openshiftRoute:
       enabled: true
@@ -44,10 +51,6 @@ spec:
       logAsJSON: false
   policy:
     type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
-    # istiod:
-    #   enableChecks: false # default false (disablePolicyChecks: true)
-    #   failOpen: false # default false
-    #   sessionAffinity: true
   addons:
     grafana:
       enabled: true
@@ -81,20 +84,24 @@ spec:
                 values:
                 - prometheus
                 namespaces: istio-system               
-    defaults:
-      deployment:
-        podDisruption:
-          enabled: false
-          minAvailable: 1
+    # defaults:
+    #   deployment:
+    #     podDisruption:
+    #       enabled: false
+    #       minAvailable: 1
   telemetry:
     type: Istiod
   proxy:
+   networking:
+    trafficControl:
+      outbound:
+        policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
     accessLogging:
       envoyService:
         enabled: false
       file:
         encoding: TEXT
-        name: /dev/stdout
+        name: /dev/stdout 
 tracing:
   sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
   type: Jaeger

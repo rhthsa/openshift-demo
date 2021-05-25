@@ -1,16 +1,23 @@
-apiVersion: "v1"
+apiVersion: v1
 kind: Pod
 metadata:
   name: pv-extract
 spec:
   containers:
-    - name: pv-extract-pod
-      image: registry.access.redhat.com/ubi8/ubi
-      command: ["sleep", "3000"]
-    #   volumeMounts:
-    #   - mountPath: "/workers-scan-results"
-    #     name: workers-scan-vol
-    # volumes:
-    # - name: workers-scan-vol
-    #   persistentVolumeClaim:
-    #       claimName: rhcos4-moderate-worker
+  - name: pv-extract-pod
+    image: registry.access.redhat.com/ubi8/ubi
+    command: ["sleep", "3000"]
+    volumeMounts:
+    - mountPath: /ocp4-cis
+      name: ocp4-cis
+    # - mountPath: /rhcos4-moderate-master
+    #   name: rhcos4-moderate-master
+  volumes:
+  - name: ocp4-cis
+    persistentVolumeClaim:
+      claimName: ocp4-cis
+  # - name: rhcos4-moderate-master
+  #   persistentVolumeClaim:
+  #     claimName: rhcos4-moderate-master
+
+    
