@@ -716,9 +716,9 @@ ocp4-cis-api-server-encryption-provider-config   Applied
 <li><p>Annotate <em>ComplianceScans</em> to rescan or use <a href="bin/rerun-compliance-scan.sh">script</a></p>
 <pre><code class="lang-bash">for scan in $(oc get compliancescans -n openshift-compliance -o custom-columns=NAME:.metadata.name --no-headers)
 do
-oc annotate compliancescans $scan compliance.openshift.io/rescan=
+oc annotate compliancescans $scan compliance.openshift.io/rescan= -n openshift-compliance
 done
-oc get compliancescan -n openshift-compliance
+watch -d oc get compliancescans -n openshift-compliance
 </code></pre>
 <p>Result</p>
 <pre><code class="lang-bash">compliancescan.compliance.openshift.io/ocp4-cis annotated
@@ -752,7 +752,7 @@ Events:                    &lt;none&gt;
 <li><p><a href="bin/rerun-compliance-scan.sh">Re-run scan</a></p>
 </li>
 <li><p>Check compliance scan status</p>
-<pre><code class="lang-bash">oc get compliancescans -n openshift-compliance
+<pre><code class="lang-bash">watch oc get compliancescans -n openshift-compliance
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                     PHASE     RESULT
@@ -818,7 +818,7 @@ unknown           14
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.9","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.8","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-05-21T07:46:45.524Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-21T07:47:30.535Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.9","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.8","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-05-25T04:54:46.904Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-05-25T04:55:27.822Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
