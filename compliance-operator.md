@@ -264,9 +264,9 @@
     ```bash
     for scan in $(oc get compliancescans -n openshift-compliance -o custom-columns=NAME:.metadata.name --no-headers)
     do
-    oc annotate compliancescans $scan compliance.openshift.io/rescan=
+    oc annotate compliancescans $scan compliance.openshift.io/rescan= -n openshift-compliance
     done
-    oc get compliancescan -n openshift-compliance
+    watch -d oc get compliancescans -n openshift-compliance
     ```
 
     Result
@@ -311,7 +311,7 @@
 - Check compliance scan status
   
   ```bash
-  oc get compliancescans -n openshift-compliance
+  watch oc get compliancescans -n openshift-compliance
   ```
   
   Output
