@@ -573,3 +573,6 @@ Pros:
 Cons:
 - More Router/Ingress Infra nodes
 - End user can't get full cluster-admin control when compare with dedicated cluster per team approach, but OpenShift can somehow compensate by having Operators with multi tenants support, such as OpenShift Service Mesh, the user can create their own service mesh control plane
+
+### Additional
+- Openshift Blog: https://www.openshift.com/blog/network-policies-controlling-cross-project-communication-on-openshift
