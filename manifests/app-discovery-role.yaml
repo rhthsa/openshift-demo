@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: app-discovery-role
+rules:
+  - apiGroups: [""]
+    resources:
+      - configmaps
+      - secrets
+      - pods
+      - services
+      - namespaces
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
