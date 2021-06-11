@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Hibernate cluster for cost saving for OpenShift on Cloud Providers · OpenShift Demo</title>
+        <title>Custom Roles and Service Account · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,6 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="custom-alert.html" />
+    
+    
+    <link rel="prev" href="infrastructure-taint-and-toleration.html" />
     
 
     </head>
@@ -207,7 +211,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.8" data-path="custom-roles.html">
+        <li class="chapter active" data-level="1.2.8" data-path="custom-roles.html">
             
                 <a href="custom-roles.html">
             
@@ -265,7 +269,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter active" data-level="1.3.1" data-path="acm-hibernate.html">
+        <li class="chapter " data-level="1.3.1" data-path="acm-hibernate.html">
             
                 <a href="acm-hibernate.html">
             
@@ -488,7 +492,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Hibernate cluster for cost saving for OpenShift on Cloud Providers</a>
+        <a href="." >Custom Roles and Service Account</a>
     </h1>
 </div>
 
@@ -503,77 +507,211 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</h1>
-<!-- TOC -->
+                                <h1 id="custom-roles-and-service-account">Custom Roles and Service Account</h1>
 <ul>
-<li><a href="#rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</a><ul>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</a></li>
-<li><a href="#steps-1-2-3">Steps 1-2-3</a></li>
+<li><a href="#custom-roles-and-service-account">Custom Roles and Service Account</a><ul>
+<li><a href="#service-account">Service Account</a><ul>
+<li><a href="#create-service-account">Create Service Account</a></li>
+</ul>
+</li>
+<li><a href="#custom-roles">Custom Roles</a><ul>
+<li><a href="#local-role">Local Role</a></li>
+<li><a href="#create-cluster-role">Create cluster role</a></li>
+</ul>
+</li>
+<li><a href="#test-service-account">Test Service Account</a><ul>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#rest-api">REST API</a></li>
+</ul>
+</li>
+<li><a href="#use-service-account-with-deployment">Use Service Account with Deployment</a></li>
 </ul>
 </li>
 </ul>
-<!-- /TOC -->
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="service-account">Service Account</h2>
+<p>Create custom roles for service account to view </p>
+<pre><code>- configmaps
+- pods
+- services
+- namespaces
+- secrets
+- *nodes*
+</code></pre><p>Remark: <em>nodes</em> need cluster role</p>
+<h3 id="create-service-account">Create Service Account</h3>
 <ul>
-<li>OpenShift 4.6 or 4.7</li>
-<li>Cluster-admin user access</li>
-<li>Red Hat Advanced Cluster Management</li>
-<li>Cloud Provider Credentials</li>
+<li><p>Create Service Account</p>
+<pre><code class="lang-bash">  oc create sa sa-discovery -n demo
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  serviceaccount/sa-discovery created
+</code></pre>
+</li>
 </ul>
-<h2 id="introduction">Introduction</h2>
-<p>Original article from <a href="https://www.openshift.com/blog/hibernate-for-cost-savings-for-advanced-cluster-management-provisioned-clusters-with-subscriptions" target="_blank">Hibernate for cost savings for Advanced Cluster Management Provisioned Clusters with Subscriptions</a></p>
-<p>OpenShift 4 has the ability to suspend and resume clusters on Cloud Providers. Red Hat Advanced Cluster Management extends this capability through its Cluster Lifecycle Management (Hive), where you can have a policy to hibernate the clusters to save the cost saving in non-working hours (ex. 16 hours in a day is 16/24 = 66% saving)</p>
-<h2 id="how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</h2>
-<p>We will walkthrough high-level process how ACM can define the herbernate policy for the cluster on Clouds</p>
-<ol>
-<li>Clone the cluster-hibernate repository to your environment</li>
-<li>Create the Running/Hibernate manifest files and put them in your Channel</li>
-<li>Create the Subscription to local hub cluster with your desire time windows</li>
-</ol>
-<p>Sample picture
-<img src="images/service-mesh-sample-app.png" alt="your sample picture"></p>
-<h2 id="steps-1-2-3">Steps 1-2-3</h2>
-<p>Steps:</p>
+<h2 id="custom-roles">Custom Roles</h2>
+<h3 id="local-role">Local Role</h3>
 <ul>
-<li>a</li>
-<li>b<ul>
-<li>c</li>
+<li><p>Create role for service account. </p>
+<pre><code class="lang-bash">  oc create role app-discovery \
+  --verb=get,list,watch \
+  --resource=configmaps,pods,services,namespaces \
+  -n demo
+  oc describe role app-discovery -n demo
+</code></pre>
+<p>  or create from <a href="manifests/app-discovery-role.yaml">YAML file</a></p>
+<pre><code class="lang-bash">  oc create -f manifests/app-discovery-role.yaml -n demo
+  oc describe role app-discovery -n demo
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  role.rbac.authorization.k8s.io/app-discovery created
+  Name:         app-discovery
+  Labels:       &lt;none&gt;
+  Annotations:  &lt;none&gt;
+  PolicyRule:
+  Resources   Non-Resource URLs  Resource Names  Verbs
+  ---------   -----------------  --------------  -----
+  configmaps  []                 []              [get list watch]
+  endpoints   []                 []              [get list watch]
+  namespaces  []                 []              [get list watch]
+  pods        []                 []              [get list watch]
+  secrets     []                 []              [get list watch]
+  services    []                 []              [get list watch]
+</code></pre>
+</li>
+<li><p>Assign role to service account</p>
+<pre><code class="lang-bash">  oc adm policy add-role-to-user app-discovery \
+  system:serviceaccount:demo:sa-discovery --role-namespace=demo -n demo
+</code></pre>
+<p>  or create from <a href="manifests/clusterrole-view-nodes.yaml">YAML file</a></p>
+<pre><code class="lang-bash">  oc create -f manifests/clusterrole-view-nodes.yaml
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  role.rbac.authorization.k8s.io/app-discovery added: &quot;system:serviceaccount:demo:sa-discovery&quot;
+</code></pre>
+<h3 id="create-cluster-role">Create cluster role</h3>
+</li>
+<li><p>Create cluster role to view node
+git </p>
+<pre><code class="lang-bash">  oc create clusterrole view-nodes \
+  --verb=get,list,watch --resource=nodes
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  clusterrole.rbac.authorization.k8s.io/view-nodes created
+</code></pre>
+</li>
+<li><p>Assign role to service account</p>
+<pre><code class="lang-bash">  oc adm policy add-cluster-role-to-user \
+  view-nodes system:serviceaccount:demo:sa-discovery
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  clusterrole.rbac.authorization.k8s.io/view-nodes added: &quot;system:serviceaccount:demo:sa-discovery&quot;
+</code></pre>
+</li>
+</ul>
+<h2 id="test-service-account">Test Service Account</h2>
+<h3 id="cli">CLI</h3>
+<ul>
+<li><p>Test service account <em>sa-discovery</em> with CLI tool</p>
+<ul>
+<li><p>Get service account <em>sa-discovery</em> token </p>
+<pre><code class="lang-bash">TOKEN=$(oc sa get-token sa-discovery -n demo)
+</code></pre>
+</li>
+<li><p>Login with service account token</p>
+<pre><code class="lang-bash">oc login --token=$TOKEN
+oc whoami
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">Using project &quot;demo&quot;.
+system:serviceaccount:demo:app-discovery
+</code></pre>
+</li>
+<li><p>Test list resources</p>
+<pre><code class="lang-bash">clear
+printf &quot;List configmaps\n&quot;
+oc get configmaps -n demo
+echo &quot;Press any keys to continue...&quot;;read
+clear
+printf &quot;List secrets\n&quot;
+oc get secrets -n demo
+echo &quot;Press any keys to continue...&quot;;read
+clear
+printf &quot;List pods\n&quot;
+oc get pods -n demo
+echo &quot;Press any keys to continue...&quot;;read
+clear
+printf &quot;List services\n&quot;
+oc get svc -n demo
+echo &quot;Press any keys to continue...&quot;;read
+clear
+printf &quot;List nodes\n&quot;
+oc get nodes
+echo &quot;Press any keys to continue...&quot;;read
+clear
+</code></pre>
+<h3 id="rest-api">REST API</h3>
+</li>
 </ul>
 </li>
-<li>d</li>
+<li><p>List pods</p>
+<pre><code class="lang-bash">  API=$(oc whoami --show-server)
+  NAMESPACE=demo
+  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-json">  &quot;items&quot;: [
+      {
+      &quot;metadata&quot;: {
+          &quot;name&quot;: &quot;backend-797f8bfdcc-xrzkw&quot;,
+          &quot;generateName&quot;: &quot;backend-797f8bfdcc-&quot;,
+          &quot;namespace&quot;: &quot;demo&quot;,
+          &quot;selfLink&quot;: &quot;/api/v1/namespaces/demo/pods/backend-797f8bfdcc-xrzkw&quot;,
+          &quot;uid&quot;: &quot;e6845671-6e46-4b20-aa7b-ced5839341e2&quot;,
+          &quot;resourceVersion&quot;: &quot;56509&quot;,
+          &quot;creationTimestamp&quot;: &quot;2021-06-10T09:10:10Z&quot;,
+          &quot;labels&quot;: {
+          &quot;app&quot;: &quot;backend&quot;,
+          &quot;pod-template-hash&quot;: &quot;797f8bfdcc&quot;,
+          &quot;version&quot;: &quot;v1&quot;
+          },
+</code></pre>
+</li>
+<li><p>Get sepcified pod</p>
+<pre><code>  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods/&lt;pod-name&gt;
+</code></pre></li>
+<li><p>List nodes</p>
+<pre><code class="lang-bash">  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/nodes
+</code></pre>
+</li>
 </ul>
-<p>Code Block</p>
-<pre><code class="lang-bash">uname -a
+<h2 id="use-service-account-with-deployment">Use Service Account with Deployment</h2>
+<ul>
+<li><p>Backend deployment (<a href="manifests/backend-discovery-sa.yaml">backend-discovery-sa.yaml</a>) with custom service account</p>
+<pre><code class="lang-bash">  spec:
+  replicas: 1
+  selector:
+      matchLabels:
+      app: backend
+      version: v1
+  template:
+      metadata:
+      creationTimestamp: null
+      labels:
+          app: backend
+          version: v1
+      annotations:
+          sidecar.istio.io/inject: &quot;false&quot;
+      spec:
+      serviceAccountName: svip-ignite-discovery
+      automountServiceAccountToken: false
+      containers:
+      - name: backend
 </code></pre>
-<pre><code class="lang-yaml">---
-sample: yaml
-spec:
-  key1: value1
-  item_list:
-    - name: item1
-      property: prop1
-    - name: item2
-      property: prop2
+</li>
+<li><p>Check service account used by pod</p>
+<pre><code class="lang-bash">  oc get pod/&lt;pod-name&gt; -o jsonpath=&apos;{.spec.serviceAccountName}&apos;
 </code></pre>
-<p>Sample inline yaml to oc apply</p>
-<pre><code class="lang-bash">cat &lt;&lt;EOF | oc create -f -
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: image-registry-storage
-  namespace: openshift-image-registry
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Gi
-  storageClassName: thin
-  volumeMode: Filesystem
-EOF
-</code></pre>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -601,6 +739,14 @@ EOF
 
             
                 
+                <a href="infrastructure-taint-and-toleration.html" class="navigation navigation-prev " aria-label="Previous page: Pod Taint and Toleration">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="custom-alert.html" class="navigation navigation-next " aria-label="Next page: Custom Alert">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -609,7 +755,7 @@ EOF
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"next":{"title":"Container Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Build & Deployment with oc","level":"1.4.1","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.4.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.4.5","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-hibernate.md","mtime":"2021-06-11T02:45:46.023Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-11T02:46:21.384Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Roles and Service Account","level":"1.2.8","depth":2,"next":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"previous":{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"path":"infrastructure-taint-and-toleration.md","ref":"infrastructure-taint-and-toleration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-roles.md","mtime":"2021-06-11T02:45:46.027Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-11T02:46:21.384Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

@@ -211,7 +211,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.8" data-path="custom-alert.html">
+        <li class="chapter " data-level="1.2.8" data-path="custom-roles.html">
+            
+                <a href="custom-roles.html">
+            
+                    
+                    Custom Roles and Service Account
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2.9" data-path="custom-alert.html">
             
                 <a href="custom-alert.html">
             
@@ -224,7 +237,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.9" data-path="compliance-operator.html">
+        <li class="chapter " data-level="1.2.10" data-path="compliance-operator.html">
             
                 <a href="compliance-operator.html">
             
@@ -510,6 +523,7 @@
 <li><a href="#jenkins-sonarqube-and-nexus">Jenkins, SonarQube and Nexus</a></li>
 <li><a href="#jenkins-slave">Jenkins Slave</a></li>
 <li><a href="#jenkins-pipelines">Jenkins Pipelines</a></li>
+<li><a href="#jenkins-remote-api">Jenkins Remote API</a></li>
 </ul>
 </li>
 <li><a href="#checkpoints">Checkpoints</a></li>
@@ -670,8 +684,24 @@ oc apply -f manifests/backend-release-prod-pipeline.yaml -n ci-cd
   - name: USE_INTERNAL_REGISTRY
     value: &quot;false&quot;
 </code></pre>
+<h3 id="jenkins-remote-api">Jenkins Remote API</h3>
+</li>
+<li><p>Create token</p>
+<p><img src="images/jenkins-token.png" alt=""></p>
+<p>Check for jenkins&apos;s user ID</p>
+<p><img src="images/jenkins-user-id.png" alt=""></p>
+</li>
+<li><p>Configure pipeline Trigger builds</p>
+<p><img src="images/jenkins-remote-api.png" alt=""></p>
+</li>
+<li><p>Test </p>
 </li>
 </ul>
+<pre><code class="lang-bash">USERID=opentlc-mgr-admin-edit-view
+TOKEN=117d9459d809be344f1823cbc1248fba09
+JENKINS_URL=https://jenkins-ci-cd.apps.cluster-1516.1516.example.opentlc.com
+curl -X POST -L -v --user $USERID:$TOKEN &quot;$JENKINS_URL/job/ci-cd/job/ci-cd-backend-build-pipeline/buildWithParameters?token=jira&amp;NEXUS_REGISTRY_SVC=nexus-registry.ci-cd.svc.cluster.local:5000&amp;NEXUS_REGISTRY=nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com&quot;
+</code></pre>
 <h2 id="checkpoints">Checkpoints</h2>
 <ul>
 <li><p>Maven build in pipeline pull dependencies from nexus</p>
@@ -781,7 +811,7 @@ script {
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd-with-jenkins.md","mtime":"2021-06-04T08:54:21.735Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-04T08:55:06.770Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd-with-jenkins.md","mtime":"2021-06-11T02:45:46.023Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-11T02:46:21.384Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
