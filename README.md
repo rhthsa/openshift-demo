@@ -24,6 +24,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Network Access Logs
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
 - [Pod Taint and Toleration](infrastructure-taint-and-toleration.md)
+- [Custom Roles and Service Account](custom-roles.md)
 - [Custom Alert](custom-alert.md)
 - [Compliance](compliance-operator.md)
 - Application Build & Deployment
