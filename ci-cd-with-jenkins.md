@@ -12,6 +12,7 @@
     - [Jenkins, SonarQube and Nexus](#jenkins-sonarqube-and-nexus)
     - [Jenkins Slave](#jenkins-slave)
     - [Jenkins Pipelines](#jenkins-pipelines)
+    - [Jenkins Remote API](#jenkins-remote-api)
   - [Checkpoints](#checkpoints)
   - [Possible improvement](#possible-improvement)
 
@@ -35,6 +36,7 @@ Remark:
   ![](images/build-pipeline.png)
 
 ### Deploy Staging Environment
+
 - Select version to deploy to stage project
 - Tag container image with *version-DDMMYYYY-round*
 - Tear down and deploy application to stage project
@@ -42,10 +44,12 @@ Remark:
   ![](images/release-pipeline.png)
 
 ### Deploy UAT Environment
+
 - Select version to deploy to uat project. Only images with tag *version-DDMMYYYY-round* will be avaiable in list to deploy
 - Tear down and deploy application to uat project
 
 ### Deploy Production Environment
+
 - Select version to deploy to prod project. Only images with tag *version-DDMMYYYY-round* will be avaiable in list to deploy
 - Create deploymentconfig and service for blue and green version
 - Create route
@@ -180,7 +184,27 @@ Remark:
     - name: USE_INTERNAL_REGISTRY
       value: "false"
   ```
+### Jenkins Remote API
+- Create token
+  
+  ![](images/jenkins-token.png)
 
+  Check for jenkins's user ID
+
+  ![](images/jenkins-user-id.png)
+
+- Configure pipeline Trigger builds
+  
+  ![](images/jenkins-remote-api.png)
+
+- Test 
+  
+```bash
+USERID=opentlc-mgr-admin-edit-view
+TOKEN=117d9459d809be344f1823cbc1248fba09
+JENKINS_URL=https://jenkins-ci-cd.apps.cluster-1516.1516.example.opentlc.com
+curl -X POST -L -v --user $USERID:$TOKEN "$JENKINS_URL/job/ci-cd/job/ci-cd-backend-build-pipeline/buildWithParameters?token=jira&NEXUS_REGISTRY_SVC=nexus-registry.ci-cd.svc.cluster.local:5000&NEXUS_REGISTRY=nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com"
+```
 ## Checkpoints
 - Maven build in pipeline pull dependencies from nexus
   - Code snippets 
