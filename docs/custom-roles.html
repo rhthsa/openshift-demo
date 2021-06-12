@@ -529,11 +529,12 @@
 </li>
 </ul>
 <h2 id="service-account">Service Account</h2>
-<p>Create custom roles for service account to view </p>
+<p>Create custom roles for service account to view,list and watch </p>
 <pre><code>- configmaps
 - pods
 - services
 - namespaces
+- endpoints
 - secrets
 - *nodes*
 </code></pre><p>Remark: <em>nodes</em> need cluster role</p>
@@ -553,13 +554,14 @@
 <li><p>Create role for service account. </p>
 <pre><code class="lang-bash">  oc create role app-discovery \
   --verb=get,list,watch \
-  --resource=configmaps,pods,services,namespaces \
+  --resource=configmaps,pods,services,namespaces,endpoints \
   -n demo
   oc describe role app-discovery -n demo
 </code></pre>
-<p>  or create from <a href="manifests/app-discovery-role.yaml">YAML file</a></p>
+<p>  or create from <a href="manifests/app-discovery-role.yaml">app-discovery</a> yaml</p>
 <pre><code class="lang-bash">  oc create -f manifests/app-discovery-role.yaml -n demo
   oc describe role app-discovery -n demo
+  oc describe role list-secret -n demo
 </code></pre>
 <p>  Output</p>
 <pre><code class="lang-bash">  role.rbac.authorization.k8s.io/app-discovery created
@@ -581,18 +583,19 @@
 <pre><code class="lang-bash">  oc adm policy add-role-to-user app-discovery \
   system:serviceaccount:demo:sa-discovery --role-namespace=demo -n demo
 </code></pre>
-<p>  or create from <a href="manifests/clusterrole-view-nodes.yaml">YAML file</a></p>
-<pre><code class="lang-bash">  oc create -f manifests/clusterrole-view-nodes.yaml
-</code></pre>
 <p>  Output</p>
 <pre><code class="lang-bash">  role.rbac.authorization.k8s.io/app-discovery added: &quot;system:serviceaccount:demo:sa-discovery&quot;
 </code></pre>
-<h3 id="create-cluster-role">Create cluster role</h3>
 </li>
-<li><p>Create cluster role to view node
-git </p>
+</ul>
+<h3 id="create-cluster-role">Create cluster role</h3>
+<ul>
+<li><p>Create cluster role to view node</p>
 <pre><code class="lang-bash">  oc create clusterrole view-nodes \
   --verb=get,list,watch --resource=nodes
+</code></pre>
+<p>  or create from <a href="manifests/clusterrole-view-nodes.yaml">view-nodes</a> yaml</p>
+<pre><code class="lang-bash">  oc create -f manifests/clusterrole-view-nodes.yaml
 </code></pre>
 <p>  Output</p>
 <pre><code class="lang-bash">  clusterrole.rbac.authorization.k8s.io/view-nodes created
@@ -648,6 +651,13 @@ oc get nodes
 echo &quot;Press any keys to continue...&quot;;read
 clear
 </code></pre>
+</li>
+<li><p>Test get secret</p>
+<pre><code class="lang-bash">oc describe secrets/$(oc get secrets --no-headers|head -n 1|awk &apos;{print $1}&apos;)
+</code></pre>
+<p>You will get following error because sa-discovery has only list action</p>
+<pre><code class="lang-bash">Error from server (Forbidden): secrets &quot;builder-dockercfg-cjfz6&quot; is forbidden: User &quot;system:serviceaccount:demo:sa-discovery&quot; cannot get resource &quot;secrets&quot; in API group &quot;&quot; in the namespace &quot;demo&quot;
+</code></pre>
 <h3 id="rest-api">REST API</h3>
 </li>
 </ul>
@@ -655,7 +665,7 @@ clear
 <li><p>List pods</p>
 <pre><code class="lang-bash">  API=$(oc whoami --show-server)
   NAMESPACE=demo
-  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods
+  curl -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods
 </code></pre>
 <p>  Output</p>
 <pre><code class="lang-json">  &quot;items&quot;: [
@@ -676,10 +686,10 @@ clear
 </code></pre>
 </li>
 <li><p>Get sepcified pod</p>
-<pre><code>  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods/&lt;pod-name&gt;
+<pre><code>  curl -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/namespaces/$NAMESPACE/pods/&lt;pod-name&gt;
 </code></pre></li>
-<li><p>List nodes</p>
-<pre><code class="lang-bash">  curl -X GET -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/nodes
+<li><p>Get node</p>
+<pre><code class="lang-bash">  curl -k -H &quot;Accept: application/json&quot; -H &quot;Authorization: Bearer $TOKEN&quot; $API/api/v1/nodes/$(oc get nodes --no-headers|head -n 1|awk &apos;{print $1}&apos;)
 </code></pre>
 </li>
 </ul>
@@ -755,7 +765,7 @@ clear
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Roles and Service Account","level":"1.2.8","depth":2,"next":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"previous":{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"path":"infrastructure-taint-and-toleration.md","ref":"infrastructure-taint-and-toleration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-roles.md","mtime":"2021-06-11T02:45:46.027Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-11T02:46:21.384Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Roles and Service Account","level":"1.2.8","depth":2,"next":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"previous":{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"path":"infrastructure-taint-and-toleration.md","ref":"infrastructure-taint-and-toleration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-roles.md","mtime":"2021-06-12T11:52:04.787Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-12T11:52:42.603Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
