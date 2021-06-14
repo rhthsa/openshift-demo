@@ -12,11 +12,12 @@
 
 ## Service Account
 
-Create custom roles for service account to view 
+Create custom roles for service account to view,list and watch 
     - configmaps
     - pods
     - services
     - namespaces
+    - endpoints
     - secrets
     - *nodes*
 
@@ -42,17 +43,17 @@ Remark: *nodes* need cluster role
     ```bash
     oc create role app-discovery \
     --verb=get,list,watch \
-    --resource=configmaps,pods,services,namespaces \
+    --resource=configmaps,pods,services,namespaces,endpoints \
     -n demo
     oc describe role app-discovery -n demo
-
     ```
 
-    or create from [YAML file](manifests/app-discovery-role.yaml)
+    or create from [app-discovery](manifests/app-discovery-role.yaml) yaml
 
     ```bash
     oc create -f manifests/app-discovery-role.yaml -n demo
     oc describe role app-discovery -n demo
+    oc describe role list-secret -n demo
     ```
     
     Output
@@ -79,24 +80,25 @@ Remark: *nodes* need cluster role
     oc adm policy add-role-to-user app-discovery \
     system:serviceaccount:demo:sa-discovery --role-namespace=demo -n demo
     ```
-    
-    or create from [YAML file](manifests/clusterrole-view-nodes.yaml)
-
-    ```bash
-    oc create -f manifests/clusterrole-view-nodes.yaml
-    ```
 
     Output
 
     ```bash
-    role.rbac.authorization.k8s.io/app-discovery added: "system:serviceaccount:demo:sa-discovery"
+    role.rbac.authorization.k8s.io/app-discovery added: "system:serviceaccount:demo:sa-discovery"   
     ```
+
 ### Create cluster role
 - Create cluster role to view node
-  git 
+ 
     ```bash
     oc create clusterrole view-nodes \
     --verb=get,list,watch --resource=nodes
+    ```
+
+    or create from [view-nodes](manifests/clusterrole-view-nodes.yaml) yaml
+
+    ```bash
+    oc create -f manifests/clusterrole-view-nodes.yaml
     ```
 
     Output
@@ -165,13 +167,25 @@ Remark: *nodes* need cluster role
     echo "Press any keys to continue...";read
     clear
     ```
+
+    - Test get secret
+    
+    ```bash
+    oc describe secrets/$(oc get secrets --no-headers|head -n 1|awk '{print $1}')
+    ```
+    
+    You will get following error because sa-discovery has only list action
+    
+    ```bash
+    Error from server (Forbidden): secrets "builder-dockercfg-cjfz6" is forbidden: User "system:serviceaccount:demo:sa-discovery" cannot get resource "secrets" in API group "" in the namespace "demo"
+    ```
 ### REST API
 - List pods
     
     ```bash
     API=$(oc whoami --show-server)
     NAMESPACE=demo
-    curl -X GET -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/namespaces/$NAMESPACE/pods
+    curl -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/namespaces/$NAMESPACE/pods
     ```
     
     Output
@@ -197,14 +211,14 @@ Remark: *nodes* need cluster role
 - Get sepcified pod
 
     ```
-    curl -X GET -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/namespaces/$NAMESPACE/pods/<pod-name>
+    curl -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/namespaces/$NAMESPACE/pods/<pod-name>
     ```
-- List nodes
+
+- Get node
 
     ```bash
-    curl -X GET -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/nodes
+    curl -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" $API/api/v1/nodes/$(oc get nodes --no-headers|head -n 1|awk '{print $1}')
     ```
-
 
 ## Use Service Account with Deployment
 - Backend deployment ([backend-discovery-sa.yaml](manifests/backend-discovery-sa.yaml)) with custom service account
@@ -236,4 +250,3 @@ Remark: *nodes* need cluster role
     ```bash
     oc get pod/<pod-name> -o jsonpath='{.spec.serviceAccountName}'
     ```
-
