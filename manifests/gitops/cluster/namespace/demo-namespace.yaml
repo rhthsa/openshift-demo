@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: demo-gitops
+  name: demo
 spec:
   finalizers:
   - kubernetes
