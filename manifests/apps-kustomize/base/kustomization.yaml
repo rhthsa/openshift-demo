@@ -1,6 +1,6 @@
 resources:
 - namespace.yaml
-- demo-reolebinding.yaml
+- demo-rolebinding.yaml
 - backend.yaml
 - frontend.yaml
 - backend-service.yaml
