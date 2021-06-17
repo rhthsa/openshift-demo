@@ -79,3 +79,4 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Prepare Azure DevOps Service Connection
   - Azure pipelines
 - [EAP on OpenShift](eap-on-ocp.md)
+- [Clair4 on OpenShift](clair4-on-ocp.md)
