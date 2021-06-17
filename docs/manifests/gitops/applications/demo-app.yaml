@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     directory:
-      recurse: true
+      recurse: false
     path: manifests/apps-kustomize/overlays/dev
     repoURL: https://github.com/rhthsa/openshift-demo
     targetRevision: main
