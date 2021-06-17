@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gitops-demo-cluster-config
+  name: demo-namespace-config
   namespace: openshift-gitops
 spec:
   destination:
@@ -15,4 +15,3 @@ spec:
     path: manifests/gitops/cluster
     repoURL: https://github.com/rhthsa/openshift-demo
     targetRevision: main
-  syncPolicy: {}
