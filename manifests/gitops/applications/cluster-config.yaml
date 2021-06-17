@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-cluster-config
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: default
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      jsonnet: {}
+      recurse: true
+    path: manifests/gitops/cluster
+    repoURL: https://github.com/rhthsa/openshift-demo
+    targetRevision: main
+  syncPolicy: {}
