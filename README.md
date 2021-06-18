@@ -30,8 +30,8 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 - [Compliance](compliance-operator.md)
 
 ### Multi-cluster Management with Advanced Cluster Management (RHACM)
-  - [Application Manageement](acm-application-management.md)
-
+- [Application Manageement](acm-application-management.md)
+- [Cost saving with hibernating OpenShift](acm-hibernate.md)
 ### Container Applications
 - Application Build & Deployment
   - [Command Line with oc](build-with-oc.md)

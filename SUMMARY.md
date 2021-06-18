@@ -12,6 +12,7 @@
   * [Compliance](compliance-operator.md)
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
   * [Application Manageement](acm-application-management.md)
+  * [Cost saving with hibernating OpenShift](acm-hibernate.md)
 * Applications
   * [Application Build & Deployment with oc](build-with-oc.md)
   * [Application Build & Deployment with odo](build-with-odo.md)  
