@@ -5,8 +5,10 @@ metadata:
   namespace: openshift-gitops
 spec:
   destination:
-    namespace: demo-gitops
+    namespace: demo
     server: https://kubernetes.default.svc
+    # name: default/api-cluster-a42c-a42c-sandbox52-opentlc-com:6443/opentlc-mgr
+    # argocd cluster add default/api-cluster-a42c-a42c-sandbox52-opentlc-com:6443/opentlc-mgr --name=
   project: default
   source:
     directory:

@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Hibernate cluster for cost saving for OpenShift on Cloud Providers · OpenShift Demo</title>
+        <title>Application Manageement · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -265,12 +265,12 @@
             <ul class="articles">
                 
     
-        <li class="chapter active" data-level="1.3.1" data-path="acm-hibernate.html">
+        <li class="chapter active" data-level="1.3.1" data-path="acm-application-management.html">
             
-                <a href="acm-hibernate.html">
+                <a href="acm-application-management.html">
             
                     
-                    Hibernate cluster for cost saving for OpenShift on Cloud Providers
+                    Application Manageement
             
                 </a>
             
@@ -288,7 +288,7 @@
                 <span>
             
                     
-                    Container Applications
+                    Applications
             
                 </span>
             
@@ -488,7 +488,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Hibernate cluster for cost saving for OpenShift on Cloud Providers</a>
+        <a href="." >Application Manageement</a>
     </h1>
 </div>
 
@@ -503,77 +503,85 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</h1>
-<!-- TOC -->
+                                <h1 id="application-management-with-rhacm">Application Management with RHACM</h1>
 <ul>
-<li><a href="#rhacm-hibernate-openshift-on-cloud-providers-for-cost-saving">RHACM Hibernate OpenShift on Cloud Providers for Cost Saving</a><ul>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#introduction">Introduction</a></li>
-<li><a href="#how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</a></li>
-<li><a href="#steps-1-2-3">Steps 1-2-3</a></li>
+<li><a href="#application-management-with-rhacm">Application Management with RHACM</a><ul>
+<li><a href="#rhacm-environment">RHACM Environment</a></li>
+<li><a href="#demo-application-with-kustomize">Demo Application with Kustomize</a></li>
+<li><a href="#rhacm-configuration">RHACM Configuration</a></li>
+<li><a href="#acm-console">ACM Console</a></li>
 </ul>
 </li>
 </ul>
-<!-- /TOC -->
-<h2 id="prerequisites">Prerequisites</h2>
+<h2 id="rhacm-environment">RHACM Environment</h2>
+<p>RHACM with 2 managed clusters </p>
 <ul>
-<li>OpenShift 4.6 or 4.7</li>
-<li>Cluster-admin user access</li>
-<li>Red Hat Advanced Cluster Management</li>
-<li>Cloud Provider Credentials</li>
+<li>Production Cluster(s) labeled with <em>environment=prod</em></li>
+<li>Development Cluster(s) labled with <em>environment=dev</em></li>
 </ul>
-<h2 id="introduction">Introduction</h2>
-<p>Original article from <a href="https://www.openshift.com/blog/hibernate-for-cost-savings-for-advanced-cluster-management-provisioned-clusters-with-subscriptions" target="_blank">Hibernate for cost savings for Advanced Cluster Management Provisioned Clusters with Subscriptions</a></p>
-<p>OpenShift 4 has the ability to suspend and resume clusters on Cloud Providers. Red Hat Advanced Cluster Management extends this capability through its Cluster Lifecycle Management (Hive), where you can have a policy to hibernate the clusters to save the cost saving in non-working hours (ex. 16 hours in a day is 16/24 = 66% saving)</p>
-<h2 id="how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</h2>
-<p>We will walkthrough high-level process how ACM can define the herbernate policy for the cluster on Clouds</p>
-<ol>
-<li>Clone the cluster-hibernate repository to your environment</li>
-<li>Create the Running/Hibernate manifest files and put them in your Channel</li>
-<li>Create the Subscription to local hub cluster with your desire time windows</li>
-</ol>
-<p>Sample picture
-<img src="images/service-mesh-sample-app.png" alt="your sample picture"></p>
-<h2 id="steps-1-2-3">Steps 1-2-3</h2>
-<p>Steps:</p>
+<h2 id="demo-application-with-kustomize">Demo Application with Kustomize</h2>
 <ul>
-<li>a</li>
-<li>b<ul>
-<li>c</li>
+<li><p><a href="manifests/apps-kustomize">Frontend/Backend App</a> with 2 overlays for <em>dev</em> and <em>prod</em></p>
+<ul>
+<li>Number of replicas</li>
+<li>Backend&apos;s environment variables</li>
+<li>Frontend&apos;s environment variables</li>
+</ul>
+<pre><code class="lang-bash">  .
+  &#x251C;&#x2500;&#x2500; base
+  &#x2502;   &#x251C;&#x2500;&#x2500; backend-service.yaml
+  &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
+  &#x2502;   &#x251C;&#x2500;&#x2500; frontend-service.yaml
+  &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
+  &#x2502;   &#x251C;&#x2500;&#x2500; kustomization.yaml
+  &#x2502;   &#x251C;&#x2500;&#x2500; namespace.yaml
+  &#x2502;   &#x2514;&#x2500;&#x2500; route.yaml
+  &#x2514;&#x2500;&#x2500; overlays
+      &#x251C;&#x2500;&#x2500; dev
+      &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
+      &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
+      &#x2502;   &#x2514;&#x2500;&#x2500; kustomization.yaml
+      &#x2514;&#x2500;&#x2500; prod
+          &#x251C;&#x2500;&#x2500; backend.yaml
+          &#x251C;&#x2500;&#x2500; frontend.yaml
+          &#x2514;&#x2500;&#x2500; kustomization.yaml
+</code></pre>
+</li>
+</ul>
+<h2 id="rhacm-configuration">RHACM Configuration</h2>
+<ul>
+<li><p>RHACM application managment configuration</p>
+<ul>
+<li>Create <a href="manifests/acm-app-management/01_namespace.yaml">Namespace</a></li>
+<li>Create <a href="manifests/acm-app-management/02_channel.yaml">Channel</a></li>
+<li>Create <a href="manifests/acm-app-management/03_application_demo_app.yaml">Applicatoion</a> </li>
+<li>Create subscription for <a href="manifests/acm-app-management/04_subscription_prod.yaml">production</a> and <a href="manifests/acm-app-management/05_placement_dev.yaml">development</a> environment</li>
+<li>Create placement rule for <a href="manifests/acm-app-management/05_placement_prod.yaml">production</a> and <a href="manifests/acm-app-management/05_placement_dev.yaml">development</a> environment</li>
 </ul>
 </li>
-<li>d</li>
+<li><p>Deploy</p>
+<pre><code class="lang-bash">oc apply -f manifests/acm-app-management/01_namespace.yaml
+oc apply -f manifests/acm-app-management/02_channel.yaml
+oc apply -f manifests/acm-app-management/03_application_demo_app.yaml
+oc apply -f manifests/acm-app-management/04_subscription_dev.yaml
+oc apply -f manifests/acm-app-management/04_subscription_prod.yaml
+oc apply -f manifests/acm-app-management/05_placement_dev.yaml
+oc apply -f manifests/acm-app-management/05_placement_prod.yaml
+</code></pre>
+</li>
 </ul>
-<p>Code Block</p>
-<pre><code class="lang-bash">uname -a
-</code></pre>
-<pre><code class="lang-yaml">---
-sample: yaml
-spec:
-  key1: value1
-  item_list:
-    - name: item1
-      property: prop1
-    - name: item2
-      property: prop2
-</code></pre>
-<p>Sample inline yaml to oc apply</p>
-<pre><code class="lang-bash">cat &lt;&lt;EOF | oc create -f -
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: image-registry-storage
-  namespace: openshift-image-registry
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Gi
-  storageClassName: thin
-  volumeMode: Filesystem
-EOF
-</code></pre>
+<h2 id="acm-console">ACM Console</h2>
+<ul>
+<li><p>Demo App topology</p>
+<p><img src="images/acm-demo-app-dev-console-full.png" alt=""></p>
+</li>
+<li><p>Check number of replicas for prod</p>
+<p><img src="images/acm-demo-app-prod-replicas.png" alt=""> </p>
+</li>
+<li><p>Filter by subscription</p>
+<p><img src="images/acm-demo-app-dev-console.png" alt=""></p>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -609,7 +617,7 @@ EOF
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"next":{"title":"Container Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Build & Deployment with oc","level":"1.4.1","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.4.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.4.5","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Hibernate cluster for cost saving for OpenShift on Cloud Providers","level":"1.3.1","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-hibernate.md","mtime":"2021-06-17T07:07:17.594Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-17T07:08:04.142Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Application Manageement","level":"1.3.1","depth":2,"next":{"title":"Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Build & Deployment with oc","level":"1.4.1","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.4.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.4.5","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-application-management.md","mtime":"2021-06-18T02:17:49.763Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-18T02:18:29.062Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
