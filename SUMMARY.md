@@ -11,8 +11,8 @@
   * [Custom Alert](custom-alert.md)
   * [Compliance](compliance-operator.md)
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
-  * [Hibernate cluster for cost saving for OpenShift on Cloud Providers](acm-hibernate.md)
-* Container Applications
+  * [Application Manageement](acm-application-management.md)
+* Applications
   * [Application Build & Deployment with oc](build-with-oc.md)
   * [Application Build & Deployment with odo](build-with-odo.md)  
   * [Application Deployment with Helm](helm.md) 
