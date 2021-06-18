@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Pod Taint and Toleration · OpenShift Demo</title>
+        <title>Cost saving with hibernating OpenShift · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="custom-roles.html" />
     
-    
-    <link rel="prev" href="infrastructure-backup-etcd.html" />
+    <link rel="prev" href="acm-application-management.html" />
     
 
     </head>
@@ -198,7 +196,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.2.7" data-path="infrastructure-taint-and-toleration.html">
+        <li class="chapter " data-level="1.2.7" data-path="infrastructure-taint-and-toleration.html">
             
                 <a href="infrastructure-taint-and-toleration.html">
             
@@ -282,7 +280,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.3.2" data-path="acm-hibernate.html">
+        <li class="chapter active" data-level="1.3.2" data-path="acm-hibernate.html">
             
                 <a href="acm-hibernate.html">
             
@@ -505,7 +503,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Pod Taint and Toleration</a>
+        <a href="." >Cost saving with hibernating OpenShift</a>
     </h1>
 </div>
 
@@ -520,70 +518,77 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="taint-and-toleration">Taint and Toleration</h1>
+                                <h1 id="hibernate-openshift-on-cloud-providers-for-cost-saving">Hibernate OpenShift on Cloud Providers for Cost Saving</h1>
+<!-- TOC -->
 <ul>
-<li><a href="#taint-and-toleration">Taint and Toleration</a><ul>
-<li><a href="#pod-eviction">Pod Eviction</a><ul>
-<li><a href="#node-unreachable">Node Unreachable</a><h2 id="pod-eviction">Pod Eviction</h2>
-</li>
+<li><a href="#hibernate-openshift-on-cloud-providers-for-cost-saving">Hibernate OpenShift on Cloud Providers for Cost Saving</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</a></li>
+<li><a href="#steps-1-2-3">Steps 1-2-3</a></li>
 </ul>
 </li>
 </ul>
-</li>
+<!-- /TOC -->
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>OpenShift 4.6 or 4.7</li>
+<li>Cluster-admin user access</li>
+<li>Red Hat Advanced Cluster Management</li>
+<li>Cloud Provider Credentials</li>
 </ul>
-<p>Pod eviction from node behavior can be configured by adding toleration to pod. This default value is 5 minutes in case of node unreachable or not-ready</p>
-<h3 id="node-unreachable">Node Unreachable</h3>
-<p>Configure pod to evict from node in case node is unreachable.</p>
+<h2 id="introduction">Introduction</h2>
+<p>Original article from <a href="https://www.openshift.com/blog/hibernate-for-cost-savings-for-advanced-cluster-management-provisioned-clusters-with-subscriptions" target="_blank">Hibernate for cost savings for Advanced Cluster Management Provisioned Clusters with Subscriptions</a></p>
+<p>OpenShift 4 has the ability to suspend and resume clusters on Cloud Providers. Red Hat Advanced Cluster Management extends this capability through its Cluster Lifecycle Management (Hive), where you can have a policy to hibernate the clusters to save the cost saving in non-working hours (ex. 16 hours in a day is 16/24 = 66% saving)</p>
+<h2 id="how-acm-acheive-hibernate-policies-for-openshift">How ACM acheive Hibernate policies for OpenShift</h2>
+<p>We will walkthrough high-level process how ACM can define the herbernate policy for the cluster on Clouds</p>
+<ol>
+<li>Clone the cluster-hibernate repository to your environment</li>
+<li>Create the Running/Hibernate manifest files and put them in your Channel</li>
+<li>Create the Subscription to local hub cluster with your desire time windows</li>
+</ol>
+<p>Sample picture
+<img src="images/service-mesh-sample-app.png" alt="your sample picture"></p>
+<h2 id="steps-1-2-3">Steps 1-2-3</h2>
+<p>Steps:</p>
 <ul>
-<li><p>Check pod default toleration</p>
-<ul>
-<li><p>Check toleration </p>
-<pre><code class="lang-bash">oc describe pod $(oc get pods | grep Running | tail -n 1 | awk &apos;{print $1}&apos;) | \
-grep -A2 -i toleration
+<li>a</li>
+<li>b<ul>
+<li>c</li>
+</ul>
+</li>
+<li>d</li>
+</ul>
+<p>Code Block</p>
+<pre><code class="lang-bash">uname -a
 </code></pre>
-</li>
-<li><p>Output example. </p>
-<ul>
-<li>node.kubernetes.io/not-ready is 300s (5 minutes)</li>
-<li>node.kubernetes.io/unreachable is 300s (5 minutes)</li>
-</ul>
-<pre><code class="lang-bash">Tolerations:     node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                 node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-</code></pre>
-</li>
-</ul>
-</li>
-<li><p>Set unreachable to 1 minute by adding toleration for node unreachable to deployment or deployment config. This toleration mean that Pods remain bound to nodes for 60s after <em>unreachable</em> of these problems is detected.</p>
-<p><strong>Remark: Default value of 5 minutes is reasonable in the assumption for preventing false posivites</strong></p>
-<ul>
-<li><p>Example of <a href="manifests/backend.yaml">deployment</a> with  <em>unreachable</em> toleration set to 1 minute.</p>
-<pre><code class="lang-yaml">template:
-metadata:
-    labels:
-    app: backend-native
-    deploymentconfig: backend-native
+<pre><code class="lang-yaml">---
+sample: yaml
 spec:
-    containers:
-    - image: image-registry.openshift-image-registry.svc:5000/demo/backend-native@sha256:5b76fdf7113c0db6d7fddea54997dd648a55b2a04383effb82f55cdbb0419dd5
-    ...
-    ...
-    tolerations:
-    - key: node.kubernetes.io/unreachable
-    operator: Exists
-    effect: NoExecute
-    tolerationSeconds: 60
+  key1: value1
+  item_list:
+    - name: item1
+      property: prop1
+    - name: item2
+      property: prop2
 </code></pre>
-</li>
-</ul>
-</li>
-<li><p>Check pod toleration node.kubernetes.io/unreachable is chaged to 60s. Pod will be recreate on another node if node is unreachable for 60s</p>
-<pre><code class="lang-bash">Tolerations:     node.kubernetes.io/memory-pressure:NoSchedule op=Exists
-                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
-                 node.kubernetes.io/unreachable:NoExecute op=Exists for 60s
+<p>Sample inline yaml to oc apply</p>
+<pre><code class="lang-bash">cat &lt;&lt;EOF | oc create -f -
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: image-registry-storage
+  namespace: openshift-image-registry
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: thin
+  volumeMode: Filesystem
+EOF
 </code></pre>
-</li>
-</ul>
 
                                 
                                 </section>
@@ -611,14 +616,10 @@ spec:
 
             
                 
-                <a href="infrastructure-backup-etcd.html" class="navigation navigation-prev " aria-label="Previous page: OpenShift state backup with etcd snapshot">
+                <a href="acm-application-management.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Application Manageement">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="custom-roles.html" class="navigation navigation-next " aria-label="Next page: Custom Roles and Service Account">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -627,7 +628,7 @@ spec:
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"next":{"title":"Custom Roles and Service Account","level":"1.2.8","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"previous":{"title":"OpenShift state backup with etcd snapshot","level":"1.2.6","depth":2,"path":"infrastructure-backup-etcd.md","ref":"infrastructure-backup-etcd.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"infrastructure-taint-and-toleration.md","mtime":"2021-06-18T02:21:07.213Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-18T02:21:46.442Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"next":{"title":"Applications","level":"1.4","depth":1,"ref":"","articles":[{"title":"Application Build & Deployment with oc","level":"1.4.1","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.4.2","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.4.3","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.4.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.4.5","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.4.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.4.11","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-hibernate.md","mtime":"2021-06-18T02:21:07.161Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-18T02:21:46.442Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
