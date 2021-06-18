@@ -536,33 +536,32 @@
 </ul>
 <h2 id="demo-application-with-kustomize">Demo Application with Kustomize</h2>
 <ul>
-<li><p><a href="manifests/apps-kustomize">Frontend/Backend App</a> with 2 overlays for <em>dev</em> and <em>prod</em></p>
-<ul>
+<li><a href="manifests/apps-kustomize">Frontend/Backend App</a> with 2 overlays for environment <em>dev</em> and <em>prod</em><ul>
 <li>Number of replicas</li>
 <li>Backend&apos;s environment variables</li>
 <li>Frontend&apos;s environment variables</li>
 </ul>
-<pre><code class="lang-bash">  .
-  &#x251C;&#x2500;&#x2500; base
-  &#x2502;   &#x251C;&#x2500;&#x2500; backend-service.yaml
-  &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
-  &#x2502;   &#x251C;&#x2500;&#x2500; frontend-service.yaml
-  &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
-  &#x2502;   &#x251C;&#x2500;&#x2500; kustomization.yaml
-  &#x2502;   &#x251C;&#x2500;&#x2500; namespace.yaml
-  &#x2502;   &#x2514;&#x2500;&#x2500; route.yaml
-  &#x2514;&#x2500;&#x2500; overlays
-      &#x251C;&#x2500;&#x2500; dev
-      &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
-      &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
-      &#x2502;   &#x2514;&#x2500;&#x2500; kustomization.yaml
-      &#x2514;&#x2500;&#x2500; prod
-          &#x251C;&#x2500;&#x2500; backend.yaml
-          &#x251C;&#x2500;&#x2500; frontend.yaml
-          &#x2514;&#x2500;&#x2500; kustomization.yaml
-</code></pre>
 </li>
 </ul>
+<pre><code class="lang-bash">    .
+    &#x251C;&#x2500;&#x2500; base
+    &#x2502;   &#x251C;&#x2500;&#x2500; backend-service.yaml
+    &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
+    &#x2502;   &#x251C;&#x2500;&#x2500; frontend-service.yaml
+    &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
+    &#x2502;   &#x251C;&#x2500;&#x2500; kustomization.yaml
+    &#x2502;   &#x251C;&#x2500;&#x2500; namespace.yaml
+    &#x2502;   &#x2514;&#x2500;&#x2500; route.yaml
+    &#x2514;&#x2500;&#x2500; overlays
+        &#x251C;&#x2500;&#x2500; dev
+        &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
+        &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
+        &#x2502;   &#x2514;&#x2500;&#x2500; kustomization.yaml
+        &#x2514;&#x2500;&#x2500; prod
+            &#x251C;&#x2500;&#x2500; backend.yaml
+            &#x251C;&#x2500;&#x2500; frontend.yaml
+            &#x2514;&#x2500;&#x2500; kustomization.yaml
+</code></pre>
 <h2 id="rhacm-configuration">RHACM Configuration</h2>
 <ul>
 <li><p>RHACM application managment configuration</p>
@@ -642,7 +641,7 @@ done
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Application Manageement","level":"1.3.1","depth":2,"next":{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-application-management.md","mtime":"2021-06-18T02:24:52.832Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-18T02:25:40.107Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Application Manageement","level":"1.3.1","depth":2,"next":{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]},"previous":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acm-application-management.md","mtime":"2021-06-18T06:30:06.036Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-18T06:30:45.799Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
