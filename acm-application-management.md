@@ -1,4 +1,5 @@
 # Application Management with RHACM
+
 - [Application Management with RHACM](#application-management-with-rhacm)
   - [RHACM Environment](#rhacm-environment)
   - [Demo Application with Kustomize](#demo-application-with-kustomize)
@@ -13,10 +14,11 @@ RHACM with 2 managed clusters
 
 ## Demo Application with Kustomize
 
-- [Frontend/Backend App](manifests/apps-kustomize) with 2 overlays for *dev* and *prod*
+- [Frontend/Backend App](manifests/apps-kustomize) with 2 overlays for environment *dev* and *prod*
   - Number of replicas
   - Backend's environment variables
   - Frontend's environment variables
+
 
   ```bash
     .
@@ -40,6 +42,7 @@ RHACM with 2 managed clusters
   ```
 
 ## RHACM Configuration
+
 - RHACM application managment configuration
   - Create [Namespace](manifests/acm-app-management/01_namespace.yaml)
   - Create [Channel](manifests/acm-app-management/02_channel.yaml)
@@ -69,6 +72,7 @@ RHACM with 2 managed clusters
   ```
 
 ## ACM Console
+
 - Demo App topology
 
   ![](images/acm-demo-app-dev-console-full.png)
