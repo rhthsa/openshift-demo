@@ -59,6 +59,15 @@ RHACM with 2 managed clusters
   oc apply -f manifests/acm-app-management/05_placement_prod.yaml
   ```
 
+  or
+
+  ```bash
+  for i in $(ls -1 manifests/acm-app-management)
+  do
+    oc apply -f manifests/acm-app-management/$i
+  done
+  ```
+
 ## ACM Console
 - Demo App topology
 
