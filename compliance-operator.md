@@ -371,3 +371,5 @@
   
    ![](images/openscap-cis-report.png)
 
+   HTML version here [cis](images/ocp4-cis.html) and [ocp4-worker-moderate](images/ocp4-worker-moderate.html)
+
