@@ -367,5 +367,7 @@
    ```bash
    oscap xccdf generate report ocp4-cis-api-checks-pod.xml.bzip2 > ocp4-cis.html
    ``` 
- - Sample reports [cis](manifests/ocp4-cis.html) and [ocp4-worker-moderate](manifests/ocp4-worker-moderate.html)
+ - Sample reports [cis](images/ocp4-cis.pdf) and [ocp4-worker-moderate](images/ocp4-worker-moderate.pdf)
+  
+   ![](images/openscap-cis-report.png)
 
