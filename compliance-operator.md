@@ -4,6 +4,7 @@
   - [Prerequisites](#prerequisites)
   - [Compliance Operator](#compliance-operator)
   - [CIS Profile](#cis-profile)
+  - [Openscap Report](#openscap-report)
 
 ## Prerequisites
 - OpenShift 4.6 or 4.7
@@ -340,5 +341,31 @@
   medium        	515
   unknown       	14
   ```
-  
+ ## Openscap Report
+ - Create pod to mount to cis pv
+   ```bash
+   oc create -f manifests/cis-extract.yaml
+   oc apply -f manifests/ocp4-worker-extract.yaml
+   ```
+ - Copy report file from pod
+   ```bash
+   oc cp cis-extract:/cis-scan-results .
+   
+   ```
+   Reports 
+   ```bash
+   ├── 0
+   │   └── ocp4-cis-api-checks-pod.xml.bzip2
+   └── 1
+       └── ocp4-cis-api-checks-pod.xml.bzip2
+   ```
+ - Install openscap on RHEL
+   ```bash
+   yum install openscap-scanner openscap-utils scap-security-guide
+   ```
+ - Use openscap utils in RHEL to generate HTML report
+   ```bash
+   oscap xccdf generate report ocp4-cis-api-checks-pod.xml.bzip2 > ocp4-cis.html
+   ``` 
+ - Sample reports [cis](manifests/ocp4-cis.html) and [ocp4-worker-moderate](manifests/ocp4-worker-moderate.html)
 
