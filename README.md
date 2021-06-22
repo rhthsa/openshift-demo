@@ -85,3 +85,4 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Prepare Azure DevOps Service Connection
     - Azure pipelines
   - [EAP on OpenShift](eap-on-ocp.md)
+  - [OpenShift GitOps](gitops.md)
