@@ -537,6 +537,7 @@
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#compliance-operator">Compliance Operator</a></li>
 <li><a href="#cis-profile">CIS Profile</a></li>
+<li><a href="#openscap-report">Openscap Report</a></li>
 </ul>
 </li>
 </ul>
@@ -816,6 +817,30 @@ low               27
 medium            515
 unknown           14
 </code></pre>
+<h2 id="openscap-report">Openscap Report</h2>
+<ul>
+<li>Create pod to mount to cis pv<pre><code class="lang-bash">oc create -f manifests/cis-extract.yaml
+oc apply -f manifests/ocp4-worker-extract.yaml
+</code></pre>
+</li>
+<li><p>Copy report file from pod</p>
+<pre><code class="lang-bash">oc cp cis-extract:/cis-scan-results .
+</code></pre>
+<p>Reports </p>
+<pre><code class="lang-bash">&#x251C;&#x2500;&#x2500; 0
+&#x2502;   &#x2514;&#x2500;&#x2500; ocp4-cis-api-checks-pod.xml.bzip2
+&#x2514;&#x2500;&#x2500; 1
+   &#x2514;&#x2500;&#x2500; ocp4-cis-api-checks-pod.xml.bzip2
+</code></pre>
+</li>
+<li>Install openscap on RHEL<pre><code class="lang-bash">yum install openscap-scanner openscap-utils scap-security-guide
+</code></pre>
+</li>
+<li>Use openscap utils in RHEL to generate HTML report<pre><code class="lang-bash">oscap xccdf generate report ocp4-cis-api-checks-pod.xml.bzip2 &gt; ocp4-cis.html
+</code></pre>
+</li>
+<li>Sample reports <a href="manifests/ocp4-cis.html">cis</a> and <a href="manifests/ocp4-worker-moderate.html">ocp4-worker-moderate</a></li>
+</ul>
 </li>
 </ul>
 
@@ -857,7 +882,7 @@ unknown           14
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.10","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-06-22T03:00:53.795Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-22T03:01:39.914Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.10","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-06-22T06:16:01.727Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-22T06:16:53.360Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
