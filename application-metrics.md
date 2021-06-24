@@ -3,23 +3,24 @@
 
 - [User Workload Metrics](#user-workload-metrics)
   - [Prerequisites](#prerequisites)
-  - [Service Monitoring](#service-monitoring)
-  - [Custom Grafana Dashboard](#custom-grafana-dashboard)
   - [Custom Alert](#custom-alert)
 
 <!-- /TOC -->
 ## Prerequisites
-- Setup [User Workload Monitoring](manifests/user-workload-monitoring.yaml)
+- Setup [User Workload Monitoring](manifests/cluster-monitoring-config.yaml)
   
-  ```bash
+  <!-- ```bash
   oc apply -f  manifests/user-workload-monitoring.yaml
-  ```
+  ``` -->
 
-  Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration
+  <!-- Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration -->
 
+  Remark: You may need to change *storageClassName* based on your cluster configuration
+  
   ```bash
   oc apply -f  manifests/cluster-monitoring-config.yaml
   ```
+
 - Verify monitoring stack
   
   ```bash
@@ -149,7 +150,7 @@ Use Grafana Operator (Community Edition) to deploy Grafana and configure datasou
   
   ```bash
   oc create -f manifests/grafana.yaml -n application-monitor
-  oc get pods -n application-monitor
+  watch -d oc get pods -n application-monitor
   ```
   
   Sample Output
