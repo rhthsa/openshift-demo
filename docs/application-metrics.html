@@ -538,8 +538,6 @@
 <ul>
 <li><a href="#user-workload-metrics">User Workload Metrics</a><ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#service-monitoring">Service Monitoring</a></li>
-<li><a href="#custom-grafana-dashboard">Custom Grafana Dashboard</a></li>
 <li><a href="#custom-alert">Custom Alert</a></li>
 </ul>
 </li>
@@ -547,10 +545,12 @@
 <!-- /TOC -->
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li><p>Setup <a href="manifests/user-workload-monitoring.yaml">User Workload Monitoring</a></p>
-<pre><code class="lang-bash">oc apply -f  manifests/user-workload-monitoring.yaml
-</code></pre>
-<p>Remark: You also need to setup and configure <a href="infrastructure-monitoring-alerts.html">cluster monitoring</a> or use following <a href="manifests/cluster-monitoring-config.yaml">simple configuration</a>. You may need to change <em>storageClassName</em> based on your cluster configuration</p>
+<li><p>Setup <a href="manifests/cluster-monitoring-config.yaml">User Workload Monitoring</a></p>
+<!-- ```bash
+oc apply -f  manifests/user-workload-monitoring.yaml
+``` -->
+<!-- Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration -->
+<p>Remark: You may need to change <em>storageClassName</em> based on your cluster configuration</p>
 <pre><code class="lang-bash">oc apply -f  manifests/cluster-monitoring-config.yaml
 </code></pre>
 </li>
@@ -662,7 +662,7 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 </li>
 <li><p>Create <a href="manifests/grafana.yaml">Grafana instance</a></p>
 <pre><code class="lang-bash">oc create -f manifests/grafana.yaml -n application-monitor
-oc get pods -n application-monitor
+watch -d oc get pods -n application-monitor
 </code></pre>
 <p>Sample Output</p>
 <pre><code class="lang-bash">NAME                                 READY   STATUS    RESTARTS   AGE
@@ -891,7 +891,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-06-22T06:27:17.390Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-22T06:27:57.699Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-06-24T15:50:21.431Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-24T15:51:11.203Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
