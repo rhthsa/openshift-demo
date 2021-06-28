@@ -549,7 +549,11 @@
 <li><a href="#envoy-access-log">Envoy Access Log</a></li>
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 <li><a href="#secure-with-mtls">Secure with mTLS</a></li>
-<li><a href="#jwt-token">JWT Token</a></li>
+<li><a href="#jwt-token">JWT Token</a><ul>
+<li><a href="#red-hat-single-sign-on">Red Hat Single Sign-On</a></li>
+<li><a href="#requestauthentication-and-authorization-policy">RequestAuthentication and Authorization Policy</a></li>
+</ul>
+</li>
 <li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
 <li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
 <li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
@@ -1288,6 +1292,7 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 <p>Check following Git for setup mTLS between service and ingress service</p>
 <p><a href="https://github.com/voraviz/openshift-service-mesh-ingress-mtls" target="_blank">Secure Application with mTLS by OpenShift Service Mesh</a></p>
 <h2 id="jwt-token">JWT Token</h2>
+<h3 id="red-hat-single-sign-on">Red Hat Single Sign-On</h3>
 <ul>
 <li><p>Setup Red Hat Single Sign-On (Keycloak)</p>
 <ul>
@@ -1333,6 +1338,7 @@ POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
 --data-urlencode scope=email \
 --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\&quot;//g)
 </code></pre>
+<h3 id="requestauthentication-and-authorization-policy">RequestAuthentication and Authorization Policy</h3>
 </li>
 </ul>
 </li>
@@ -1642,7 +1648,7 @@ prometheus-7dc95494b-x8gvf              ip-10-0-162-66.us-east-2.compute.interna
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-06-28T14:41:55.595Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-28T14:42:43.172Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-06-28T14:50:50.818Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-28T14:51:36.481Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
