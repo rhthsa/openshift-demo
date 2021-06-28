@@ -14,6 +14,7 @@
   - [Envoy Access Log](#envoy-access-log)
   - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
+  - [JWT Token](#jwt-token)
   - [Service Level Objective (SLO)](#service-level-objective-slo)
   - [Control Plane with High Availability](#control-plane-with-high-availability)
     - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
@@ -837,11 +838,101 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   ```bash
   oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/start
   ```
+
 ## Secure with mTLS
 Check following Git for setup mTLS between service and ingress service
 
 [Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
 
+## JWT Token
+- Setup Red Hat Single Sign-On (Keycloak)
+  - Create namespace
+  
+    ```bash
+    oc new-project sso --description="Red Hat Single Sign-On" --display-name="Red Hat Single Sign-On"
+    ```
+  - Install Red Hat Single Sign-On Operator
+    
+    ![](images/rhsso-operator-hub.png)
+
+    Install to namespace sso
+
+    ![](images/rhsso-operator.png)
+
+  - Create Keycloak instance
+
+    ```bash
+    oc create -f manifests/keycloak.yaml -n sso
+    watch oc get pods -n sso
+    ```
+
+  - Cosmetic topology view 
+  
+    ```bash
+    oc label deployment/keycloak-postgresql app.kubernetes.io/name=postgresql -n sso
+    oc annotate statefulset/keycloak 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"keycloak-postgresql"}]' -n sso
+    ```
+
+  - Extract admin password
+  
+    ```bash
+    KEYCLOAK_ADMIN_PASSWORD=$(oc extract secret/credential-keycloak -n sso --to=- --keys=ADMIN_PASSWORD  2>/dev/null)
+    ```
+
+  - Create Realm and Keycloak Client with Client Credential
+  
+    ```bash
+    oc create -f manifests/keycloak-realm.yaml -n sso
+    oc create -f manifests/keycloak-client.yaml -n sso
+    ```
+
+  - Client secret
+    
+    ![](images/rhsso-client-secret.png)
+
+  - Test login with client secret
+  
+    ```bash
+    KEYCLOAK=$(oc get route/keycloak -n sso -o jsonpath='{.spec.host}')
+    CLIENT_SECRET=e31fe61b-2cc1-41da-9644-d72bdb8339d5
+    TOKEN=$(curl -s  --location --request  \
+    POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode client_id=frontend-app \
+    --data-urlencode client_secret=$CLIENT_SECRET \
+    --data-urlencode scope=email \
+    --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\"//g)
+    ```
+
+- Create [RequestAuthentication and AuthorizationPolicy](manifests/frontend-jwt.yaml)
+  
+  ```bash
+  oc apply -f manitests/frontend-jwt -n project1
+  ```
+
+- Test without JWT token. You will get HTTP resonse code 403
+  
+  ```bash
+  curl -kv https://frontend-user1.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com
+  ```
+- Test with invalid JWT token. You will get HTTP resonse code 401
+- Test with valid JWT token
+  
+  ```bash
+  TOKEN=$(curl -s  --location --request  \
+    POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode client_id=frontend-app \
+    --data-urlencode client_secret=$CLIENT_SECRET \
+    --data-urlencode scope=email \
+    --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\"//g)
+    curl --header 'Authorization: Bearer '$TOKEN -kv https://frontend-user1.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com
+  ```
+- Test with expired JWT token (token life is 5 minutes). You will get HTTP response code 401 with following message
+  
+  ```bash
+  Jwt is expired* Closing connection 0
+  ```
 ## Service Level Objective (SLO)
 - We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI
 - Prometheus in Service Mesh's control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service
