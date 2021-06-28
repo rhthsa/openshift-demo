@@ -549,6 +549,7 @@
 <li><a href="#envoy-access-log">Envoy Access Log</a></li>
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 <li><a href="#secure-with-mtls">Secure with mTLS</a></li>
+<li><a href="#jwt-token">JWT Token</a></li>
 <li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
 <li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
 <li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
@@ -1281,13 +1282,85 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 <li><p>Set backend pod to normal status</p>
 <pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/start
 </code></pre>
-<h2 id="secure-with-mtls">Secure with mTLS</h2>
-<p>Check following Git for setup mTLS between service and ingress service</p>
 </li>
 </ul>
+<h2 id="secure-with-mtls">Secure with mTLS</h2>
+<p>Check following Git for setup mTLS between service and ingress service</p>
 <p><a href="https://github.com/voraviz/openshift-service-mesh-ingress-mtls" target="_blank">Secure Application with mTLS by OpenShift Service Mesh</a></p>
-<h2 id="service-level-objective-slo">Service Level Objective (SLO)</h2>
+<h2 id="jwt-token">JWT Token</h2>
 <ul>
+<li><p>Setup Red Hat Single Sign-On (Keycloak)</p>
+<ul>
+<li><p>Create namespace</p>
+<pre><code class="lang-bash">oc new-project sso --description=&quot;Red Hat Single Sign-On&quot; --display-name=&quot;Red Hat Single Sign-On&quot;
+</code></pre>
+</li>
+<li><p>Install Red Hat Single Sign-On Operator</p>
+<p><img src="images/rhsso-operator-hub.png" alt=""></p>
+<p>Install to namespace sso</p>
+<p><img src="images/rhsso-operator.png" alt=""></p>
+</li>
+<li><p>Create Keycloak instance</p>
+<pre><code class="lang-bash">oc create -f manifests/keycloak.yaml -n sso
+watch oc get pods -n sso
+</code></pre>
+</li>
+<li><p>Cosmetic topology view </p>
+<pre><code class="lang-bash">oc label deployment/keycloak-postgresql app.kubernetes.io/name=postgresql -n sso
+oc annotate statefulset/keycloak &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;keycloak-postgresql&quot;}]&apos; -n sso
+</code></pre>
+</li>
+<li><p>Extract admin password</p>
+<pre><code class="lang-bash">KEYCLOAK_ADMIN_PASSWORD=$(oc extract secret/credential-keycloak -n sso --to=- --keys=ADMIN_PASSWORD  2&gt;/dev/null)
+</code></pre>
+</li>
+<li><p>Create Realm and Keycloak Client with Client Credential</p>
+<pre><code class="lang-bash">oc create -f manifests/keycloak-realm.yaml -n sso
+oc create -f manifests/keycloak-client.yaml -n sso
+</code></pre>
+</li>
+<li><p>Client secret</p>
+<p><img src="images/rhsso-client-secret.png" alt=""></p>
+</li>
+<li><p>Test login with client secret</p>
+<pre><code class="lang-bash">KEYCLOAK=$(oc get route/keycloak -n sso -o jsonpath=&apos;{.spec.host}&apos;)
+CLIENT_SECRET=e31fe61b-2cc1-41da-9644-d72bdb8339d5
+TOKEN=$(curl -s  --location --request  \
+POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
+--header &apos;Content-Type: application/x-www-form-urlencoded&apos; \
+--data-urlencode client_id=frontend-app \
+--data-urlencode client_secret=$CLIENT_SECRET \
+--data-urlencode scope=email \
+--data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\&quot;//g)
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Create <a href="manifests/frontend-jwt.yaml">RequestAuthentication and AuthorizationPolicy</a></p>
+<pre><code class="lang-bash">oc apply -f manitests/frontend-jwt -n project1
+</code></pre>
+</li>
+<li><p>Test without JWT token. You will get HTTP resonse code 403</p>
+<pre><code class="lang-bash">curl -kv https://frontend-user1.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com
+</code></pre>
+</li>
+<li>Test with invalid JWT token. You will get HTTP resonse code 401</li>
+<li><p>Test with valid JWT token</p>
+<pre><code class="lang-bash">TOKEN=$(curl -s  --location --request  \
+  POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
+  --header &apos;Content-Type: application/x-www-form-urlencoded&apos; \
+  --data-urlencode client_id=frontend-app \
+  --data-urlencode client_secret=$CLIENT_SECRET \
+  --data-urlencode scope=email \
+  --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\&quot;//g)
+  curl --header &apos;Authorization: Bearer &apos;$TOKEN -kv https://frontend-user1.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com
+</code></pre>
+</li>
+<li><p>Test with expired JWT token (token life is 5 minutes). You will get HTTP response code 401 with following message</p>
+<pre><code class="lang-bash">Jwt is expired* Closing connection 0
+</code></pre>
+<h2 id="service-level-objective-slo">Service Level Objective (SLO)</h2>
+</li>
 <li>We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI</li>
 <li>Prometheus in Service Mesh&apos;s control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service<ul>
 <li>Success Rate<ul>
@@ -1569,7 +1642,7 @@ prometheus-7dc95494b-x8gvf              ip-10-0-162-66.us-east-2.compute.interna
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-06-24T15:50:21.511Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-24T15:51:11.203Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-06-28T14:41:55.595Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-28T14:42:43.172Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
