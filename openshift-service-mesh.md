@@ -15,6 +15,8 @@
   - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
   - [JWT Token](#jwt-token)
+    - [Red Hat Single Sign-On](#red-hat-single-sign-on)
+    - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
   - [Service Level Objective (SLO)](#service-level-objective-slo)
   - [Control Plane with High Availability](#control-plane-with-high-availability)
     - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
@@ -845,6 +847,7 @@ Check following Git for setup mTLS between service and ingress service
 [Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
 
 ## JWT Token
+### Red Hat Single Sign-On
 - Setup Red Hat Single Sign-On (Keycloak)
   - Create namespace
   
@@ -903,7 +906,7 @@ Check following Git for setup mTLS between service and ingress service
     --data-urlencode scope=email \
     --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\"//g)
     ```
-
+### RequestAuthentication and Authorization Policy
 - Create [RequestAuthentication and AuthorizationPolicy](manifests/frontend-jwt.yaml)
   
   ```bash
