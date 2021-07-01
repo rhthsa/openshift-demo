@@ -61,6 +61,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Tracing
     - Circuit Breaker
     - Secure with mTLS
+    - JWT Token (with RHSSO)
     - Service Level Objective (SLO)
     - Control Plane with High Availability
   - [User Workload Monitoring](application-metrics.md)
