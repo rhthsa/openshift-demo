@@ -40,7 +40,7 @@
   
 ## Service Monitoring
 - Deploy application with custom metrics
-  - Backend application provides metrics by /metrics and /metrics/applications
+  - Backend application provides metrics by /q/metrics and /q/metrics/applications
   
     ```bash
     oc apply -f manifests/frontend.yaml -n project1
@@ -53,7 +53,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -Ls  http://localhost:8080/metrics
+    -- curl -Ls  http://localhost:8080/q/metrics
     ```
     Sample output
   
@@ -72,7 +72,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -Ls http://localhost:8080/metrics/application
+    -- curl -Ls http://localhost:8080/q/metrics/application
     ```
     Sample output
   
