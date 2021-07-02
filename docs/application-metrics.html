@@ -571,16 +571,18 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 <ul>
 <li><p>Deploy application with custom metrics</p>
 <ul>
-<li><p>Backend application provides metrics by /metrics and /metrics/applications</p>
+<li><p>Backend application provides metrics by /q/metrics and /q/metrics/applications</p>
 <pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
 oc apply -f manifests/backend.yaml -n project1
 oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
 oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
+<p>Remark: 
+If frontend and backend deployment configured with service mesh and mTLS for dataplane is enbled. User workload monitoring will not work properly because prometheus-user-workload doesn&apos;t have sidecar and not in the service mesh.</p>
 </li>
 <li><p>Test backend&apos;s  metrics</p>
 <pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) \
--- curl -Ls  http://localhost:8080/metrics
+-- curl -Ls  http://localhost:8080/q/metrics
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash"># TYPE vendor_memory_committedNonHeap_bytes gauge
@@ -595,7 +597,7 @@ vendor_memory_usedNonHeap_bytes 3.1780976E7
 </li>
 <li><p>Test backend application level&apos;s metrics</p>
 <pre><code class="lang-bash">oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk &apos;{print $1}&apos;) \
--- curl -Ls http://localhost:8080/metrics/application
+-- curl -Ls http://localhost:8080/q/metrics/application
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash"># HELP application_com_example_quarkus_BackendResource_timeBackend_seconds Times how long it takes to invoke the backend method
@@ -891,7 +893,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-07-01T03:34:36.249Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-07-01T03:35:16.893Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.4.10","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2021-07-02T13:31:25.837Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-07-02T13:32:23.107Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
