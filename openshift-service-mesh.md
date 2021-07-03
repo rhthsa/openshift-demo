@@ -1176,14 +1176,14 @@ Check following Git for setup mTLS between service and ingress service
 
   ```bash
   NAME                                    NODE                                         PHASE
-  grafana-5bcbbc7877-n4zzm                ip-10-0-152-186.us-east-2.compute.internal   Running
-  istio-ingressgateway-5fbfcc6d7f-8xfnk   ip-10-0-152-186.us-east-2.compute.internal   Running
-  istio-ingressgateway-5fbfcc6d7f-k2wrw   ip-10-0-162-66.us-east-2.compute.internal    Running
-  istiod-basic-install-66859cc44b-db6pw   ip-10-0-162-66.us-east-2.compute.internal    Running
-  istiod-basic-install-66859cc44b-wvnrj   ip-10-0-152-186.us-east-2.compute.internal   Running
-  jaeger-6d9cd754d8-wbsm9                 ip-10-0-152-186.us-east-2.compute.internal   Running
-  prometheus-7dc95494b-klmms              ip-10-0-152-186.us-east-2.compute.internal   Running
-  prometheus-7dc95494b-x8gvf              ip-10-0-162-66.us-east-2.compute.internal    Running
+  grafana-99f7c499f-jnd9k                 ip-10-0-166-202.us-east-2.compute.internal   Running
+  istio-ingressgateway-5fc94885b5-hjhqw   ip-10-0-166-202.us-east-2.compute.internal   Running
+  istio-ingressgateway-5fc94885b5-hxn9r   ip-10-0-151-28.us-east-2.compute.internal    Running
+  istiod-basic-install-58c9bc5bf8-4wbhq   ip-10-0-151-28.us-east-2.compute.internal    Running
+  jaeger-596448d54d-gwn97                 ip-10-0-166-202.us-east-2.compute.internal   Running
+  kiali-85c677967c-k7767                  ip-10-0-166-202.us-east-2.compute.internal   Running
+  prometheus-565c997f45-plqqb             ip-10-0-151-28.us-east-2.compute.internal    Running
+  prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.internal   Running
   ```
 
 <!-- - Verify PDB for istiod
