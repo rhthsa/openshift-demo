@@ -11,11 +11,11 @@ spec:
   endpoints:
   - interval: 30s
     port: http
-    path: /metrics
+    path: /q/metrics
     scheme: http
   - interval: 30s
     port: http
-    path: /metrics/application
+    path: /q/metrics/application
     scheme: http
   selector:
     matchLabels:
