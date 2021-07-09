@@ -1,0 +1,146 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  trivyVersion: 0.15.0
+
+steps:
+
+- task: UseDotNet@2
+  displayName: "prepare test sdk"
+  inputs:
+    packageType: sdk
+    version: 2.2.207
+    
+- task: DotNetCoreCLI@2
+  displayName: 'restore'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+    feedsToUse: 'select'
+    vstsFeed: 'a9304c9c-ddfc-4a30-90ca-6770b0340d97/7211ac46-18cb-43bd-8a66-434bfd2bd9c1'
+    includeNuGetOrg: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'build'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--no-restore -c Release'
+
+- task: DotNetCoreCLI@2
+  displayName: 'unit test'
+  inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    testRunTitle: 'unit test'
+    arguments: '--no-restore -c Release /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
+    
+- task: PublishCodeCoverageResults@1
+  displayName: 'code coverage'
+  inputs:
+    codeCoverageTool: 'Cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
+
+- task: DotNetCoreCLI@2
+  displayName: 'publish'
+  inputs:
+    command: 'publish'
+    projects: '**/*Front/*.csproj'
+    arguments: '--no-restore -c Release'
+    zipAfterPublish: false
+
+# - task: FortifyOnDemandStatic@7
+#   inputs:
+#     FortifyProjects: '$(Build.SourcesDirectory)'
+#     ReleaseId: 129901
+#     BSIToken: 'eyJ0ZW5hbnRJZCI6MTY5MTQsInRlbmFudENvZGUiOiJyZWRfaGF0XzEyX0ZNQV8xMDQ3MzEwNzkiLCJyZWxlYXNlSWQiOjEyOTkwMSwicGF5bG9hZFR5cGUiOiJBTkFMWVNJU19QQVlMT0FEIiwiYXNzZXNzbWVudFR5cGVJZCI6MTQsInRlY2hub2xvZ3lUeXBlIjoiLk5FVCIsInRlY2hub2xvZ3lUeXBlSWQiOjEsInRlY2hub2xvZ3lWZXJzaW9uIjoiMi4wIiwidGVjaG5vbG9neVZlcnNpb25JZCI6MiwiYXVkaXRQcmVmZXJlbmNlIjoiQXV0b21hdGVkIiwiYXVkaXRQcmVmZXJlbmNlSWQiOjIsImluY2x1ZGVUaGlyZFBhcnR5IjpmYWxzZSwiaW5jbHVkZU9wZW5Tb3VyY2VBbmFseXNpcyI6ZmFsc2UsInBvcnRhbFVyaSI6Imh0dHBzOi8vdHJpYWwuZm9ydGlmeS5jb20vIiwiYXBpVXJpIjoiaHR0cHM6Ly9hcGkudHJpYWwuZm9ydGlmeS5jb20iLCJzY2FuUHJlZmVyZW5jZSI6IlN0YW5kYXJkIiwic2NhblByZWZlcmVuY2VJZCI6MX0='
+#     FodConnection: 'fortify'
+#     EntitlementPreference: '0'
+#     PolicyFailAction: '0'
+#     InProgressScanActionType: '1'
+#     RemediationScanPreference: '0'
+         
+- task: Docker@2
+  displayName: 'build image'
+  inputs:
+    containerRegistry: 'harbor'
+    repository: 'bot/botdemoapp.front'
+    command: 'build'
+    Dockerfile: '**/*Front/Dockerfile'
+    buildContext: '/home/vsts/work/1/s/BOTDemoApplication.Front/bin/Release/netcoreapp2.1/publish'
+    tags: '$(Build.BuildNumber)'
+
+- task: Bash@3
+  displayName: 'install trivy'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+
+      sudo apt-get install rpm
+      wget https://github.com/aquasecurity/trivy/releases/download/v$(trivyVersion)/trivy_$(trivyVersion)_Linux-64bit.deb
+      sudo dpkg -i trivy_$(trivyVersion)_Linux-64bit.deb
+      trivy -v
+
+- task: Bash@3
+  displayName: 'scan image with trivy'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+
+      #trivy image --exit-code 0 --severity LOW,MEDIUM --format template --template "@templates/junit.tpl" -o junit-report-low-med.xml ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:$(Build.BuildNumber)
+      trivy image --exit-code 0 --severity HIGH,CRITICAL --format template --template "@templates/junit.tpl" -o junit-report-high-crit.xml ocr.apps.cluster-852b.852b.example.opentlc.com/bot/botdemoapp.front:$(Build.BuildNumber)
+
+# - task: PublishTestResults@2
+#   inputs:
+#     testResultsFormat: 'JUnit'
+#     testResultsFiles: '**/junit-report-low-med.xml'
+#     mergeTestResults: false
+#     failTaskOnFailedTests: false
+#     testRunTitle: 'Trivy - Low and Medium Vulnerabilities'
+#   condition: 'always()'   
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/junit-report-high-crit.xml'
+    mergeTestResults: false
+    failTaskOnFailedTests: false
+    testRunTitle: 'Trivy - High and Critical Vulnerabilities'
+  condition: 'always()'  
+
+- task: Bash@3
+  displayName: 'harbor login'
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Write your commands here
+      ls $(Build.SourcesDirectory)/BOTDemoApplication.Front 
+      sudo mkdir /etc/docker/certs.d
+      cd /etc/docker/certs.d
+      pwd
+      sudo mkdir /etc/docker/certs.d/ocr.apps.cluster-852b.852b.example.opentlc.com
+      cd /etc/docker/certs.d/ocr.apps.cluster-852b.852b.example.opentlc.com      
+      pwd
+      sudo cp $(Build.SourcesDirectory)/BOTDemoApplication.Front/ca.crt /etc/docker/certs.d/ocr.apps.cluster-852b.852b.example.opentlc.com
+      ls /etc/docker/certs.d/ocr.apps.cluster-852b.852b.example.opentlc.com
+      /usr/bin/docker login ocr.apps.cluster-852b.852b.example.opentlc.com -u chatapazar -p Optimus9a
+
+- task: Docker@2
+  displayName: 'push image to harbor'
+  inputs:
+    containerRegistry: 'harbor'
+    command: 'push'
+    repository: 'bot/botdemoapp.front'
+    tags: '$(Build.BuildNumber)'
