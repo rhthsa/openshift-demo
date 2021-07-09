@@ -218,7 +218,7 @@ Solutions
   
     
 ## Add ServiceMonitor to Managed Application in Managed Cluster & Test Solution
-- Creante Sample Application
+- Create Sample Application
 - Create ServiceMonitor for Sample App with [service-monitor-reversewords-cluster1.yaml](manifest/../manifests/thanos-receive/service-monitor-reversewords-cluster1.yaml)
   ```bash
   oc --context cluster1 create namespace reverse-words-app
