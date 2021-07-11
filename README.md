@@ -87,3 +87,5 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Azure pipelines
   - [EAP on OpenShift](eap-on-ocp.md)
   - [OpenShift GitOps](gitops.md)
+- Additional Solutions
+  - [Managed Multi-Cluster Application Metrics with Prometheus & Thanos](thanos-receive.md)
