@@ -56,7 +56,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -Ls  http://localhost:8080/q/metrics
+    -- curl -s  http://localhost:8080/q/metrics
     ```
     Sample output
   
@@ -75,7 +75,7 @@
   
     ```bash
     oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -Ls http://localhost:8080/q/metrics/application
+    -- curl -s http://localhost:8080/q/metrics/application
     ```
     Sample output
   
