@@ -54,7 +54,7 @@
   ```
 - Use argocd CLI to add current cluster to be managed by ArgoCD
   ```bash
-  argocd add cluster dev-cluster
+  argocd cluster add dev-cluste
   ```
   Output
   ```bash
