@@ -98,8 +98,8 @@ spec:
       outbound:
         policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
     accessLogging:
-      envoyService:
-        enabled: false
+      #envoyService:
+      #  enabled: false
       file:
         encoding: TEXT
         name: /dev/stdout 
