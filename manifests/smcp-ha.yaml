@@ -1,0 +1,108 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic-install
+spec:
+  version: v2.0
+  security:
+    dataPlane:
+      mtls: true
+      automtls: true
+    controlPlane:
+      mtls: true
+      automtls: true
+  gateways:
+    openshiftRoute:
+      enabled: true
+    ingress:
+        enabled: true
+        ingress: false
+        runtime:
+          container:
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                cpu: 2000m
+                memory: 2048Mi
+          deployment:
+            autoScaling:
+              maxReplicas: 4
+              minReplicas: 2
+              targetCPUUtilizationPercentage: 85
+              enabled: true
+            podDisruption:
+              enabled: false
+            pod:
+              tolerations:
+              - key: node.kubernetes.io/unreachable
+                operator: Exists
+                effect: NoExecute
+                tolerationSeconds: 60
+        service:
+          type: ClusterIP
+    egress:
+        enabled: false
+  general:
+    logging:
+      componentLevels:
+        default: info
+      logAsJSON: false
+  policy:
+    type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
+  addons:
+    grafana:
+      enabled: true
+    jaeger:
+      install:
+        storage:
+          type: Memory
+    kiali:
+      enabled: true
+    prometheus:
+      enabled: true
+  runtime:
+    components:
+      prometheus:                   
+        deployment:
+          replicas: 2
+        podDisruption:
+          enabled: false
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - prometheus
+                namespaces: istio-system               
+    # defaults:
+    #   deployment:
+    #     podDisruption:
+    #       enabled: false
+    #       minAvailable: 1
+    # Pod Disruption still not official supported for control
+  telemetry:
+    type: Istiod
+  proxy:
+   networking:
+    trafficControl:
+      outbound:
+        policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
+    accessLogging:
+      #envoyService:
+      #  enabled: false
+      file:
+        encoding: TEXT
+        name: /dev/stdout 
+tracing:
+  sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
+  type: Jaeger
