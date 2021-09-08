@@ -559,7 +559,11 @@
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 </ul>
 </li>
-<li><a href="#secure-with-mtls">Secure with mTLS</a></li>
+<li><a href="#secure-with-mtls">Secure with mTLS</a><ul>
+<li><a href="#within-service-mesh">Within Service Mesh</a></li>
+<li><a href="#istio-gateway-with-mtls">Istio Gateway with mTLS</a></li>
+</ul>
+</li>
 <li><a href="#jwt-token">JWT Token</a><ul>
 <li><a href="#red-hat-single-sign-on">Red Hat Single Sign-On</a></li>
 <li><a href="#requestauthentication-and-authorization-policy">RequestAuthentication and Authorization Policy</a></li>
@@ -1176,7 +1180,10 @@ cat manifests/frontend-virtual-service.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&a
 cat manifests/frontend-gateway.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
 watch oc get pods -n project1
 </code></pre>
+<p><img src="images/dev-console-app-for-cb.png" alt=""></p>
 </li>
+</ul>
+<ul>
 <li><p>Test with cURL</p>
 <pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl http://$FRONTEND_ISTIO_ROUTE
@@ -1348,6 +1355,16 @@ Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
 </li>
 </ul>
 <h2 id="secure-with-mtls">Secure with mTLS</h2>
+<h3 id="within-service-mesh">Within Service Mesh</h3>
+<ul>
+<li><p>Enable data plane mTLS by edit ServiceMeshControlPlane with following configuration</p>
+<p><img src="images/smcp-data-plane-mtls.png" alt=""></p>
+</li>
+<li><p>Deploy another pod without sidecar and try to connect to anther services that is part of mesh</p>
+<p><img src="images/pod-without-sidecar.png" alt=""></p>
+</li>
+</ul>
+<h3 id="istio-gateway-with-mtls">Istio Gateway with mTLS</h3>
 <p>Check following Git for setup mTLS between service and ingress service</p>
 <p><a href="https://github.com/voraviz/openshift-service-mesh-ingress-mtls" target="_blank">Secure Application with mTLS by OpenShift Service Mesh</a></p>
 <h2 id="jwt-token">JWT Token</h2>
@@ -1427,11 +1444,16 @@ POST https://$KEYCLOAK/auth/realms/demo/protocol/openid-connect/token \
 <h2 id="service-level-objective-slo">Service Level Objective (SLO)</h2>
 </li>
 <li>We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI</li>
-<li>Prometheus in Service Mesh&apos;s control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service<ul>
-<li>Success Rate<ul>
-<li>Successful request for last 5 minutes<pre><code>sum(increase(istio_requests_total{destination_service_name=&quot;backend&quot;,response_code!~&quot;5*&quot;}[5m]))
-</code></pre><img src="images/prometheus-backend-service-total-request.png" alt=""></li>
-<li>Total requests for last 5 minutes<pre><code>sum(increase(istio_requests_total{destination_service_name=&quot;backend&quot;}[5m]))
+<li><p>Prometheus in Service Mesh&apos;s control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service</p>
+<ul>
+<li><p>Success Rate</p>
+<ul>
+<li><p>Successful request for last 5 minutes</p>
+<pre><code>sum(increase(istio_requests_total{destination_service_name=&quot;backend&quot;,response_code!~&quot;5*&quot;}[5m]))
+</code></pre><p><img src="images/prometheus-backend-service-total-request.png" alt=""></p>
+</li>
+<li><p>Total requests for last 5 minutes</p>
+<pre><code>sum(increase(istio_requests_total{destination_service_name=&quot;backend&quot;}[5m]))
 </code></pre></li>
 <li>Sample data provided by Prometheus<pre><code>istio_requests_total{connection_security_policy=&quot;unknown&quot;,destination_app=&quot;backend&quot;,destination_canonical_revision=&quot;v1&quot;,destination_canonical_service=&quot;backend&quot;,destination_principal=&quot;spiffe://cluster.local/ns/user1/sa/default&quot;,destination_service=&quot;backend.user1.svc.cluster.local&quot;,destination_service_name=&quot;backend&quot;,destination_service_namespace=&quot;user1&quot;,destination_version=&quot;v1&quot;,destination_workload=&quot;backend-v1&quot;,destination_workload_namespace=&quot;user1&quot;,instance=&quot;10.128.2.42:15090&quot;,job=&quot;envoy-stats&quot;,namespace=&quot;user1&quot;,pod_name=&quot;frontend-v1-66fbd89459-8ksr8&quot;,reporter=&quot;source&quot;,request_protocol=&quot;http&quot;,response_code=&quot;503&quot;,response_flags=&quot;URX&quot;,source_app=&quot;frontend&quot;,source_canonical_revision=&quot;v1&quot;,source_canonical_service=&quot;frontend&quot;,source_principal=&quot;spiffe://cluster.local/ns/user1/sa/default&quot;,source_version=&quot;v1&quot;,source_workload=&quot;frontend-v1&quot;,source_workload_namespace=&quot;user1&quot;}
 </code></pre></li>
@@ -1707,7 +1729,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-08T13:12:12.273Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-08T13:12:59.832Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-08T13:23:38.743Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-08T13:24:26.891Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
