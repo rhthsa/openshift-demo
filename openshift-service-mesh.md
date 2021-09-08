@@ -764,17 +764,18 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   frontend-v1-d6dc6768-vbzcc    us-east-2a
   ```
 
-- Envoy has **Localcity Load Balancing** feature and this feature is enabled by default. A locality defines geographic location by region, zone and subzone. Envoy will try to send request to pod within defined geographic if avilable In this case is within same AZ
+  Envoy has **Localcity Load Balancing** feature and this feature is enabled by default. A locality defines geographic location by region, zone and subzone. Envoy will try to send request to pod within defined geographic if avilable In this case is within same AZ
 
-Following test will show that frontend will send request to backend within same AZ first.
+  *Notice that response came frome 2 pods in AZ us-east-2a same AZ with frontend*
+
 - By default, Envoy will automatically retry if it get response with code 503
 
 - Force one backend pod to return 503 
 
   - by command line.
-    
+    <!-- $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -->
     ```bash
-    oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -s http://localhost:8080/not_ready
+    oc exec -n project1 -c backend <backend pod same zone with frontend> -- curl -s http://localhost:8080/not_ready
     ```
 
     Sample output
@@ -790,7 +791,7 @@ Following test will show that frontend will send request to backend within same 
 - Verify response from that pod.
  
   ```bash
-    oc exec -n project1 -c backend   $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -sv http://localhost:8080/
+    oc exec -n project1 -c backend   <backend pod same zone with frontend> -- curl -sv http://localhost:8080/
   ```
 
   Sample Output
@@ -830,7 +831,7 @@ Following test will show that frontend will send request to backend within same 
 - Set backend pod to return 200
   
     ```bash
-    oc exec -n project1 -c backend  <pod in the same AZ with frontend> -- curl -s http://localhost:8080/ready
+    oc exec -n project1 -c backend  <backend pod same zone with frontend> -- curl -s http://localhost:8080/ready
     ```  
 
 ### Circuit Breaker
@@ -858,7 +859,7 @@ Following test will show that frontend will send request to backend within same 
 - Set one backend pod to return 504 and verify that pod return 504
   
   ```bash
-  oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -s http://localhost:8080/stop
+  oc exec -n project1 -c backend <backend pod same zone with frontend> -- curl -s http://localhost:8080/stop
   ```
 
   Sample output
@@ -870,7 +871,7 @@ Following test will show that frontend will send request to backend within same 
 - Verify that backend pod return 504
 
   ```bash
-  oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -- curl -s http://localhost:8080/
+  oc exec -n project1 -c backend <backend pod same zone with frontend> -- curl -s http://localhost:8080/
   ```
 
   Sample output
