@@ -2,7 +2,7 @@
 apiVersion: maistra.io/v2
 kind: ServiceMeshControlPlane
 metadata:
-  name: basic-install
+  name: basic
 spec:
   version: v2.0
   security:
@@ -10,8 +10,8 @@ spec:
       mtls: true
       automtls: true
     controlPlane:
-      mtls: true
-      automtls: true
+      mtls: false
+      automtls: false
   gateways:
     openshiftRoute:
       enabled: true

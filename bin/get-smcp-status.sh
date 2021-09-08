@@ -8,7 +8,7 @@ do
   oc get smcp -n $CONTROL_PLANE
   echo
   echo
-  CURRENT_STATUS=$(oc get smcp basic-install -n $CONTROL_PLANE -o jsonpath='{.status.annotations.readyComponentCount}')
+  CURRENT_STATUS=$(oc get smcp basic -n $CONTROL_PLANE -o jsonpath='{.status.annotations.readyComponentCount}')
   printf "Ready Component Count: %s\n" "$CURRENT_STATUS"
   READY=$(echo $CURRENT_STATUS|awk -F'/' '{print $1}')
   TOTAL=$(echo $CURRENT_STATUS|awk -F'/' '{print $2}')

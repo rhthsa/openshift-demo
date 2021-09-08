@@ -11,4 +11,4 @@ spec:
       name: http2
       protocol: HTTP
     hosts:
-    - 'frontend.apps.SUBDOMAIN'
+    - 'frontend.apps.DOMAIN'
