@@ -539,15 +539,26 @@
 <li><a href="#openshift-service-mesh">OpenShift Service Mesh</a><ul>
 <li><a href="#overview">Overview</a></li>
 <li><a href="#setup-control-plane-and-sidecar">Setup Control Plane and sidecar</a></li>
-<li><a href="#create-istio-gateway">Create Istio Gateway</a></li>
+<li><a href="#traffic-management">Traffic Management</a><ul>
+<li><a href="#destination-rule-virtual-service-and-gateway">Destination Rule, Virtual Service and Gateway</a><ul>
+<li><a href="#kiali">Kiali</a></li>
+<li><a href="#cliyaml">CLI/YAML</a></li>
+</ul>
+</li>
+<li><a href="#test-istio-gateway">Test Istio Gateway</a></li>
 <li><a href="#weight-routing-with-istio-virtual-service">Weight-Routing with Istio Virtual Service</a></li>
 <li><a href="#routing-by-condition-based-on-uri">Routing by condition based on URI</a></li>
 <li><a href="#ab-with-istio-virtual-service">A/B with Istio Virtual Service</a></li>
+</ul>
+</li>
+<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</a></li>
 <li><a href="#traffic-analysis">Traffic Analysis</a></li>
 <li><a href="#distributed-tracing">Distributed Tracing</a></li>
-<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</a></li>
 <li><a href="#envoy-access-log">Envoy Access Log</a></li>
+<li><a href="#service-resilience">Service Resilience</a><ul>
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
+</ul>
+</li>
 <li><a href="#secure-with-mtls">Secure with mTLS</a></li>
 <li><a href="#jwt-token">JWT Token</a><ul>
 <li><a href="#red-hat-single-sign-on">Red Hat Single Sign-On</a></li>
@@ -557,19 +568,20 @@
 <li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
 <li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
 <li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
-<li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a></li>
-</ul>
+<li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a><!-- /TOC -->
 </li>
 </ul>
 </li>
 </ul>
-<!-- /TOC -->
+</li>
+</ul>
 <h2 id="overview">Overview</h2>
 <p>Sample application</p>
 <p><img src="images/service-mesh-sample-app.png" alt=""></p>
 <h2 id="setup-control-plane-and-sidecar">Setup Control Plane and sidecar</h2>
 <ul>
-<li>Install following Operators from OperatorHub<ul>
+<li><p>Install following Operators from OperatorHub</p>
+<ul>
 <li>ElasticSearch</li>
 <li>Jaeger</li>
 <li>Kiali</li>
@@ -577,16 +589,62 @@
 </ul>
 </li>
 <li><p>Create control plane by create ServiceMeshControlPlane CRD</p>
+<ul>
+<li><p>CLI</p>
 <pre><code class="lang-bash">oc new-project istio-system
 oc create -f manifests/smcp.yaml -n istio-system
 </code></pre>
 </li>
+<li><p>OpenShift Administrator Console</p>
+<ul>
+<li><p>Switch to Adminstration and navigate to: Operators -&gt; Installed Operators then select Red Hat OpenShift Service Mesh-&gt;Service Mesh Control Plane</p>
+<p><img src="images/select-openshift-service-mesh.png" alt=""></p>
+</li>
+<li><p>Select Create ServiceMeshControlPlane</p>
+<p><img src="images/create-control-plane.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>- Navigate to Proxy and input following values to enable access log at Envoy (sidecar)
+
+  ![](images/smcp-envoy-access-log.png)
+
+- Set outbound traffic policy
+
+  ![](images/smcp-outbound-allow-any.png)
+
+- Set auto mTLS
+
+  ![](images/smcp-mtls.png)
+
+- Verify YAML
+
+  ![](images/dev-console-smcp-yaml.png)
+
+- Create
+</code></pre><ul>
 <li><p>Check for control plane(<a href="bin/get-smcp-status.sh">get-smcp-status.sh</a>)</p>
+<p><img src="images/admin-console-smcp-status.png" alt=""></p>
+<p>Or using CLI</p>
 <pre><code class="lang-bash">bin/get-smcp-status.sh istio-system
+</code></pre>
+<p>or</p>
+<pre><code class="lang-bash">oc get smcp/basic -n istio-system
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME    READY   STATUS            PROFILES      VERSION   AGE
+basic   9/9     ComponentsReady   [&quot;default&quot;]   2.0.7.1   9m54s
 </code></pre>
 </li>
 <li><p>Join project1 into control plane</p>
 <ul>
+<li><p>Create data plane project</p>
+<pre><code class="lang-bash">oc new-project project1
+</code></pre>
+</li>
 <li><p>Review <a href="manifests/smcp.yaml">ServiceMeshMemberRoll CRD</a></p>
 <pre><code class="lang-yaml">apiVersion: maistra.io/v1
 kind: ServiceMeshMemberRoll
@@ -595,10 +653,6 @@ metadata:
 spec:
   members:
   - project1
-</code></pre>
-</li>
-<li><p>Create data plane project</p>
-<pre><code class="lang-bash">oc new-project project1
 </code></pre>
 </li>
 <li><p>Apply ServiceMeshMemberRoll</p>
@@ -634,52 +688,42 @@ frontend-v2-5d4dbdbc9-k6787    1/1     Terminating   0          13m
 <p><img src="images/pod-with-sidecar.png" alt=""></p>
 </li>
 </ul>
+<h2 id="traffic-management">Traffic Management</h2>
+<h3 id="destination-rule-virtual-service-and-gateway">Destination Rule, Virtual Service and Gateway</h3>
+<h4 id="kiali">Kiali</h4>
 <ul>
-<li><p>Check <a href="manifests/frontend-service.yaml">frontend service</a> which set slector to both v1 and v2</p>
-<pre><code class="lang-yaml">selector:
-  app: frontend
-</code></pre>
+<li><p>Open Kiali Console</p>
+<p><img src="images/dev-console-kiali.png" alt=""></p>
 </li>
-<li><p>Create <a href="manifests/frontend-service.yaml">frontend service</a></p>
-<pre><code class="lang-bash">oc create -f manifests/frontend-service.yaml -n project1
-</code></pre>
+<li><p>Navigate to Services and select frontend, Actions-&gt; Request Routing</p>
+<p><img src="images/kiali-request-routing-menu.png" alt=""></p>
 </li>
-</ul>
-<h2 id="create-istio-gateway">Create Istio Gateway</h2>
+<li><p>Click Route To, Set weight of frontend-v1 to 100% then Click Add Rule</p>
+<p><img src="images/kiali-reqeust-routing-weight.png" alt=""></p>
+</li>
+<li><p>Click Show Advanced Options</p>
 <ul>
-<li><p>Create Gateway for frontend app</p>
-<ul>
-<li>Check for cluster&apos;s sub-domain<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-echo $SUBDOMAIN
+<li><p>Check cluster domain</p>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+echo $DOMAIN
 </code></pre>
 </li>
-<li><p>Review <a href="manifests/frontend-gateway.yaml">Gateway CRD</a>, Replaced SUBDOMAIN with cluster&apos;s sub-domain</p>
-<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-name: frontend-gateway
-spec:
-selector:
-    istio: ingressgateway # use istio default controller
-servers:
-- port:
-    number: 80
-    name: http2
-    protocol: HTTP
-    hosts:
-    - &apos;frontend.apps.SUBDOMAIN&apos;
-</code></pre>
+<li><p>Virtual Service Hosts frontend.apps.$DOMAIN</p>
+<p><img src="images/kiali-reqeust-routing-virtual-host.png" alt=""></p>
 </li>
-<li><p>Replace SUBDOMAIN with your clsuter sub-domain and Create <a href="manifests/frontend-gateway.yaml">gateway</a></p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend-gateway.yaml -n istio-system
-</code></pre>
-<p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-gateway.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n istio-system -f -
-</code></pre>
+<li><p>Gateway</p>
+<p><img src="images/kiali-reqeust-routing-gateway.png" alt=""></p>
+</li>
+<li><p>Traffic Policy</p>
+<p><img src="images/kiali-reqeust-routing-traffic-policy.png" alt=""></p>
+</li>
+<li><p>Create</p>
 </li>
 </ul>
 </li>
+</ul>
+<h4 id="cliyaml">CLI/YAML</h4>
+<ul>
 <li><p>Create Destination Rule for frontend v1 and frontend v2</p>
 <ul>
 <li><p>Review <a href="manifests/frontend-destination-rule.yaml">Destination Rule CRD</a></p>
@@ -714,16 +758,16 @@ spec:
 </li>
 <li><p>Create Virtual Service for frontend app</p>
 <ul>
-<li><p>Review <a href="manifests/frontend-virtual-service.yaml">Virtual Service CRD</a>, Replace SUBDOMAIN with cluster&apos;s sub-domain.</p>
+<li><p>Review <a href="manifests/frontend-virtual-service.yaml">Virtual Service CRD</a>, Replace DOMAIN with cluster&apos;s sub-domain.</p>
 <pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
     name: frontend
 spec:
     hosts:
-    - frontend.apps.SUBDOMAIN
+    - frontend.apps.DOMAIN
     gateways:
-    - istio-system/frontend-gateway
+    - project1/frontend-gateway
     http:
     - route:
     - destination:
@@ -732,29 +776,60 @@ spec:
         host: frontend.project1.svc.cluster.local
 </code></pre>
 </li>
-<li><p>Replace SUBDOMAIN with cluster subdomain and create <a href="manifests/frontend-virtual-service.yaml">virtual service</a></p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service.yaml -n project1
+<li><p>Replace DOMAIN with cluster DOMAIN and create <a href="manifests/frontend-virtual-service.yaml">virtual service</a> or run following command</p>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Create Gateway for frontend app</p>
+<ul>
+<li><p>Check for cluster&apos;s sub-domain</p>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+echo $DOMAIN
+</code></pre>
+</li>
+<li><p>Review <a href="manifests/frontend-gateway.yaml">Gateway CRD</a>, Replaced DOMAIN with cluster&apos;s sub-domain</p>
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+name: frontend-gateway
+spec:
+selector:
+    istio: ingressgateway # use istio default controller
+servers:
+- port:
+    number: 80
+    name: http2
+    protocol: HTTP
+    hosts:
+    - &apos;frontend.apps.DOMAIN&apos;
+</code></pre>
+</li>
+<li><p>Replace DOMAIN with your clsuter sub-domain and Create <a href="manifests/frontend-gateway.yaml">gateway</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/frontend-gateway.yaml -n project1
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-gateway.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
 <li><p>Check that route is automatically created</p>
-<pre><code class="lang-bash">oc get route -n istio-system | grep istio-system-frontend-gateway
+<pre><code class="lang-bash">oc get route -n istio-system | grep frontend-gateway
 </code></pre>
 <p>Sample outout</p>
-<pre><code class="lang-bash">istio-system-frontend-gateway-fmlsp   frontend.apps.cluster-ba08.ba08.example.opentlc.com                                   istio-ingressgateway   http2                                  istio-ingressgateway   http2                        None
+<pre><code class="lang-bash">project1-frontend-gateway-5f5077c573bd9294   frontend.apps.cluster-27bb.27bb.sandbox664.opentlc.com                                   istio-ingressgateway   http2                        None
 </code></pre>
 <p>&lt;!-- - Create Route (configured with Istio Gateway) for frontend app</p>
 </li>
-<li><p>Review <a href="manifests/frontend-route-istio.yaml">Route</a>, Replace SUBDOMAIN with cluster&apos;s subdomain</p>
+<li><p>Review <a href="manifests/frontend-route-istio.yaml">Route</a>, Replace DOMAIN with cluster&apos;s DOMAIN</p>
 <pre><code class="lang-yaml">apiVersion: v1
 kind: Route
 metadata:
     name: frontend
 spec:
-    host: frontend.apps.SUBDOMAIN
+    host: frontend.apps.DOMAIN
     port:
     targetPort: http2
     to:
@@ -764,35 +839,40 @@ spec:
     wildcardPolicy: None
 </code></pre>
 </li>
-<li><p>Replace SUBDOMAIN with cluster subdomain then create Route</p>
+<li><p>Replace DOMAIN with cluster DOMAIN then create Route</p>
 <pre><code class="lang-bash">oc apply -f manifests/frontend-route-istio.yaml -n istio-system
 </code></pre>
 <p>or use following bash command </p>
 <p><code>bash
-SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-route-istio.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -</code> --&gt;</p>
+DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-route-istio.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -</code> --&gt;</p>
 </li>
 </ul>
 </li>
-<li><p>Test with cURL</p>
-</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<h3 id="test-istio-gateway">Test Istio Gateway</h3>
+<ul>
+<li><p>Test with cURL  </p>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl http://$FRONTEND_ISTIO_ROUTE
 </code></pre>
-<h2 id="weight-routing-with-istio-virtual-service">Weight-Routing with Istio Virtual Service</h2>
+</li>
+</ul>
+<h3 id="weight-routing-with-istio-virtual-service">Weight-Routing with Istio Virtual Service</h3>
 <ul>
-<li><p>Set weight routing between 2 services with virtual service</p>
+<li><p>Set weight routing between 2 services with virtual service
+Remark: if you use above Kiali steps then you already set 100% traffic to frontend-v1</p>
 <ul>
-<li>Check for <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service with weight routing</a>, Replace SUBDOMAIN with cluster&apos;s subdomain.<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+<li><p>Check for <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service with weight routing</a>, Replace DOMAIN with cluster&apos;s DOMAIN</p>
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
 name: frontend
 spec:
 hosts:
-- frontend.apps.SUBDOMAIN
+- frontend.apps.DOMAIN
 gateways:
-- istio-system/frontend-gateway
+- project1/frontend-gateway
 http:
 - route:
   - destination:
@@ -808,19 +888,15 @@ http:
       subset: v2
     weight: 0
 </code></pre>
-or use following bash command </li>
-</ul>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
-</code></pre>
 <ul>
-<li><p>Apply <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service</a> for Blue/Green deployment with route all traffic to v1</p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-weight-routing.yaml -n project1
+<li>Apply <a href="manifests/frontend-virtual-service-with-weight-routing.yaml">virtual service</a> for Blue/Green deployment with route all traffic to v1</li>
+</ul>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
-</ul>
-<ul>
-<li>Test with cURL to verify that all requests are routed to v1</li>
+<li><p>Test with cURL to verify that all requests are routed to v1</p>
+</li>
 <li><p>Blue/Green deployment by route all requests to v2</p>
 <pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:0},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:100}]}}]&apos; -n project1
 </code></pre>
@@ -836,7 +912,7 @@ cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed &apos;s/SU
 <li><p>Test canary deployment</p>
 <ul>
 <li><p>Run 100 requests</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 COUNT=0
 rm -f result.txt
 while [ $COUNT -lt 100 ];
@@ -858,38 +934,41 @@ rm -f result.txt
 </ul>
 </li>
 </ul>
-<h2 id="routing-by-condition-based-on-uri">Routing by condition based on URI</h2>
+<h3 id="routing-by-condition-based-on-uri">Routing by condition based on URI</h3>
 <ul>
-<li>Set conditional routing between 2 services with virtual service<ul>
-<li>Check for <a href="manifests/frontend-virtual-service-with-uri.yaml">virtual service by URI</a>, Replace SUBDOMAIN with cluster&apos;s subdomain. Condition with regular expression<ul>
-<li>Route to v1 if request URI start with &quot;/ver&quot; and end with &quot;1&quot;<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
+<li><p>Set conditional routing between 2 services with virtual service</p>
+<ul>
+<li><p>Check for <a href="manifests/frontend-virtual-service-with-uri.yaml">virtual service by URI</a>, Replace DOMAIN with cluster&apos;s DOMAIN. Condition with regular expression</p>
+<ul>
+<li><p>Route to v1 if request URI start with &quot;/ver&quot; and end with &quot;1&quot;</p>
+<pre><code class="lang-yaml">apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-name: frontend
+  name: frontend
 spec:
-hosts:
-- frontend.apps.SUBDOMAIN
-gateways:
-- istio-system/frontend-gateway
-http:
-- match:
-- uri:
-    regex: /ver(.*)1
-rewrite:
-# Rewrite URI back to / because frontend app not have /ver(*)1
-uri: &quot;/&quot;
-route:
-- destination:
-    host: frontend
-    port:
-    number: 8080
-    subset: v1
-- route:
-- destination:
-    host: frontend
-    port:
-    number: 8080
-    subset: v2
+  hosts:
+  - frontend.apps.SUBDOMAIN
+  gateways:
+  - project1/frontend-gateway
+  http:
+  - match:
+    - uri:
+        regex: /ver(.*)1
+    # Rewrite URI back to / because frontend app not have /ver(*)1
+    rewrite:
+      uri: &quot;/&quot;
+    route:
+    - destination:
+        host: frontend
+        port:
+          number: 8080
+        subset: v1
+  - route:
+    - destination:
+        host: frontend
+        port:
+          number: 8080
+        subset: v2
 </code></pre>
 </li>
 </ul>
@@ -900,8 +979,8 @@ route:
 <pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-uri.yaml -n project1
 </code></pre>
 <p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service-with-uri.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-uri.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
 </code></pre>
 </li>
 <li><p>Test with URI /version1 and /ver1</p>
@@ -917,9 +996,9 @@ curl $FRONTEND_ISTIO_ROUTE/
 </code></pre>
 </li>
 </ul>
-<h2 id="ab-with-istio-virtual-service">A/B with Istio Virtual Service</h2>
+<h3 id="ab-with-istio-virtual-service">A/B with Istio Virtual Service</h3>
 <ul>
-<li><p>A/B testing by investigating User-Agent header with <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a>, Replace SUBDOMAIN with cluster&apos;s sub-domain.</p>
+<li><p>A/B testing by investigating User-Agent header with <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a>, Replace DOMAIN with cluster&apos;s sub-domain.</p>
 <ul>
 <li>If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2</li>
 </ul>
@@ -929,9 +1008,9 @@ metadata:
   name: frontend
 spec:
   hosts:
-  - frontend.apps.SUBDOMAIN
+  - frontend.apps.DOMAIN
   gateways:
-  - istio-gateway/frontend-gateway
+  - project1/frontend-gateway
   http:
   - match:
     - headers:
@@ -950,20 +1029,7 @@ spec:
           number: 8080
         subset: v1
 </code></pre>
-</li>
-<li><p>Apply <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a></p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
-</code></pre>
-<p>or use following bash command </p>
-<pre><code class="lang-bash">SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service-with-header.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
-</code></pre>
-</li>
-<li><p>Test with cURL with HTTP header User-Agent contains Firefox</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
-curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot; $FRONTEND_ISTIO_ROUTE
-</code></pre>
-<h2 id="traffic-analysis">Traffic Analysis</h2>
+<h2 id="traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</h2>
 </li>
 <li><p>Deploy backend application</p>
 <pre><code class="lang-bash">oc apply -f manifests/backend.yaml -n project1
@@ -983,12 +1049,51 @@ oc annotate deployment frontend-v2 &apos;app.openshift.io/connects-to=[{&quot;ap
 oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
 </code></pre>
 </li>
-<li><p>Check Kiali Console</p>
+<li><p>Deploy audit app and mirror every requests that frontend call backend to audit app</p>
+<pre><code class="lang-bash">oc apply -f manifests/audit-app.yaml -n project1
+oc get pods -n project1
+</code></pre>
 </li>
+<li><p>Update <a href="manifests/backend-virtual-service-mirror.yaml">backend virtual service</a> to mirror requests to audit app.</p>
+<pre><code class="lang-bash">oc apply -f manifests/backend-virtual-service-mirror.yaml -n project1
+</code></pre>
+</li>
+<li><p>Use cURL to call frontend and check audit&apos;s pod log by CLI (with another terminal) or Web Console</p>
+<ul>
+<li>cURL frontend</li>
+</ul>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl $FRONTEND_ISTIO_ROUTE
+</code></pre>
+<ul>
+<li>View audit log </li>
+</ul>
+<pre><code class="lang-bash">oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk &apos;{print $1}&apos;) -c backend -n project1
+</code></pre>
+<p><img src="images/mirror-log.png" alt=""></p>
+</li>
+<li><p>Apply <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
+</code></pre>
+<p>or use following bash command </p>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-header.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+</code></pre>
+</li>
+<li><p>Test with cURL with HTTP header User-Agent contains Firefox</p>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot; $FRONTEND_ISTIO_ROUTE
+</code></pre>
+</li>
+</ul>
+<h2 id="traffic-analysis">Traffic Analysis</h2>
+<ul>
+<li>Check Kiali Console</li>
 <li><p>login to OpenShift Developer Console, select project istio-system and open Kiali console </p>
 <p><img src="images/istio-system-project.png" alt=""></p>
 </li>
-<li>Login to Kiali Console and select Graph<ul>
+<li><p>Login to Kiali Console and select Graph</p>
+<ul>
 <li>Namespace: select checkbox &quot;project1&quot;</li>
 <li>Display: select checkbox &quot;Requests percentage&quot; and &quot;Traffic animation&quot;</li>
 </ul>
@@ -1028,32 +1133,6 @@ done
 </ul>
 </li>
 </ul>
-<h2 id="traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</h2>
-<ul>
-<li><p>Deploy audit app and mirror every requests that frontend call backend to audit app</p>
-<pre><code class="lang-bash">oc apply -f manifests/audit-app.yaml -n project1
-oc get pods -n project1
-</code></pre>
-</li>
-<li><p>Update <a href="manifests/backend-virtual-service-mirror.yaml">backend virtual service</a> to mirror requests to audit app.</p>
-<pre><code class="lang-bash">oc apply -f manifests/backend-virtual-service-mirror.yaml -n project1
-</code></pre>
-</li>
-<li><p>Use cURL to call frontend and check audit&apos;s pod log by CLI (with another terminal) or Web Console</p>
-<ul>
-<li>cURL frontend</li>
-</ul>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
-curl $FRONTEND_ISTIO_ROUTE
-</code></pre>
-<ul>
-<li>View audit log </li>
-</ul>
-<pre><code class="lang-bash">oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk &apos;{print $1}&apos;) -c backend -n project1
-</code></pre>
-<p><img src="images/mirror-log.png" alt=""></p>
-</li>
-</ul>
 <h2 id="envoy-access-log">Envoy Access Log</h2>
 <ul>
 <li>Envoy access log already enabled with <a href="manifests/smcp.yaml">ServiceMeshControlPlane CRD</a><pre><code class="lang-yaml">  proxy:
@@ -1074,31 +1153,32 @@ curl $FRONTEND_ISTIO_ROUTE
 </code></pre>
 </li>
 </ul>
-<h2 id="circuit-breaker">Circuit Breaker</h2>
+<h2 id="service-resilience">Service Resilience</h2>
 <ul>
 <li><p>Configure our application to contains only frontend-v1 and backend-v1 and scale backend to 3 pods.</p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
+<pre><code class="lang-bash">oc delete all --all -n project1
+oc delete gateway --all -n project1
+oc delete dr,vs --all -n project1
+oc apply -f manifests/frontend.yaml -n project1
 oc patch deployment/frontend-v1 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
 oc apply -f manifests/backend.yaml -n project1
-oc delete deployment frontend-v2 -n project1
-oc delete deployment backend-v2 -n project1 
-oc delete svc frontend-v2 -n project1
+oc delete deployment/frontend-v2 -n project1
+oc delete deployment/backend-v2 -n project1
+oc delete route frontend -n project1
 oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
 oc annotate deployment frontend-v1 &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos; -n project1
-oc delete route frontend -n project1
 oc scale deployment backend-v1 --replicas=3 -n project1
 oc apply -f manifests/backend-destination-rule-v1-only.yaml -n project1
 oc apply -f manifests/backend-virtual-service.yaml -n project1
 oc apply -f manifests/frontend-destination-rule-v1-only.yaml -n project1
-SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n project1 -f -
-SUBDOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-gateway.yaml | sed &apos;s/SUBDOMAIN/&apos;$SUBDOMAIN&apos;/&apos;|oc apply -n istio-system -f -
-oc get pods -n project1
+DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+cat manifests/frontend-gateway.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+watch oc get pods -n project1
 </code></pre>
 </li>
 <li><p>Test with cURL</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl http://$FRONTEND_ISTIO_ROUTE
 </code></pre>
 <p>Sample output - Check for field Host that is backend pod that processed for this request</p>
@@ -1107,10 +1187,9 @@ curl http://$FRONTEND_ISTIO_ROUTE
 </li>
 <li><p>Loop 6 times. Result from backend will be round robin.</p>
 <ul>
-<li>Create bash function</li>
-</ul>
+<li><p>Create bash function</p>
 <pre><code class="lang-bash">function loop_frontend(){
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
   COUNT=0
   MAX=$1
   while [ $COUNT -lt $MAX ];
@@ -1120,83 +1199,95 @@ curl http://$FRONTEND_ISTIO_ROUTE
   done
 }
 </code></pre>
-<ul>
-<li>Run function with input paramter 6</li>
+</li>
+<li><p>Run function with input paramter 6</p>
+</li>
 </ul>
 <pre><code class="lang-bash">loop_frontend 6
 </code></pre>
 <p>Sample output</p>
-<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+<pre><code class="lang-bash">Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
 </code></pre>
 </li>
-<li><p>By default, Envoy will automatically retry if it get response with code 503</p>
+<li><p>Check that pods run on which node</p>
+<pre><code class="lang-bash">oc get pods -o=custom-columns=&quot;NAME:.metadata.name,AZ:.metadata.labels[&apos;topology\.kubernetes\.io/zone&apos;]&quot; -n project1
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">NAME                          AZ
+backend-v1-7779cb476b-6wbsp   us-east-2a
+backend-v1-7779cb476b-bgk22   us-east-2a
+backend-v1-7779cb476b-q2hz9   us-east-2b
+frontend-v1-d6dc6768-vbzcc    us-east-2a
+</code></pre>
+</li>
+<li><p>Envoy has <strong>Localcity Load Balancing</strong> feature and this feature is enabled by default. A locality defines geographic location by region, zone and subzone. Envoy will try to send request to pod within defined geographic if avilable In this case is within same AZ</p>
+</li>
+</ul>
+<p>Following test will show that frontend will send request to backend within same AZ first.</p>
 <ul>
+<li><p>By default, Envoy will automatically retry if it get response with code 503</p>
+</li>
 <li><p>Force one backend pod to return 503 </p>
 <ul>
 <li><p>by command line.</p>
 <pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/not_ready
 </code></pre>
-</li>
-</ul>
 <p>Sample output</p>
-<pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Readiness: false
+<pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-7779cb476b-bgk22, Status:200, Message: Readiness: false
 </code></pre>
-<ul>
+</li>
 <li><p>by Web Console</p>
-<p><img src="images/dev-console-terminal-set-pod-not-ready.png" alt=""></p>
+<p>  <img src="images/dev-console-terminal-set-pod-not-ready.png" alt=""></p>
 </li>
 </ul>
 </li>
 <li><p>Verify response from that pod.</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
+<pre><code class="lang-bash">  oc exec -n project1 -c backend   $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
 </code></pre>
 <p>Sample Output</p>
-<pre><code class="lang-bash">*   Trying ::1...
-* TCP_NODELAY set
-* Connected to localhost (::1) port 8080 (#0)
-&gt; GET / HTTP/1.1
-&gt; Host: localhost:8080
-&gt; User-Agent: curl/7.61.1
-&gt; Accept: */*
-&gt;
-&lt; HTTP/1.1 503 Service Unavailable
-&lt; Content-Encoding: text/plain
-&lt; Expires: Tue, 02 Feb 2021 08:18:22 GMT
-&lt; Content-Length: 125
-&lt; Content-Type: text/plain;charset=UTF-8
-&lt;
-* Connection #0 to host localhost left intact
- Backend version:v1, Response:503, Host:backend-v1-f4dbf777f-h7rwg, Status:503, Message: Application readiness is set to false
+<pre><code class="lang-bash">  &lt; HTTP/1.1 503 Service Unavailable
+  &lt; Content-Encoding: text/plain
+  &lt; Expires: Wed, 08 Sep 2021 12:46:28 GMT
+  &lt; Content-Length: 126
+  &lt; Content-Type: text/plain;charset=UTF-8
+  &lt;
+  { [126 bytes data]
+  * Connection #0 to host localhost left intact
+  Backend version:v1, Response:503, Host:backend-v1-7779cb476b-bgk22, Status:503, Message: Application readiness is set to false
 </code></pre>
 </li>
 <li><p>Test with cURL again. You will get only status 200</p>
-<pre><code class="lang-bash">loop_frontend 10
+<pre><code class="lang-bash">  loop_frontend 10
 </code></pre>
-<p>Sample Output</p>
-<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+<p>  Sample Output</p>
+<pre><code class="lang-bash">  Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+  Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+  Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+  Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+  Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+  Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+  Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+  Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
+  Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+  Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
 </code></pre>
 </li>
 <li><p>Set backend pod to return 200</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/ready
+<pre><code class="lang-bash">  oc exec -n project1 -c backend  &lt;pod in the same AZ with frontend&gt; -- curl -s http://localhost:8080/ready
 </code></pre>
 </li>
 </ul>
-</li>
-<li>Test CB</li>
+<h3 id="circuit-breaker">Circuit Breaker</h3>
+<ul>
 <li><p>Update destination rule with circuit breaker</p>
 <pre><code class="lang-bash">oc apply -f manifests/backend-destination-rule-circuit-breaker.yaml -n project1
 </code></pre>
@@ -1216,68 +1307,38 @@ Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
 </code></pre>
 </li>
 <li><p>Set one backend pod to return 504 and verify that pod return 504</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/stop
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/stop
 </code></pre>
 <p>Sample output</p>
-<pre><code>*   Trying ::1...
-* TCP_NODELAY set
-* Connected to localhost (::1) port 8080 (#0)
-&gt; GET /stop HTTP/1.1
-&gt; Host: localhost:8080
-&gt; User-Agent: curl/7.61.1
-&gt; Accept: */*
-&gt;
-&lt; HTTP/1.1 200 OK
-&lt; Content-Encoding: text/plain
-&lt; Expires: Tue, 02 Feb 2021 08:37:59 GMT
-&lt; Content-Length: 103
-&lt; Content-Type: text/plain;charset=UTF-8
-&lt;
-{ [103 bytes data]
-* Connection #0 to host localhost left intact
-Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Liveness: false
-</code></pre></li>
+<pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-7779cb476b-bgk22, Status:200, Message: Liveness: false
+</code></pre>
+</li>
 <li><p>Verify that backend pod return 504</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
+<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/
 </code></pre>
 <p>Sample output</p>
-<pre><code>*   Trying ::1...
-* TCP_NODELAY set
-* Connected to localhost (::1) port 8080 (#0)
-&gt; GET / HTTP/1.1
-&gt; Host: localhost:8080
-&gt; User-Agent: curl/7.61.1
-&gt; Accept: */*
-&gt;
-&lt; HTTP/1.1 504 Gateway Timeout
-&lt; Content-Encoding: text/plain
-&lt; Expires: Tue, 02 Feb 2021 08:42:33 GMT
-&lt; Content-Length: 124
-&lt; Content-Type: text/plain;charset=UTF-8
-&lt;
-{ [124 bytes data]
-* Connection #0 to host localhost left intact
-Backend version:v1, Response:504, Host:backend-v1-f4dbf777f-h7rwg, Status:504, Message: Application liveness is set to false
-</code></pre></li>
+<pre><code class="lang-bash">Backend version:v1, Response:504, Host:backend-v1-7779cb476b-bgk22, Status:504, Message: Application liveness is set to fasle
+</code></pre>
+</li>
 <li><p>Test again with cURL. You will get 504 just one times.</p>
 <pre><code class="lang-bash">loop_frontend 15
 </code></pre>
 <p>Sample output</p>
-<pre><code class="lang-bash">Host:backend-v1-f4dbf777f-h7rwg=&gt; Status:504
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
-Host:backend-v1-f4dbf777f-vjhcl=&gt; Status:200
-Host:backend-v1-f4dbf777f-tgssd=&gt; Status:200
+<pre><code class="lang-bash">Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-q2hz9=&gt; Status:504
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
+Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
 </code></pre>
 </li>
 <li><p>Check Kiali Console. Remark that there is lightning icon at backend service. This is represent for circuit breaker.</p>
@@ -1648,7 +1709,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-08-30T16:33:47.077Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-08-30T16:34:38.427Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-08T13:09:25.153Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-08T13:10:17.483Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
