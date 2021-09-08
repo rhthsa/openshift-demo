@@ -1228,18 +1228,16 @@ backend-v1-7779cb476b-bgk22   us-east-2a
 backend-v1-7779cb476b-q2hz9   us-east-2b
 frontend-v1-d6dc6768-vbzcc    us-east-2a
 </code></pre>
+<p>Envoy has <strong>Localcity Load Balancing</strong> feature and this feature is enabled by default. A locality defines geographic location by region, zone and subzone. Envoy will try to send request to pod within defined geographic if avilable In this case is within same AZ</p>
+<p><em>Notice that response came frome 2 pods in AZ us-east-2a same AZ with frontend</em></p>
 </li>
-<li><p>Envoy has <strong>Localcity Load Balancing</strong> feature and this feature is enabled by default. A locality defines geographic location by region, zone and subzone. Envoy will try to send request to pod within defined geographic if avilable In this case is within same AZ</p>
-</li>
-</ul>
-<p>Following test will show that frontend will send request to backend within same AZ first.</p>
-<ul>
 <li><p>By default, Envoy will automatically retry if it get response with code 503</p>
 </li>
 <li><p>Force one backend pod to return 503 </p>
 <ul>
 <li><p>by command line.</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/not_ready
+<!-- $(oc get pod -n project1 | grep -m1 backend | cut -d " " -f1) -->
+<pre><code class="lang-bash">oc exec -n project1 -c backend &lt;backend pod same zone with frontend&gt; -- curl -s http://localhost:8080/not_ready
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-7779cb476b-bgk22, Status:200, Message: Readiness: false
@@ -1251,7 +1249,7 @@ frontend-v1-d6dc6768-vbzcc    us-east-2a
 </ul>
 </li>
 <li><p>Verify response from that pod.</p>
-<pre><code class="lang-bash">  oc exec -n project1 -c backend   $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -sv http://localhost:8080/
+<pre><code class="lang-bash">  oc exec -n project1 -c backend   &lt;backend pod same zone with frontend&gt; -- curl -sv http://localhost:8080/
 </code></pre>
 <p>Sample Output</p>
 <pre><code class="lang-bash">  &lt; HTTP/1.1 503 Service Unavailable
@@ -1282,7 +1280,7 @@ frontend-v1-d6dc6768-vbzcc    us-east-2a
 </code></pre>
 </li>
 <li><p>Set backend pod to return 200</p>
-<pre><code class="lang-bash">  oc exec -n project1 -c backend  &lt;pod in the same AZ with frontend&gt; -- curl -s http://localhost:8080/ready
+<pre><code class="lang-bash">  oc exec -n project1 -c backend  &lt;backend pod same zone with frontend&gt; -- curl -s http://localhost:8080/ready
 </code></pre>
 </li>
 </ul>
@@ -1307,14 +1305,14 @@ frontend-v1-d6dc6768-vbzcc    us-east-2a
 </code></pre>
 </li>
 <li><p>Set one backend pod to return 504 and verify that pod return 504</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/stop
+<pre><code class="lang-bash">oc exec -n project1 -c backend &lt;backend pod same zone with frontend&gt; -- curl -s http://localhost:8080/stop
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash">Backend version:v1, Response:200, Host:backend-v1-7779cb476b-bgk22, Status:200, Message: Liveness: false
 </code></pre>
 </li>
 <li><p>Verify that backend pod return 504</p>
-<pre><code class="lang-bash">oc exec -n project1 -c backend $(oc get pod -n project1 | grep -m1 backend | cut -d &quot; &quot; -f1) -- curl -s http://localhost:8080/
+<pre><code class="lang-bash">oc exec -n project1 -c backend &lt;backend pod same zone with frontend&gt; -- curl -s http://localhost:8080/
 </code></pre>
 <p>Sample output</p>
 <pre><code class="lang-bash">Backend version:v1, Response:504, Host:backend-v1-7779cb476b-bgk22, Status:504, Message: Application liveness is set to fasle
@@ -1709,7 +1707,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-08T13:09:25.153Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-08T13:10:17.483Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-08T13:12:12.273Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-08T13:12:59.832Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
