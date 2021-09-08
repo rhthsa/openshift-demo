@@ -18,6 +18,8 @@
   - [Service Resilience](#service-resilience)
     - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
+    - [Within Service Mesh](#within-service-mesh)
+    - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
   - [JWT Token](#jwt-token)
     - [Red Hat Single Sign-On](#red-hat-single-sign-on)
     - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
@@ -698,6 +700,9 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   watch oc get pods -n project1
   ```
 
+  ![](images/dev-console-app-for-cb.png)
+
+
 - Test with cURL
 
   ```bash
@@ -918,6 +923,16 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 
 ## Secure with mTLS
 
+### Within Service Mesh
+- Enable data plane mTLS by edit ServiceMeshControlPlane with following configuration
+
+  ![](images/smcp-data-plane-mtls.png)
+
+- Deploy another pod without sidecar and try to connect to anther services that is part of mesh
+  
+  ![](images/pod-without-sidecar.png)
+
+### Istio Gateway with mTLS
 Check following Git for setup mTLS between service and ingress service
 
 [Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
@@ -1021,6 +1036,7 @@ Check following Git for setup mTLS between service and ingress service
         sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m]))
         ```
         ![](images/prometheus-backend-service-total-request.png)
+        
       - Total requests for last 5 minutes
         ```
         sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))
