@@ -21,7 +21,6 @@
     - [Within Service Mesh](#within-service-mesh)
       - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
     - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
-  - [Istio Ingress Gateway with mTLS](#istio-ingress-gateway-with-mtls)
   - [JWT Token](#jwt-token)
     - [Red Hat Single Sign-On](#red-hat-single-sign-on)
     - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
@@ -941,15 +940,15 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   ```bash
   oc set probe deployment backend-v1 \
    --readiness --get-url=http://:8080/q/health/ready \
-   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n $USERID
+   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n project1
     oc set probe deployment backend-v1 \
    --liveness --get-url=http://:8080/q/health/live \
-   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n $USERID
+   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n project1
   ```
 - Check for pod status
   
   ```bash
-  watch oc get pods -l app=backend,version=v1 -n $USERID
+  watch oc get pods -l app=backend,version=v1 -n project1
   ```
   
   Example of output
@@ -964,13 +963,15 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 - Rewrite HTTP probe by annotation to deployment 
 
   ```bash
-  oc patch deployment/backend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/rewriteAppHTTPProbers":"true"}}}}}'
+  oc patch deployment/backend-v1 \
+  -n project1 \
+  -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/rewriteAppHTTPProbers":"true"}}}}}'
   ```
 
 - Remove Liveness and Readiness probe
   
   ```bash
-  oc set probe deployment backend-v1 --remove --readiness --liveness -n $USERID
+  oc set probe deployment backend-v1 --remove --readiness --liveness -n project1
   ```
 
 ### Istio Gateway with mTLS
@@ -1066,8 +1067,6 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   * Using HTTP2, server supports multi-use
   * Connection state changed (HTTP/2 confirmed)
   ```
-
-## Istio Ingress Gateway with mTLS
 
 - Create client certificate
 
