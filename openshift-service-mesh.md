@@ -19,7 +19,9 @@
     - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
     - [Within Service Mesh](#within-service-mesh)
+      - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
     - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
+  - [Istio Ingress Gateway with mTLS](#istio-ingress-gateway-with-mtls)
   - [JWT Token](#jwt-token)
     - [Red Hat Single Sign-On](#red-hat-single-sign-on)
     - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
@@ -932,13 +934,282 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   
   ![](images/pod-without-sidecar.png)
 
-### Istio Gateway with mTLS
-Check following Git for setup mTLS between service and ingress service
+#### Pod Liveness and Readiness
 
-[Secure Application with mTLS by OpenShift Service Mesh](https://github.com/voraviz/openshift-service-mesh-ingress-mtls)
+- Enable Liveness nad Readiness on backend-v1
+  
+  ```bash
+  oc set probe deployment backend-v1 \
+   --readiness --get-url=http://:8080/q/health/ready \
+   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n $USERID
+    oc set probe deployment backend-v1 \
+   --liveness --get-url=http://:8080/q/health/live \
+   --initial-delay-seconds=5 --failure-threshold=1 --period-seconds=5 -n $USERID
+  ```
+- Check for pod status
+  
+  ```bash
+  watch oc get pods -l app=backend,version=v1 -n $USERID
+  ```
+  
+  Example of output
+
+  ```bash
+  NAME                          READY   STATUS            RESTARTS   AGE
+  backend-v1-5846f59c84-p6tn5   1/2     CrashLoopBackOff   4          68s
+  ```
+  
+  Remark: Liveness and Readiness probe fail because kubelet cannot connect to port 8080 anymore.
+
+- Rewrite HTTP probe by annotation to deployment 
+
+  ```bash
+  oc patch deployment/backend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/rewriteAppHTTPProbers":"true"}}}}}'
+  ```
+
+- Remove Liveness and Readiness probe
+  
+  ```bash
+  oc set probe deployment backend-v1 --remove --readiness --liveness -n $USERID
+  ```
+
+### Istio Gateway with mTLS
+
+* Create certificates and private key
+  
+  ```bash
+  mkdir -p certs
+  DOMAIN=$(oc whoami --show-console  | awk -F'apps.' '{print $2}')
+  CN=frontend.apps.$SDOMAIN
+  echo "Create Root CA and Private Key"
+  openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' \
+  -keyout certs/example.com.key -out certs/example.com.crt
+  echo "Create Certificate and Private Key for $CN"
+  openssl req -out certs/frontend.csr -newkey rsa:2048 -nodes -keyout certs/frontend.key -subj "/CN=${CN}/O=Great Department"
+  openssl x509 -req -days 365 -CA certs/example.com.crt -CAkey certs/example.com.key -set_serial 0 -in certs/frontend.csr -out certs/frontend.crt
+  ```
+
+* Create secret to store private key and certificate
+  
+  ```bash
+  oc create secret generic frontend-credential \
+  --from-file=tls.key=certs/frontend.key \
+  --from-file=tls.crt=certs/frontend.crt \
+  -n istio-system
+  ```
+
+* Update [Gateway](manifests/gateway-tls.yaml)
+  
+  ```bash
+  cat manifests/gateway-tls.yaml|sed s/DOMAIN/$DOMAIN/g|oc apply -n project1 -f -
+  ```
+
+* Verify updated gateway configuration
+  
+  ```bash
+  oc get gateway frontend-gateway -n project1 -o yaml
+  ```
+  
+  Example of output
+  
+  ```bash
+  spec:
+    selector:
+      istio: ingressgateway
+    servers:
+    - hosts:
+      - frontend.apps.cluster-27bb.27bb.sandbox664.opentlc.com
+      port:
+        name: https
+        number: 443
+        protocol: HTTPS
+      tls:
+        credentialName: frontend-credential
+        mode: SIMPLE
+  ```
+
+  - port is changed to 443 with protocol HTTPS
+  - TLS mode is SIMPLE and use private key and certificate from secret name *frontend-credential* in control plane namespace
+  - SIMPLE mode is for TLS. For mutual TLS use MUTUAL
+
+* Check that route created by Istio Gateway is updated to passthrough mode
+  
+  ```bash
+  oc get route \
+  $(oc get route -n istio-system --no-headers -o=custom-columns="NAME:.metadata.name" | grep frontend) \
+  -n istio-system -o jsonpath='{.spec.tls.termination}'
+  ```
+
+  Example of output
+
+  ```bash
+  passthrough
+  ```
+* Test with cURL
+
+  ```bash
+  export GATEWAY_URL=$(oc get route $(oc get route -n istio-system | grep frontend | awk '{print $1}') -n istio-system -o yaml  -o jsonpath='{.spec.host}')
+  curl -kv https://$GATEWAY_URL
+  ```
+
+  Example of output
+
+  ```bash
+  * SSL connection using TLSv1.2 / ECDHE-RSA-AES256-GCM-SHA384
+  * ALPN, server accepted to use h2
+  * Server certificate:
+  *  subject: CN=frontend-istio-user1.apps.; O=Great Department
+  *  start date: Sep  1 12:10:22 2021 GMT
+  *  expire date: Sep  1 12:10:22 2022 GMT
+  *  issuer: O=example Inc.; CN=example.com
+  *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
+  * Using HTTP2, server supports multi-use
+  * Connection state changed (HTTP/2 confirmed)
+  ```
+
+## Istio Ingress Gateway with mTLS
+
+- Create client certificate
+
+  ```bash
+  CN=great-partner.apps.acme.com
+  echo "Create Root CA and Private Key"
+  openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=Acme Inc./CN=acme.com' \
+  -keyout certs/acme.com.key -out certs/acme.com.crt
+  echo "Create Certificate and Private Key for $CN"
+  openssl req -out certs/great-partner.csr -newkey rsa:2048 -nodes -keyout certs/great-partner.key -subj "/CN=${CN}/O=Great Department"
+  openssl x509 -req -days 365 -CA certs/acme.com.crt -CAkey certs/acme.com.key -set_serial 0 -in certs/great-partner.csr -out certs/great-partner.crt
+  ```
+
+- Update frontend-credential secret
+
+  ```bash
+  oc create secret generic frontend-credential \
+  --from-file=tls.key=certs/frontend.key \
+  --from-file=tls.crt=certs/frontend.crt \
+  --from-file=ca.crt=certs/acme.com.crt \
+  -n istio-system --dry-run=client -o yaml \
+  | oc replace -n istio-system  secret frontend-credential -f -
+  ```
+
+- Update frontend gateway TLS mode to MUTUAL
+  
+  ```bash
+  oc patch gateway frontend-gateway -n project1 \
+  --type='json' \
+  -p='[{"op":"replace","path":"/spec/servers/0/tls/mode","value":"MUTUAL"}]'
+  ```
+
+- Test
+  - cURL without client certificate
+    
+    ```bash
+    curl -k https://$GATEWAY_URL
+    ```
+
+    You will get following error
+
+    ```bash
+    curl: (35) error:1401E410:SSL routines:CONNECT_CR_FINISHED:sslv3 alert handshake failure
+    ```
+
+  - cURL with Acme Inc certificate
+    
+    ```bash
+    curl -kv --cacert certs/acme.com.crt \
+    --cert certs/great-partner.crt \
+    --key certs/great-partner.key \
+    https://$GATEWAY_URL
+    ```
+    
+    Example of output
+    
+    ```bash
+    * ALPN, offering h2
+    * ALPN, offering http/1.1
+    * successfully set certificate verify locations:
+    *   CAfile: certs/acme.com.crt
+      CApath: none
+    ...
+    * Server certificate:
+    *  subject: CN=frontend-istio-user1.apps.; O=Great Department
+    *  start date: Sep  1 12:10:22 2021 GMT
+    *  expire date: Sep  1 12:10:22 2022 GMT
+    *  issuer: O=example Inc.; CN=example.com
+    *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway
+    ...
+    Frontend version: 1.0.0 => [Backend: http://backend:8080, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-xp65r, Status:200, Message: Hello, Quarkus]
+    ```
+
+  - Generate another certificate and private key (Pirate Inc) that frontend gateway not trust
+    
+    ```bash
+    CN=bad-partner.apps.pirate.com
+    echo "Create Root CA and Private Key"
+    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=Pirate Inc./CN=pirate.com' \
+    -keyout certs/pirate.com.key -out certs/pirate.com.crt
+    echo "Create Certificate and Private Key for $CN"
+    openssl req -out certs/bad-partner.csr -newkey rsa:2048 -nodes -keyout certs/bad-partner.key -subj "/CN=${CN}/O=Bad Department"
+    openssl x509 -req -days 365 -CA certs/pirate.com.crt -CAkey certs/pirate.com.key -set_serial 0 -in certs/bad-partner.csr -out certs/bad-partner.crt
+    ```
+
+  - cURL with Pirate Inc certificate
+    
+    ```bash
+    curl -k --cacert certs/pirate.com.crt \
+    --cert certs/bad-partner.crt \
+    --key certs/bad-partner.key \
+    https://$GATEWAY_URL
+    ```
+
+    You will get error alert unknown ca
+
+    ```bash
+    curl: (35) error:1401E418:SSL routines:CONNECT_CR_FINISHED:tlsv1 alert unknown ca
+    ```
+  
+  - Update frontend gateway to trust Pirate Inc by update frontend-credential secret
+  
+    ```bash
+    cat certs/acme.com.crt > certs/trusted.crt
+    cat certs/pirate.com.crt >> certs/trusted.crt
+    oc create secret generic frontend-credential \
+      --from-file=tls.key=certs/frontend.key \
+      --from-file=tls.crt=certs/frontend.crt \
+      --from-file=ca.crt=certs/trusted.crt \
+      -n istio-system --dry-run=client -o yaml \
+      | oc replace -n istio-system secret frontend-credential -f -
+    ```
+  
+  - Test with Pirate Inc certificate
+    
+    ```bash
+    curl -k --cacert certs/pirate.com.crt \
+    --cert certs/bad-partner.crt \
+    --key certs/bad-partner.key \
+    https://$GATEWAY_URL
+    ```
+
+  - Recheck that Acme Inc can acess frontend app
+    
+    ```bash
+    curl -kv --cacert certs/acme.com.crt \
+    --cert certs/great-partner.crt \
+    --key certs/great-partner.key \
+    https://$GATEWAY_URL
+    ```
+- Update frontend gateway TLS mode to SIMPLE
+  
+  ```bash
+  oc patch gateway frontend-gateway -n project1 \
+  --type='json' \
+  -p='[{"op":"replace","path":"/spec/servers/0/tls/mode","value":"SIMPLE"}]'
+  ```
 
 ## JWT Token
+
 ### Red Hat Single Sign-On
+
 - Setup Red Hat Single Sign-On (Keycloak)
   - Create namespace
   
@@ -997,7 +1268,9 @@ Check following Git for setup mTLS between service and ingress service
     --data-urlencode scope=email \
     --data-urlencode grant_type=client_credentials  | jq .access_token | sed s/\"//g)
     ```
+
 ### RequestAuthentication and Authorization Policy
+
 - Create [RequestAuthentication and AuthorizationPolicy](manifests/frontend-jwt.yaml)
   
   ```bash
@@ -1027,53 +1300,139 @@ Check following Git for setup mTLS between service and ingress service
   ```bash
   Jwt is expired* Closing connection 0
   ```
+
 ## Service Level Objective (SLO)
-- We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI
+
+We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to determine and measure availability of services. For RESTful Web Service we can use HTTP response code to measure for SLI
+
+- Deploy applicaition
+  
+  ```bash
+  oc delete all --all -n project1
+  oc delete gateway --all -n project1
+  oc delete dr,vs --all -n project1
+  oc apply -f manifests/frontend.yaml -n project1
+  oc patch deployment/frontend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
+  oc apply -f manifests/backend.yaml -n project1
+  oc scale deployment/frontend-v1 --replicas=5 -n project1
+  oc scale deployment/backend-v1 --replicas=10 -n project1
+  oc scale deployment/backend-v2 --replicas=10 -n project1
+  oc delete deployment/frontend-v2 -n project1
+  oc delete route frontend -n project1
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+  oc annotate deployment frontend-v1 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+  oc apply -f manifests/backend-destination-rule.yaml -n project1
+  oc apply -f manifests/backend-virtual-service-v1-v2-50-50.yaml -n project1
+  oc apply -f manifests/frontend-destination-rule-v1-only.yaml -n project1
+  DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests/frontend-virtual-service.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
+  cat manifests/frontend-gateway.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
+  oc patch virtualservice backend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"backend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":100},{"destination":{"host":"backend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":0}]}}]' -n project1
+  watch oc get pods -n project1
+  ```
+
+- Generate load
+  - Create namespace
+
+    ```bash
+    oc new-project load-test
+    ```  
+
+  - Run K6 with 15 threads for 10 minutes to simulate workload
+  
+    ```bash
+      FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
+      oc run load-test -n load-test -i --rm \
+      --image=loadimpact/k6 --rm=true --restart=Never \
+      --  run -  < manifests/load-test-k6.js \
+      -e URL=http://$FRONTEND_ISTIO_ROUTE -e THREADS=15 -e DURATION=10m -e RAMPUP=1s -e RAMPDOWN=0s
+    ```
+
 - Prometheus in Service Mesh's control plane contains information about HTTP responses then we can use following PromQL to check for the sucessfull request and total request of backend service
+
+  Use OpenShift Developer Console, select project istio-system and open Prometheus console
+
     - Success Rate
       - Successful request for last 5 minutes
+        
         ```
         sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m]))
         ```
+
         ![](images/prometheus-backend-service-total-request.png)
-        
+
       - Total requests for last 5 minutes
+        
         ```
         sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))
         ```
-      - Sample data provided by Prometheus
+        <!-- Sample data provided by Prometheus
+        
         ```
         istio_requests_total{connection_security_policy="unknown",destination_app="backend",destination_canonical_revision="v1",destination_canonical_service="backend",destination_principal="spiffe://cluster.local/ns/user1/sa/default",destination_service="backend.user1.svc.cluster.local",destination_service_name="backend",destination_service_namespace="user1",destination_version="v1",destination_workload="backend-v1",destination_workload_namespace="user1",instance="10.128.2.42:15090",job="envoy-stats",namespace="user1",pod_name="frontend-v1-66fbd89459-8ksr8",reporter="source",request_protocol="http",response_code="503",response_flags="URX",source_app="frontend",source_canonical_revision="v1",source_canonical_service="frontend",source_principal="spiffe://cluster.local/ns/user1/sa/default",source_version="v1",source_workload="frontend-v1",source_workload_namespace="user1"}
-        ```
+        ``` -->
+
     - Latency
       - 99th Percentile of response time in sec of frontend service
+  
         ```
         histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="frontend",response_code!~"5*"}[5m])) by (le))/1000
         ```
+
 - SLO for success rate can be calculated by following PromQL and compare this to your desired service level e.g. 99.9%
   ```
   sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5*"}[5m])) / sum(increase(istio_requests_total{destination_service_name="backend"}[5m]))*100
   ```
-- Configure Grafana Dashboard in OpenShift Service Mesh's control plane for measuring [SLO Dashbaord](manifests/grafana-slo-dashboard.json)
+- Login to Grafana Dashbaord in control plane and import [SLO Dashbaord](manifests/grafana-slo-dashboard.json)
+  
   - Backend Application service %availability
+  
     ```
     sum(increase(istio_requests_total{destination_service_name="backend",response_code!~"5.*"}[5m])) / sum(increase(istio_requests_total{destination_service_name="backend"}[5m])) *100
     ```
+  
   - Frontend 99th percentile response time in second
+  
     ```
     histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="frontend",response_code!~"5*"}[5m])) by (le))/1000
     ```
+  
   - Backend 99th percentile response time in second
+  
     ```
     histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_service_name="backend",response_code!~"5*"}[5m])) by (le))/1000
     ```
 
-  ![](images/grafana-dashboard-slo.png)
-<!-- 
+    ![](images/grafana-dashboard-slo.png)
 
--->
+
+- Run following bash script to force 5 backend-v1 pod to return 504 then set those pods to return to 200 OK.
+  
+  ```bash
+  for pod in $(oc get pods -l app=backend,version=v1 --no-headers  -o=custom-columns="NAME:.metadata.name" -n project1|head -n 5|sort)
+  do
+    oc exec -n project1 -c backend $pod -- curl -s http://localhost:8080/stop -w "\n"
+    sleep 1
+  done
+  sleep 10
+  for pod in $(oc get pods -l app=backend,version=v1 --no-headers  -o=custom-columns="NAME:.metadata.name" -n project1|head -n 5|sort)
+  do
+    oc exec -n project1 -c backend $pod -- curl -s http://localhost:8080/start -w "\n"
+  done
+  ```
+
+  ![](images/slo-success-rate-decrease.png)
+   
+- Run following bash script to set traffic to backend-v2 and check both frontend and backend response time increasing. 
+  
+  ```bash
+    oc patch virtualservice backend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"backend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":30},{"destination":{"host":"backend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":70}]}}]' -n project1
+  ```
+
+  ![](images/slo-response-time-increase.png)
 
 ## Control Plane with High Availability
+
 ### OpenShift Service Mesh 1.x
 
 [ServiceMeshControlPlane](manifests/smcp-v1-ha.yaml) with high availability configuration
@@ -1082,25 +1441,20 @@ Check following Git for setup mTLS between service and ingress service
   - Set request and limit
   - Set autoscaling to true
   - Set number of min and max replicas with target CPU utilization to trigger HPA
-
+    
     ```yaml
     ingress:
-      enabled: true
-      runtime:
-        container:
-          resources:
-            requests:
-              cpu: 500m
-              memory: 300Mi
-            limits:
-              cpu: 2
-              memory: 1Gi
-        deployment:
-          autoScaling:
-            enabled: true
-            maxReplicas: 4
-            minReplicas: 2
-            targetCPUUtilizationPercentage: 85
+        enabled: true
+        ingress: false
+        runtime:
+          container:
+            resources:
+              requests:
+                cpu: 10m
+                memory: 128Mi
+              limits:
+                cpu: 2000m
+                memory: 2048Mi
     ```
 
 - For others components 
