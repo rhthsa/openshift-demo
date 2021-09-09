@@ -552,9 +552,12 @@
 </ul>
 </li>
 <li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</a></li>
+<li><a href="#observability">Observability</a><ul>
 <li><a href="#traffic-analysis">Traffic Analysis</a></li>
 <li><a href="#distributed-tracing">Distributed Tracing</a></li>
 <li><a href="#envoy-access-log">Envoy Access Log</a></li>
+</ul>
+</li>
 <li><a href="#service-resilience">Service Resilience</a><ul>
 <li><a href="#circuit-breaker">Circuit Breaker</a></li>
 </ul>
@@ -1093,7 +1096,8 @@ curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) 
 </code></pre>
 </li>
 </ul>
-<h2 id="traffic-analysis">Traffic Analysis</h2>
+<h2 id="observability">Observability</h2>
+<h3 id="traffic-analysis">Traffic Analysis</h3>
 <ul>
 <li>Check Kiali Console</li>
 <li><p>login to OpenShift Developer Console, select project istio-system and open Kiali console </p>
@@ -1105,7 +1109,8 @@ curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) 
 <li>Display: select checkbox &quot;Requests percentage&quot; and &quot;Traffic animation&quot;</li>
 </ul>
 </li>
-<li>Run following command<pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos; -n project1
+<li><p>Run following command</p>
+<pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos; -n project1
 FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
 while [ 1 ];
 do
@@ -1122,7 +1127,7 @@ done
 <p><img src="images/kiali-frontend-inboud-traffic.png" alt=""></p>
 </li>
 </ul>
-<h2 id="distributed-tracing">Distributed Tracing</h2>
+<h3 id="distributed-tracing">Distributed Tracing</h3>
 <ul>
 <li><p>Distributed tracing with Jaeger. Select tab Tracing</p>
 <ul>
@@ -1135,14 +1140,28 @@ done
 <li><p>Drill down to tracing information</p>
 <p><img src="images/jaeger-transaction.png" alt=""> </p>
 </li>
-<li><p>Show feature config on the fly in service --&gt; frontend v2 --&gt; action</p>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="envoy-access-log">Envoy Access Log</h2>
+<li><p>Simulate error on backend app </p>
 <ul>
-<li>Envoy access log already enabled with <a href="manifests/smcp.yaml">ServiceMeshControlPlane CRD</a><pre><code class="lang-yaml">  proxy:
+<li><p>set backend pod to </p>
+<pre><code class="lang-bash">oc exec backend-v1-7c7d56c9d5-gvkbr -- curl http://localhost:8080/stop
+</code></pre>
+</li>
+<li><p>Request to frontend app</p>
+<pre><code class="lang-bash">curl -s $FRONTEND_ISTIO_ROUTE
+</code></pre>
+</li>
+<li><p>Query Jaeger with tag http.status_code=504</p>
+<p><img src="images/jaeger-with-http-504.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="envoy-access-log">Envoy Access Log</h3>
+<ul>
+<li><p>Envoy access log already enabled with <a href="manifests/smcp.yaml">ServiceMeshControlPlane CRD</a></p>
+<pre><code class="lang-yaml">  proxy:
   accessLogging:
     envoyService:
       enabled: false
@@ -1288,6 +1307,11 @@ frontend-v1-d6dc6768-vbzcc    us-east-2a
   Host:backend-v1-7779cb476b-6wbsp=&gt; Status:200
   Host:backend-v1-7779cb476b-q2hz9=&gt; Status:200
 </code></pre>
+</li>
+<li><p>Check tracing in Jaeger by query with http.response_code=503</p>
+<p><img src="images/jaeger-with-http-503.png" alt=""></p>
+<p>Drill down to check that envoy retry request to backend after it got 503 response.</p>
+<p> <img src="images/jaeger-with-http-503-drill-down.png" alt=""></p>
 </li>
 <li><p>Set backend pod to return 200</p>
 <pre><code class="lang-bash">  oc exec -n project1 -c backend  &lt;backend pod same zone with frontend&gt; -- curl -s http://localhost:8080/ready
@@ -2014,7 +2038,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-09T03:25:08.224Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-09T03:25:52.588Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.8","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.9","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.4.7","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-09T06:17:27.067Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-09T06:18:11.350Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
