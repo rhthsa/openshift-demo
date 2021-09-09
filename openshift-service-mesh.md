@@ -12,9 +12,10 @@
     - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
     - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
   - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
-  - [Traffic Analysis](#traffic-analysis)
-  - [Distributed Tracing](#distributed-tracing)
-  - [Envoy Access Log](#envoy-access-log)
+  - [Observability](#observability)
+    - [Traffic Analysis](#traffic-analysis)
+    - [Distributed Tracing](#distributed-tracing)
+    - [Envoy Access Log](#envoy-access-log)
   - [Service Resilience](#service-resilience)
     - [Circuit Breaker](#circuit-breaker)
   - [Secure with mTLS](#secure-with-mtls)
@@ -606,7 +607,9 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   curl -H "User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0" $FRONTEND_ISTIO_ROUTE
 ```
 
-## Traffic Analysis
+## Observability
+
+### Traffic Analysis
 
   
 - Check Kiali Console
@@ -617,7 +620,9 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 - Login to Kiali Console and select Graph
   -  Namespace: select checkbox "project1"
   -  Display: select checkbox "Requests percentage" and "Traffic animation"
+
 - Run following command
+
   ```bash
   oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
@@ -636,8 +641,10 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
   
   ![](images/kiali-frontend-inboud-traffic.png)
 
-## Distributed Tracing
+### Distributed Tracing
+
 - Distributed tracing with Jaeger. Select tab Tracing
+  
   - Overall tracing for frontend app
 
     ![](images/frontend-app-tracing.png)
@@ -650,10 +657,27 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 
     ![](images/jaeger-transaction.png) 
   
-  - Show feature config on the fly in service --> frontend v2 --> action
+  - Simulate error on backend app 
+    - set backend pod to 
+      
+      ```bash
+      oc exec backend-v1-7c7d56c9d5-gvkbr -- curl http://localhost:8080/stop
+      ```
+
+    - Request to frontend app
+
+      ```bash
+      curl -s $FRONTEND_ISTIO_ROUTE
+      ```
+
+    - Query Jaeger with tag http.status_code=504
+      
+      ![](images/jaeger-with-http-504.png)
+    
   
-## Envoy Access Log
+### Envoy Access Log
 - Envoy access log already enabled with [ServiceMeshControlPlane CRD](manifests/smcp.yaml)
+  
   ```yaml
     proxy:
     accessLogging:
@@ -834,6 +858,14 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
     Host:backend-v1-7779cb476b-6wbsp=> Status:200
     Host:backend-v1-7779cb476b-q2hz9=> Status:200
     ```
+- Check tracing in Jaeger by query with http.response_code=503
+  
+  ![](images/jaeger-with-http-503.png)
+
+  Drill down to check that envoy retry request to backend after it got 503 response.
+
+   ![](images/jaeger-with-http-503-drill-down.png)
+   
 - Set backend pod to return 200
   
     ```bash
