@@ -670,7 +670,7 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
       curl -s $FRONTEND_ISTIO_ROUTE
       ```
 
-    - Query Jaeger with tag http.status_code=504
+    - Query Jaeger with tag http.status_code=504. Check detail trace to verify that envoy retry request to backend service
       
       ![](images/jaeger-with-http-504.png)
     
