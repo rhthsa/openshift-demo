@@ -155,6 +155,12 @@
 
 ### Todo App
 
+Order of operation sync by ArgoCD can be managed by Phase and Wave 
+  * Phase: PreSync, Sync and PostSync
+  * Wave: lower number first
+
+todo-dev-cluster is ordered by todo-db, todo app and service montioring.
+
 - Create application [todo-dev-cluster](manifests/gitops/applications/todo-dev-cluster.yaml)
   
   ```bash
