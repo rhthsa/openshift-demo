@@ -533,14 +533,31 @@
                                 
                                 <h1 id="openshift-gitops">OpenShift GitOps</h1>
 <ul>
+<li><a href="#openshift-gitops">OpenShift GitOps</a><ul>
+<li><a href="#gitops-operator">GitOps Operator</a><ul>
+<li><a href="#argocd-cli">ArgoCD CLI</a></li>
+<li><a href="#add-cluster">Add Cluster</a></li>
+</ul>
+</li>
+<li><a href="#arcocd-applications">ArcoCD Applications</a><ul>
+<li><a href="#frontendbackend-app">Frontend/Backend App</a></li>
+<li><a href="#todo-app">Todo App</a></li>
+</ul>
+</li>
+<li><a href="#argocd-web-console">ArgoCD Web Console</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="gitops-operator">GitOps Operator</h2>
+<ul>
 <li><p>Install OpenShift GitOps Operator</p>
 <p><img src="images/argocd-operatorhub-openshift-gitops.png" alt=""></p>
 </li>
-</ul>
-<ul>
-<li>Check ArgoCD in openshift-gitops namespace<pre><code class="lang-bash">oc get pods -n openshift-gitops
+<li><p>Wait for few minutes. Check ArgoCD&apos;s pods in openshift-gitops namespace</p>
+<pre><code class="lang-bash">oc get pods -n openshift-gitops
 </code></pre>
-Output<pre><code class="lang-bash">NAME                                                        READY   STATUS    RESTARTS   AGE
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                                        READY   STATUS    RESTARTS   AGE
 cluster-5b574cff45-szpsl                                    1/1     Running   0          36s
 kam-7f65f49f56-2bd7g                                        1/1     Running   0          35s
 openshift-gitops-application-controller-0                   1/1     Running   0          35s
@@ -550,17 +567,33 @@ openshift-gitops-repo-server-7c46884cf6-jjrn8               1/1     Running   0 
 openshift-gitops-server-7975f7b985-56tn7                    1/1     Running   0          35s
 </code></pre>
 </li>
-<li>ArgoCD URL. Remark that ArgoCD route is passtrough.<pre><code class="lang-bash">ARGOCD=$(oc get route/openshift-gitops-server -n openshift-gitops -o jsonpath=&apos;{.spec.host}&apos;)
+<li><p>Access ArgoCD Console. </p>
+<ul>
+<li><p>Select Cluster Argo CD from top menu bar</p>
+<p><img src="images/argocd-url.png" alt=""></p>
+</li>
+<li><p>By CLI</p>
+<pre><code class="lang-bash">ARGOCD=$(oc get route/openshift-gitops-server -n openshift-gitops -o jsonpath=&apos;{.spec.host}&apos;)
 echo https://$ARGOCD
 </code></pre>
 </li>
-<li>Password<pre><code class="lang-bash">PASSWORD=$(oc extract secret/openshift-gitops-cluster -n openshift-gitops --to=-) 2&gt;/dev/null
+</ul>
+<p><em>Notice that ArgoCD route is passtrough.</em></p>
+<ul>
+<li><p>Extract password from secret</p>
+<pre><code class="lang-bash">PASSWORD=$(oc extract secret/openshift-gitops-cluster -n openshift-gitops --to=-) 2&gt;/dev/null
 echo $PASSWORD
 </code></pre>
 </li>
-<li>Install argocd cli. For OSX use brew<pre><code class="lang-bash">brew install argocd
+</ul>
+</li>
+<li><p>Install argocd cli. For OSX use brew</p>
+<pre><code class="lang-bash">brew install argocd
 </code></pre>
 </li>
+</ul>
+<h3 id="argocd-cli">ArgoCD CLI</h3>
+<ul>
 <li>login to argocd<pre><code class="lang-bash">argocd login $ARGOCD  --insecure \
 --username admin \
 --password $PASSWORD
@@ -574,22 +607,35 @@ Context &apos;openshift-gitops-server-openshift-gitops.apps.cluster-0e2b.0e2b.sa
 Output<pre><code class="lang-bash">Context &quot;default/api-cluster-0e2b-0e2b-sandbox563-opentlc-com:6443/opentlc-mgr&quot; renamed to &quot;dev-cluster&quot;.
 </code></pre>
 </li>
-<li>Use argocd CLI to add current cluster to be managed by ArgoCD<pre><code class="lang-bash">argocd cluster add dev-cluste
+</ul>
+<h3 id="add-cluster">Add Cluster</h3>
+<ul>
+<li><p>Use argocd CLI to add current cluster to be managed by ArgoCD</p>
+<pre><code class="lang-bash">argocd cluster add dev-cluster
 </code></pre>
-Output<pre><code class="lang-bash">INFO[0001] ServiceAccount &quot;argocd-manager&quot; already exists in namespace &quot;kube-system&quot;
+<p>Output</p>
+<pre><code class="lang-bash">INFO[0001] ServiceAccount &quot;argocd-manager&quot; already exists in namespace &quot;kube-system&quot;
 INFO[0001] ClusterRole &quot;argocd-manager-role&quot; updated
 INFO[0002] ClusterRoleBinding &quot;argocd-manager-role-binding&quot; updated
 Cluster &apos;https://api.cluster-0e2b.0e2b.sandbox563.opentlc.com:6443&apos; added
 </code></pre>
 </li>
-<li>Create application demo-dev-cluster<pre><code class="lang-bash">oc apply -f manifests/gitops/applications/demo-dev-cluster.yaml
+</ul>
+<h2 id="arcocd-applications">ArcoCD Applications</h2>
+<h3 id="frontendbackend-app">Frontend/Backend App</h3>
+<ul>
+<li><p>Create application <a href="manifests/gitops/applications/demo-dev-cluster.yaml">demo-dev-cluster</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/gitops/applications/demo-dev-cluster.yaml
 </code></pre>
-Output<pre><code class="lang-bash">application.argoproj.io/demo-dev-cluster created
+<p>Output</p>
+<pre><code class="lang-bash">application.argoproj.io/demo-dev-cluster created
 </code></pre>
 </li>
-<li>Check application demo-dev-cluster status<pre><code class="lang-bash">oc get application -n openshift-gitops
+<li><p>Check application demo-dev-cluster status</p>
+<pre><code class="lang-bash">oc get application -n openshift-gitops
 </code></pre>
-Output<pre><code class="lang-bash">NAME               SYNC STATUS   HEALTH STATUS
+<p>Output</p>
+<pre><code class="lang-bash">NAME               SYNC STATUS   HEALTH STATUS
 demo-dev-cluster   Synced        Healthy
 </code></pre>
 </li>
@@ -615,6 +661,22 @@ demo-dev-cluster   Synced        Healthy
         &#x2514;&#x2500;&#x2500; kustomization.yaml
 </code></pre>
 </li>
+</ul>
+<h3 id="todo-app">Todo App</h3>
+<ul>
+<li><p>Create application <a href="manifests/gitops/applications/todo-dev-cluster.yaml">todo-dev-cluster</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/gitops/applications/todo-dev-cluster.yaml
+</code></pre>
+</li>
+<li><p>Check for Hook and Wave in <a href="manifests/todo-kustomize/base/todo-db.yaml">todo-db.yaml</a></p>
+<pre><code class="lang-yaml">  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: &quot;1&quot;
+</code></pre>
+</li>
+</ul>
+<h2 id="argocd-web-console">ArgoCD Web Console</h2>
+<ul>
 <li><p>Walkthrough ArgoCD console</p>
 <ul>
 <li><p>Open ArgoCD URL</p>
@@ -677,7 +739,7 @@ demo-dev-cluster   Synced        Healthy
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift GitOps","level":"1.4.13","depth":2,"previous":{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"gitops.md","mtime":"2021-09-10T08:24:05.846Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-10T08:24:44.037Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift GitOps","level":"1.4.13","depth":2,"previous":{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"gitops.md","mtime":"2021-09-11T10:07:42.852Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-11T10:08:23.001Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
