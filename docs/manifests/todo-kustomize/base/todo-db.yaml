@@ -8,7 +8,7 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
   labels:
     app: todo-db
-    app.kubernetes.io/component: todo-db
+    app.kubernetes.io/component: todo
     app.kubernetes.io/instance: todo-db
     app.kubernetes.io/part-of: todo-app
 spec:
@@ -27,7 +27,7 @@ metadata:
   name: todo-db
   annotations:
     argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "-1"
 type: Opaque
 data:
   database-name: dG9kbw==
@@ -44,7 +44,7 @@ metadata:
   name: todo-db
   annotations:
     argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: 1
   selector:
@@ -132,7 +132,7 @@ metadata:
     app: todo-db
   annotations:
     argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   ports:
   - name: tcp
