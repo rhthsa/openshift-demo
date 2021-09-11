@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   annotations:
     app.openshift.io/connects-to: '[{"apiVersion":"apps.openshift.io/v1","kind":"Deployment","name":"todo-db"}]'
+    app.openshift.io/vcs-ref: "master"
     app.openshift.io/vcs-uri: https://github.com/voraviz/quarkus-todo-app
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/sync-wave: "1"
