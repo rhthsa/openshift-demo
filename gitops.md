@@ -6,6 +6,7 @@
   - [ArcoCD Applications](#arcocd-applications)
     - [Frontend/Backend App](#frontendbackend-app)
     - [Todo App](#todo-app)
+      - [Phase and Sync-Wave](#phase-and-sync-wave)
   - [ArgoCD Web Console](#argocd-web-console)
   
 ## GitOps Operator
@@ -156,8 +157,19 @@
 ### Todo App
 
 Order of operation sync by ArgoCD can be managed by Phase and Wave 
-  * Phase: PreSync, Sync and PostSync
-  * Wave: lower number first
+
+#### Phase and Sync-Wave
+
+| Phase | Sync-Wave | Object
+| --- | --- |--- | 
+| PreSync | -1 | Secret
+| PreSync | 1 | pvc for todo-db
+| PreSync | 1 | todo-db deployment
+| Pre-ync | 2 | todo-db service
+|Sync | 1 | todo deployment
+|Sync | 2 | todo service
+|Sync | 3 | todo route
+|PostSync | 1 | todo service monitor
 
 todo-dev-cluster is ordered by todo-db, todo app and service montioring.
 
