@@ -90,7 +90,7 @@ metadata:
     app: todo
   annotations:
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   ports:
   - name: http
@@ -112,7 +112,7 @@ metadata:
     app: todo
   annotations:
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   port:
     targetPort: http
