@@ -1,4 +1,19 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: todo-db
+  name: todo-db
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/sync-wave: "-1"
+type: Opaque
+data:
+  database-name: dG9kbw==
+  database-password: dG9kb1Bhc3N3MHJk
+  database-user: dG9kbw==
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: todo-db
@@ -18,21 +33,6 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: gp2
----
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app: todo-db
-  name: todo-db
-  annotations:
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/sync-wave: "-1"
-type: Opaque
-data:
-  database-name: dG9kbw==
-  database-password: dG9kb1Bhc3N3MHJk
-  database-user: dG9kbw==
 ---
 apiVersion: apps/v1
 kind: Deployment

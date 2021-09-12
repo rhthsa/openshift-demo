@@ -167,13 +167,25 @@ todo-dev-cluster is ordered by todo-db, todo app and service montioring.
   oc apply -f manifests/gitops/applications/todo-dev-cluster.yaml
   ```
 
-- Check for Hook and Wave in [todo-db.yaml](manifests/todo-kustomize/base/todo-db.yaml)
+- Check for Hook and Wave in 
 
-  ```yaml
-    annotations:
-      argocd.argoproj.io/hook: PreSync
-      argocd.argoproj.io/sync-wave: "1"
-  ```
+  - Todo Database [todo-db.yaml](manifests/todo-kustomize/base/todo-db.yaml)
+    - Secret sync-wave -1
+    - PVC and Deployment sync-wave 1
+
+    ```yaml
+      annotations:
+        argocd.argoproj.io/hook: PreSync
+        argocd.argoproj.io/sync-wave: "1"
+    ```
+
+  -  Todo App [todo.yaml](manifests/todo-kustomize/base/todo.yaml)
+
+    ```yaml
+      annotations:
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/sync-wave: "1"
+    ```
 
 ## ArgoCD Web Console
 
