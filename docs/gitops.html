@@ -541,7 +541,10 @@
 </li>
 <li><a href="#arcocd-applications">ArcoCD Applications</a><ul>
 <li><a href="#frontendbackend-app">Frontend/Backend App</a></li>
-<li><a href="#todo-app">Todo App</a></li>
+<li><a href="#todo-app">Todo App</a><ul>
+<li><a href="#phase-and-sync-wave">Phase and Sync-Wave</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#argocd-web-console">ArgoCD Web Console</a></li>
@@ -664,10 +667,58 @@ demo-dev-cluster   Synced        Healthy
 </ul>
 <h3 id="todo-app">Todo App</h3>
 <p>Order of operation sync by ArgoCD can be managed by Phase and Wave </p>
-<ul>
-<li>Phase: PreSync, Sync and PostSync</li>
-<li>Wave: lower number first</li>
-</ul>
+<h4 id="phase-and-sync-wave">Phase and Sync-Wave</h4>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Sync-Wave</th>
+<th>Object</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PreSync</td>
+<td>-1</td>
+<td>Secret</td>
+</tr>
+<tr>
+<td>PreSync</td>
+<td>1</td>
+<td>pvc for todo-db</td>
+</tr>
+<tr>
+<td>PreSync</td>
+<td>1</td>
+<td>todo-db deployment</td>
+</tr>
+<tr>
+<td>Pre-ync</td>
+<td>2</td>
+<td>todo-db service</td>
+</tr>
+<tr>
+<td>Sync</td>
+<td>1</td>
+<td>todo deployment</td>
+</tr>
+<tr>
+<td>Sync</td>
+<td>2</td>
+<td>todo service</td>
+</tr>
+<tr>
+<td>Sync</td>
+<td>3</td>
+<td>todo route</td>
+</tr>
+<tr>
+<td>PostSync</td>
+<td>1</td>
+<td>todo service monitor</td>
+</tr>
+</tbody>
+</table>
 <p>todo-dev-cluster is ordered by todo-db, todo app and service montioring.</p>
 <ul>
 <li><p>Create application <a href="manifests/gitops/applications/todo-dev-cluster.yaml">todo-dev-cluster</a></p>
@@ -759,7 +810,7 @@ demo-dev-cluster   Synced        Healthy
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift GitOps","level":"1.4.13","depth":2,"previous":{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"gitops.md","mtime":"2021-09-12T04:41:42.519Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-12T04:42:25.964Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift GitOps","level":"1.4.13","depth":2,"previous":{"title":"EAP on OpenShift","level":"1.4.12","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"gitops.md","mtime":"2021-09-12T05:19:56.279Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-12T05:20:36.780Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
