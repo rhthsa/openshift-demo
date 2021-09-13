@@ -1262,6 +1262,15 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
     watch oc get pods -n sso
     ```
 
+    Sample outout
+
+    ```bash
+    NAME                                   READY   STATUS              RESTARTS   AGE
+    keycloak-0                             0/1     PodInitializing     0          19s
+    keycloak-postgresql-76c57d6f5b-jgnx6   0/1     ContainerCreating   0          19s
+    rhsso-operator-748cdf5c96-6nwtq        1/1     Running             0          82s
+    ```
+
   - Cosmetic topology view 
   
     ```bash
@@ -1269,10 +1278,12 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
     oc annotate statefulset/keycloak 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"keycloak-postgresql"}]' -n sso
     ```
 
+    ![](images/dev-console-rhsso-topology.png)
+
   - Extract admin password
   
     ```bash
-    KEYCLOAK_ADMIN_PASSWORD=$(oc extract secret/credential-keycloak -n sso --to=- --keys=ADMIN_PASSWORD  2>/dev/null)
+    KEYCLOAK_ADMIN_PASSWORD=$(oc extract secret/credential-demo -n sso --to=- --keys=ADMIN_PASSWORD  2>/dev/null)
     ```
 
   - Create Realm and Keycloak Client with Client Credential
