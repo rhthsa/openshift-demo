@@ -49,6 +49,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Readiness Probe
     - Liveness Probe
     - Startup Probe
+  - [Kustomize](kustomize.md)
   - [OpenShift Service Mesh](openshift-service-mesh.md)
     - Install and configure control plane
     - Sidecar injection

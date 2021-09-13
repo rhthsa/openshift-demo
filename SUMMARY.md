@@ -21,6 +21,7 @@
   * [OpenShift Route](openshift-route.md)
   * [Horizontal Pod Autoscaler](hpa.md)
   * [Health Check](health.md)
+  * [Kustomize](kustomize.md)
   * [OpenShift Service Mesh](openshift-service-mesh.md)
   * [User Workload Monitoring](application-metrics.md)
   * [CI/CD with Jenkins](ci-cd-with-jenkins.md)
