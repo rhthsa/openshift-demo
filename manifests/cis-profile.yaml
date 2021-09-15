@@ -1,7 +1,7 @@
 apiVersion: compliance.openshift.io/v1alpha1
 profiles:
   - apiGroup: compliance.openshift.io/v1alpha1
-    name: rhcos4-moderate
+    name: ocp4-cis-node
     kind: Profile
   - apiGroup: compliance.openshift.io/v1alpha1
     name: ocp4-cis
@@ -13,5 +13,5 @@ settingsRef:
   kind: ScanSetting
 kind: ScanSettingBinding
 metadata:
-  name: cis-and-moderate-profile
+  name: cis-profile
   namespace: openshift-compliance

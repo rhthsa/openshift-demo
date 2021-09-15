@@ -24,13 +24,14 @@
     Output example
 
     ```bash
-    NAME              AGE
-    ocp4-cis          4h52m
-    ocp4-cis-node     4h52m
-    ocp4-e8           4h52m
-    ocp4-moderate     4h52m
-    rhcos4-e8         4h52m
-    rhcos4-moderate   4h52m
+    NAME                 AGE
+    ocp4-cis             10m
+    ocp4-cis-node        10m
+    ocp4-e8              10m
+    ocp4-moderate        10m
+    ocp4-moderate-node   10m
+    rhcos4-e8            10m
+    rhcos4-moderate      10m
     ```
 
   - Check detail of profile
@@ -57,6 +58,7 @@
     ```bash
     oc get -o yaml rules.compliance ocp4-accounts-unique-service-account  -n openshift-compliance
     ```
+
 - Check for default ScanSetting
   
   - List all ScanSetting
@@ -104,13 +106,13 @@
 
     ![](images/compliance-default-scansettingbinding.png)
 
-  - Add *opc4-cis* profile to profiles list
+  - Add *opc4-cis* and *ocp4-cis-node* profiles to [ScanSettingBinding](manifests/cis-profile.yaml)
   
     ```yaml
     apiVersion: compliance.openshift.io/v1alpha1
     profiles:
       - apiGroup: compliance.openshift.io/v1alpha1
-        name: rhcos4-moderate
+        name: ocp4-cis-node
         kind: Profile
       - apiGroup: compliance.openshift.io/v1alpha1
         name: ocp4-cis
@@ -121,23 +123,23 @@
       kind: ScanSetting
     kind: ScanSettingBinding
     metadata:
-      name: cis-and-moderate-profile
+      name: cis-profile
       namespace: openshift-compliance
     ```
 
     or use CLI
 
     ```bash
-    oc apply -f manifests/cis-and-moderate-profile.yaml
-    oc describe scansettingbinding/cis-and-moderate-profile -n openshift-compliance
+    oc apply -f manifests/cis-profile.yaml
+    oc describe scansettingbinding/cis-profile -n openshift-compliance
     ```
 
     Check for status
-
+    
     ```bash
     Status:
       Conditions:
-        Last Transition Time:  2021-05-12T08:02:50Z
+        Last Transition Time:  2021-09-15T04:05:27Z
         Message:               The scan setting binding was successfully processed
         Reason:                Processed
         Status:                True
@@ -145,11 +147,11 @@
       Output Ref:
         API Group:  compliance.openshift.io
         Kind:       ComplianceSuite
-        Name:       cis-and-moderate-profile
+        Name:       cis-profile
     Events:
       Type    Reason        Age   From                    Message
       ----    ------        ----  ----                    -------
-      Normal  SuiteCreated  10s   scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-and-moderate-profile created    
+      Normal  SuiteCreated  2s    scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-profile created
     ```
   
   - Check ComplianceScan tab
@@ -159,16 +161,25 @@
   - or use CLI
     
     ```bash
-    oc get compliancescan -n openshift-compliance
+    watch -d oc get compliancescan -n openshift-compliance
     ```
     
     Output
 
     ```bash
-    NAME                     PHASE     RESULT
-    ocp4-cis                 DONE      NON-COMPLIANT
-    rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-    rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+    NAME                   PHASE         RESULT
+    ocp4-cis               AGGREGATING   NOT-AVAILABLE
+    ocp4-cis-node-master   RUNNING       NOT-AVAILABLE
+    ocp4-cis-node-worker   AGGREGATING   NOT-AVAILABLE
+    ```
+
+    When compliance scan is completed
+
+    ```bash
+    NAME                   PHASE   RESULT
+    ocp4-cis               DONE    NON-COMPLIANT
+    ocp4-cis-node-master   DONE    NON-COMPLIANT
+    ocp4-cis-node-worker   DONE    NON-COMPLIANT
     ```
 
 - Check result
@@ -178,22 +189,28 @@
     oc get compliancecheckresult -n openshift-compliance | grep FAIL | wc -l
     ```
 
+    Output
+
+    ```bash
+    29
+    ```
+
   - Script for summary result [bin/check-compliance-result.sh](bin/check-compliance-result.sh) 
     
     ```bash
     ================== RESULT ==================
     TYPE          	NUMBER
-    PASS          	148
-    FAIL          	395
-    MANUAL        	34
-    INFO          	2
+    PASS          	201
+    FAIL          	29
+    MANUAL        	26
+    INFO          	0
     NOT_APPLICABLE	0
-    
+    INCONSISTENT  	0
+
     ================ SEVERITY =================
-    high          	29
-    low           	27
-    medium        	515
-    unknown       	14
+    high          	9
+    low           	8
+    medium        	280
     ```
 
   - Check for result description for *ocp4-cis-api-server-encryption-provider-config*
@@ -231,19 +248,18 @@
     Output
 
     ```bash
-    NAME                                                                                                STATE
-    ocp4-cis-api-server-encryption-provider-cipher                                                      NotApplied
-    ocp4-cis-api-server-encryption-provider-config                                                      NotApplied
-    rhcos4-moderate-master-audit-rules-dac-modification-chmod                                           NotApplied
-    rhcos4-moderate-master-audit-rules-dac-modification-chown                                           NotApplied
-    ...
+    NAME                                             STATE
+    ocp4-cis-api-server-encryption-provider-cipher   NotApplied
+    ocp4-cis-api-server-encryption-provider-config   NotApplied
     ```
 
-  - Fix failed *ocp4-cis-api-server-encryption-provider-config* policy with *ComplianceRemidiation*
+  - Fix failed *ocp4-cis-api-server-encryption-provider-config* and *ocp4-cis-api-server-encryption-provider-cipher* policy with *ComplianceRemidiation*
   
     ```bash
     oc patch -n openshift-compliance complianceremediation \
     ocp4-cis-api-server-encryption-provider-config -p '{"spec":{"apply":true}}' --type='merge'
+    oc patch -n openshift-compliance complianceremediation \
+    ocp4-cis-api-server-encryption-provider-cipher -p '{"spec":{"apply":true}}' --type='merge'
     ```
 
     Check result
@@ -256,6 +272,7 @@
 
     ```bash
     NAME                                             STATE
+    ocp4-cis-api-server-encryption-provider-cipher   Applied
     ocp4-cis-api-server-encryption-provider-config   Applied
     ```
   
@@ -273,103 +290,114 @@
     Result
 
     ```bash
-    compliancescan.compliance.openshift.io/ocp4-cis annotated
-    compliancescan.compliance.openshift.io/rhcos4-moderate-master annotated
-    compliancescan.compliance.openshift.io/rhcos4-moderate-worker annotated
-    NAME                     PHASE     RESULT
-    ocp4-cis                 RUNNING   NOT-AVAILABLE
-    rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-    rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+    ocp4-cis               LAUNCHING   NOT-AVAILABLE
+    ocp4-cis-node-master   PENDING     NOT-AVAILABLE
+    ocp4-cis-node-worker   PENDING     NOT-AVAILABLE
     ```
 
   - Recheck policy *ocp4-cis-api-server-encryption-provider-config*
     
     ```bash
-    oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
+    oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance | grep -A3 Severity
     ```
     
     Output
     
     ```bash
-    ...
     Severity:                  medium
     Status:                    PASS
     Events:                    <none>
     ```
+
 - Change *ScanSettingBinding* cis-and-moderate-profile to use ScanSetting *default-auto-apply*
   
   ```bash
-  oc patch -n openshift-compliance ScanSettingBinding cis-and-moderate-profile -p '{"settingsRef":{"name":"default-auto-apply"}}' --type='merge'
+  oc patch -n openshift-compliance ScanSettingBinding cis-profile -p '{"settingsRef":{"name":"default-auto-apply"}}' --type='merge'
   ```
 
   Output
 
   ```bash
-  scansettingbinding.compliance.openshift.io/cis-and-moderate-profile patched
+  scansettingbinding.compliance.openshift.io/cis-profile patched
   ```
 
-- [Re-run scan](bin/rerun-compliance-scan.sh)
-- Check compliance scan status
-  
-  ```bash
-  watch oc get compliancescans -n openshift-compliance
-  ```
-  
-  Output
-
-  ```bash
-  NAME                     PHASE     RESULT
-  ocp4-cis                 DONE      NON-COMPLIANT
-  rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-  rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
-  ```
 - [Recheck result](bin/check-compliance-result.sh)
   
   ```bash
   ================== RESULT ==================
   TYPE          	NUMBER
-  PASS          	150
-  FAIL          	89
-  MANUAL        	34
-  INFO          	2
+  PASS          	203
+  FAIL          	27
+  MANUAL        	26
+  INFO          	0
   NOT_APPLICABLE	0
-  INCONSISTENT  	304
+  INCONSISTENT  	0
 
   ================ SEVERITY =================
-  high          	29
-  low           	27
-  medium        	515
-  unknown       	14
+  high          	9
+  low           	8
+  medium        	280
   ```
+
  ## Openscap Report
- - Create pod to mount to cis pv
-   ```bash
-   oc create -f manifests/cis-extract.yaml
-   oc apply -f manifests/ocp4-worker-extract.yaml
-   ```
- - Copy report file from pod
-   ```bash
-   oc cp cis-extract:/cis-scan-results .
+
+ 
+ - Generate HTML reports for latest scan results by using oscap tools. Container image with oscap tools already build with this [Dockerfile](manifests/Dockerfile.oscap)
    
-   ```
-   Reports 
-   ```bash
-   ├── 0
-   │   └── ocp4-cis-api-checks-pod.xml.bzip2
-   └── 1
-       └── ocp4-cis-api-checks-pod.xml.bzip2
-   ```
- - Install openscap on RHEL
-   ```bash
-   yum install openscap-scanner openscap-utils scap-security-guide
-   ```
- - Use openscap utils in RHEL to generate HTML report
-   ```bash
-   oscap xccdf generate report ocp4-cis-api-checks-pod.xml.bzip2 > ocp4-cis.html
-   ``` 
- - Sample reports [cis](images/ocp4-cis.pdf) and [ocp4-worker-moderate](images/ocp4-worker-moderate.pdf)
+  - Create pods to mount to reports PVC
+   
+    ```bash
+    oc create -f manifests/cis-report.yaml -n openshift-compliance
+    watch oc get pods -l app=report-generator -n openshift-compliance
+    ```
+
+    Output
+
+    ```bash
+    NAME                READY   STATUS    RESTARTS   AGE
+    cis-master-report   1/1     Running   0          54s
+    cis-report          1/1     Running   0          55s
+    cis-worker-report   1/1     Running   0          55s
+    ```
+
+    ![](images/compliance-cis-report-generator-pods.png)
+
+  - Generate reports with *oscap*
+  
+    ```bash
+    REPORTS_DIR=compliance-operator-reports
+    mkdir -p $REPORTS_DIR
+    reports=(cis-report cis-worker-report cis-master-report)
+    for report in ${reports[@]}
+    do
+      DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v "lost+found"|head -n 1)
+
+      for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
+      do
+        echo "Generate report for $report from $file"
+        oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file > $REPORTS_DIR/$report-$file.html
+      done
+    done 
+    oc delete pods -l app=report-generator -n openshift-compliance
+    ```
+   
+    Sample output
+
+    ```bash
+      Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
+      Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
+      Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
+      Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
+      Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
+      Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
+    ```
+ 
+ - Sample reports [cis](compliance-operator-reports/cis-report-ocp4-cis-api-checks.pdf) a
   
    ![](images/openscap-cis-report.png)
 
-   HTML version here [cis](images/ocp4-cis.html) and [ocp4-worker-moderate](images/ocp4-worker-moderate.html)
+   HTML version here 
+   - [CIS](compliance-operator-reports/cis-report-ocp4-cis-api-checks.html)
+   - [CIS Master Node](compliance-operator-reports//cis-master-report.html)
+   - [CIS Worker Node](compliance-operator-reports/cis-worker-report.html)
 
