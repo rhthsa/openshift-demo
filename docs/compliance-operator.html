@@ -568,13 +568,14 @@
 <pre><code class="lang-bash">oc get profiles.compliance -n openshift-compliance
 </code></pre>
 <p>Output example</p>
-<pre><code class="lang-bash">NAME              AGE
-ocp4-cis          4h52m
-ocp4-cis-node     4h52m
-ocp4-e8           4h52m
-ocp4-moderate     4h52m
-rhcos4-e8         4h52m
-rhcos4-moderate   4h52m
+<pre><code class="lang-bash">NAME                 AGE
+ocp4-cis             10m
+ocp4-cis-node        10m
+ocp4-e8              10m
+ocp4-moderate        10m
+ocp4-moderate-node   10m
+rhcos4-e8            10m
+rhcos4-moderate      10m
 </code></pre>
 </li>
 <li><p>Check detail of profile</p>
@@ -637,11 +638,11 @@ Scan Tolerations:
 <li><p>Use Admin Console to create ScanSettingBinding, default is <em>rhcos4-moderate</em> and use default <em>ScanSetting</em></p>
 <p><img src="images/compliance-default-scansettingbinding.png" alt=""></p>
 </li>
-<li><p>Add <em>opc4-cis</em> profile to profiles list</p>
+<li><p>Add <em>opc4-cis</em> and <em>ocp4-cis-node</em> profiles to <a href="manifests/cis-profile.yaml">ScanSettingBinding</a></p>
 <pre><code class="lang-yaml">apiVersion: compliance.openshift.io/v1alpha1
 profiles:
   - apiGroup: compliance.openshift.io/v1alpha1
-    name: rhcos4-moderate
+    name: ocp4-cis-node
     kind: Profile
   - apiGroup: compliance.openshift.io/v1alpha1
     name: ocp4-cis
@@ -652,17 +653,17 @@ settingsRef:
   kind: ScanSetting
 kind: ScanSettingBinding
 metadata:
-  name: cis-and-moderate-profile
+  name: cis-profile
   namespace: openshift-compliance
 </code></pre>
 <p>or use CLI</p>
-<pre><code class="lang-bash">oc apply -f manifests/cis-and-moderate-profile.yaml
-oc describe scansettingbinding/cis-and-moderate-profile -n openshift-compliance
+<pre><code class="lang-bash">oc apply -f manifests/cis-profile.yaml
+oc describe scansettingbinding/cis-profile -n openshift-compliance
 </code></pre>
 <p>Check for status</p>
 <pre><code class="lang-bash">Status:
   Conditions:
-    Last Transition Time:  2021-05-12T08:02:50Z
+    Last Transition Time:  2021-09-15T04:05:27Z
     Message:               The scan setting binding was successfully processed
     Reason:                Processed
     Status:                True
@@ -670,24 +671,30 @@ oc describe scansettingbinding/cis-and-moderate-profile -n openshift-compliance
   Output Ref:
     API Group:  compliance.openshift.io
     Kind:       ComplianceSuite
-    Name:       cis-and-moderate-profile
+    Name:       cis-profile
 Events:
   Type    Reason        Age   From                    Message
   ----    ------        ----  ----                    -------
-  Normal  SuiteCreated  10s   scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-and-moderate-profile created
+  Normal  SuiteCreated  2s    scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-profile created
 </code></pre>
 </li>
 <li><p>Check ComplianceScan tab</p>
 <p><img src="images/compliance-progress-compliancescan.png" alt=""></p>
 </li>
 <li><p>or use CLI</p>
-<pre><code class="lang-bash">oc get compliancescan -n openshift-compliance
+<pre><code class="lang-bash">watch -d oc get compliancescan -n openshift-compliance
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                     PHASE     RESULT
-ocp4-cis                 DONE      NON-COMPLIANT
-rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+<pre><code class="lang-bash">NAME                   PHASE         RESULT
+ocp4-cis               AGGREGATING   NOT-AVAILABLE
+ocp4-cis-node-master   RUNNING       NOT-AVAILABLE
+ocp4-cis-node-worker   AGGREGATING   NOT-AVAILABLE
+</code></pre>
+<p>When compliance scan is completed</p>
+<pre><code class="lang-bash">NAME                   PHASE   RESULT
+ocp4-cis               DONE    NON-COMPLIANT
+ocp4-cis-node-master   DONE    NON-COMPLIANT
+ocp4-cis-node-worker   DONE    NON-COMPLIANT
 </code></pre>
 </li>
 </ul>
@@ -697,21 +704,24 @@ rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
 <li><p>Count for FAIL </p>
 <pre><code class="lang-bash">oc get compliancecheckresult -n openshift-compliance | grep FAIL | wc -l
 </code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">29
+</code></pre>
 </li>
 <li><p>Script for summary result <a href="bin/check-compliance-result.sh">bin/check-compliance-result.sh</a> </p>
 <pre><code class="lang-bash">================== RESULT ==================
 TYPE              NUMBER
-PASS              148
-FAIL              395
-MANUAL            34
-INFO              2
+PASS              201
+FAIL              29
+MANUAL            26
+INFO              0
 NOT_APPLICABLE    0
+INCONSISTENT      0
 
 ================ SEVERITY =================
-high              29
-low               27
-medium            515
-unknown           14
+high              9
+low               8
+medium            280
 </code></pre>
 </li>
 <li><p>Check for result description for <em>ocp4-cis-api-server-encryption-provider-config</em></p>
@@ -742,23 +752,23 @@ Events:                    &lt;none&gt;
 <pre><code class="lang-bash">oc get ComplianceRemediation -n openshift-compliance
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                                                                                                STATE
-ocp4-cis-api-server-encryption-provider-cipher                                                      NotApplied
-ocp4-cis-api-server-encryption-provider-config                                                      NotApplied
-rhcos4-moderate-master-audit-rules-dac-modification-chmod                                           NotApplied
-rhcos4-moderate-master-audit-rules-dac-modification-chown                                           NotApplied
-...
+<pre><code class="lang-bash">NAME                                             STATE
+ocp4-cis-api-server-encryption-provider-cipher   NotApplied
+ocp4-cis-api-server-encryption-provider-config   NotApplied
 </code></pre>
 </li>
-<li><p>Fix failed <em>ocp4-cis-api-server-encryption-provider-config</em> policy with <em>ComplianceRemidiation</em></p>
+<li><p>Fix failed <em>ocp4-cis-api-server-encryption-provider-config</em> and <em>ocp4-cis-api-server-encryption-provider-cipher</em> policy with <em>ComplianceRemidiation</em></p>
 <pre><code class="lang-bash">oc patch -n openshift-compliance complianceremediation \
 ocp4-cis-api-server-encryption-provider-config -p &apos;{&quot;spec&quot;:{&quot;apply&quot;:true}}&apos; --type=&apos;merge&apos;
+oc patch -n openshift-compliance complianceremediation \
+ocp4-cis-api-server-encryption-provider-cipher -p &apos;{&quot;spec&quot;:{&quot;apply&quot;:true}}&apos; --type=&apos;merge&apos;
 </code></pre>
 <p>Check result</p>
 <pre><code class="lang-bash">oc get ComplianceRemediation/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                                             STATE
+ocp4-cis-api-server-encryption-provider-cipher   Applied
 ocp4-cis-api-server-encryption-provider-config   Applied
 </code></pre>
 </li>
@@ -774,21 +784,16 @@ done
 watch -d oc get compliancescans -n openshift-compliance
 </code></pre>
 <p>Result</p>
-<pre><code class="lang-bash">compliancescan.compliance.openshift.io/ocp4-cis annotated
-compliancescan.compliance.openshift.io/rhcos4-moderate-master annotated
-compliancescan.compliance.openshift.io/rhcos4-moderate-worker annotated
-NAME                     PHASE     RESULT
-ocp4-cis                 RUNNING   NOT-AVAILABLE
-rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+<pre><code class="lang-bash">ocp4-cis               LAUNCHING   NOT-AVAILABLE
+ocp4-cis-node-master   PENDING     NOT-AVAILABLE
+ocp4-cis-node-worker   PENDING     NOT-AVAILABLE
 </code></pre>
 </li>
 <li><p>Recheck policy <em>ocp4-cis-api-server-encryption-provider-config</em></p>
-<pre><code class="lang-bash">oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance
+<pre><code class="lang-bash">oc describe compliancecheckresult/ocp4-cis-api-server-encryption-provider-config -n openshift-compliance | grep -A3 Severity
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">...
-Severity:                  medium
+<pre><code class="lang-bash">Severity:                  medium
 Status:                    PASS
 Events:                    &lt;none&gt;
 </code></pre>
@@ -796,66 +801,79 @@ Events:                    &lt;none&gt;
 </ul>
 </li>
 <li><p>Change <em>ScanSettingBinding</em> cis-and-moderate-profile to use ScanSetting <em>default-auto-apply</em></p>
-<pre><code class="lang-bash">oc patch -n openshift-compliance ScanSettingBinding cis-and-moderate-profile -p &apos;{&quot;settingsRef&quot;:{&quot;name&quot;:&quot;default-auto-apply&quot;}}&apos; --type=&apos;merge&apos;
+<pre><code class="lang-bash">oc patch -n openshift-compliance ScanSettingBinding cis-profile -p &apos;{&quot;settingsRef&quot;:{&quot;name&quot;:&quot;default-auto-apply&quot;}}&apos; --type=&apos;merge&apos;
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">scansettingbinding.compliance.openshift.io/cis-and-moderate-profile patched
-</code></pre>
-</li>
-<li><p><a href="bin/rerun-compliance-scan.sh">Re-run scan</a></p>
-</li>
-<li><p>Check compliance scan status</p>
-<pre><code class="lang-bash">watch oc get compliancescans -n openshift-compliance
-</code></pre>
-<p>Output</p>
-<pre><code class="lang-bash">NAME                     PHASE     RESULT
-ocp4-cis                 DONE      NON-COMPLIANT
-rhcos4-moderate-master   RUNNING   NOT-AVAILABLE
-rhcos4-moderate-worker   RUNNING   NOT-AVAILABLE
+<pre><code class="lang-bash">scansettingbinding.compliance.openshift.io/cis-profile patched
 </code></pre>
 </li>
 <li><p><a href="bin/check-compliance-result.sh">Recheck result</a></p>
 <pre><code class="lang-bash">================== RESULT ==================
 TYPE              NUMBER
-PASS              150
-FAIL              89
-MANUAL            34
-INFO              2
+PASS              203
+FAIL              27
+MANUAL            26
+INFO              0
 NOT_APPLICABLE    0
-INCONSISTENT      304
+INCONSISTENT      0
 
 ================ SEVERITY =================
-high              29
-low               27
-medium            515
-unknown           14
+high              9
+low               8
+medium            280
 </code></pre>
 <h2 id="openscap-report">Openscap Report</h2>
+</li>
+</ul>
 <ul>
-<li>Create pod to mount to cis pv<pre><code class="lang-bash">oc create -f manifests/cis-extract.yaml
-oc apply -f manifests/ocp4-worker-extract.yaml
+<li><p>Generate HTML reports for latest scan results by using oscap tools. Container image with oscap tools already build with this <a href="manifests/Dockerfile.oscap">Dockerfile</a></p>
+<ul>
+<li><p>Create pods to mount to reports PVC</p>
+<pre><code class="lang-bash">oc create -f manifests/cis-report.yaml -n openshift-compliance
+watch oc get pods -l app=report-generator -n openshift-compliance
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                READY   STATUS    RESTARTS   AGE
+cis-master-report   1/1     Running   0          54s
+cis-report          1/1     Running   0          55s
+cis-worker-report   1/1     Running   0          55s
+</code></pre>
+<p><img src="images/compliance-cis-report-generator-pods.png" alt=""></p>
+</li>
+<li><p>Generate reports with <em>oscap</em></p>
+<pre><code class="lang-bash">REPORTS_DIR=compliance-operator-reports
+mkdir -p $REPORTS_DIR
+reports=(cis-report cis-worker-report cis-master-report)
+for report in ${reports[@]}
+do
+ DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v &quot;lost+found&quot;|head -n 1)
+
+ for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
+ do
+   echo &quot;Generate report for $report from $file&quot;
+   oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file &gt; $REPORTS_DIR/$report-$file.html
+ done
+done 
+oc delete pods -l app=report-generator -n openshift-compliance
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash"> Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
+ Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
+ Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
+ Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
+ Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
+ Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
 </code></pre>
 </li>
-<li><p>Copy report file from pod</p>
-<pre><code class="lang-bash">oc cp cis-extract:/cis-scan-results .
-</code></pre>
-<p>Reports </p>
-<pre><code class="lang-bash">&#x251C;&#x2500;&#x2500; 0
-&#x2502;   &#x2514;&#x2500;&#x2500; ocp4-cis-api-checks-pod.xml.bzip2
-&#x2514;&#x2500;&#x2500; 1
-   &#x2514;&#x2500;&#x2500; ocp4-cis-api-checks-pod.xml.bzip2
-</code></pre>
+</ul>
 </li>
-<li>Install openscap on RHEL<pre><code class="lang-bash">yum install openscap-scanner openscap-utils scap-security-guide
-</code></pre>
-</li>
-<li>Use openscap utils in RHEL to generate HTML report<pre><code class="lang-bash">oscap xccdf generate report ocp4-cis-api-checks-pod.xml.bzip2 &gt; ocp4-cis.html
-</code></pre>
-</li>
-<li><p>Sample reports <a href="images/ocp4-cis.pdf">cis</a> and <a href="images/ocp4-worker-moderate.pdf">ocp4-worker-moderate</a></p>
+<li><p>Sample reports <a href="compliance-operator-reports/cis-report-ocp4-cis-api-checks.pdf">cis</a> a</p>
 <p><img src="images/openscap-cis-report.png" alt=""></p>
-<p>HTML version here <a href="images/ocp4-cis.html">cis</a> and <a href="images/ocp4-worker-moderate.html">ocp4-worker-moderate</a></p>
-</li>
+<p>HTML version here </p>
+<ul>
+<li><a href="compliance-operator-reports/cis-report-ocp4-cis-api-checks.html">CIS</a></li>
+<li><a href="compliance-operator-reports/cis-master-report.html">CIS Master Node</a></li>
+<li><a href="compliance-operator-reports/cis-worker-report.html">CIS Worker Node</a></li>
 </ul>
 </li>
 </ul>
@@ -898,7 +916,7 @@ oc apply -f manifests/ocp4-worker-extract.yaml
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.10","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-09-13T06:14:33.626Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-13T06:15:19.218Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.10","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Custom Alert","level":"1.2.9","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2021-09-15T08:07:30.685Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-15T08:08:16.020Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
