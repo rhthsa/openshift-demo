@@ -183,7 +183,7 @@
 - or download from https://github.com/quay/clair/releases
 - example command
   ```bash
-  clairctl report -host <URL> quay.io/voravitl/frontend-js:v1
+  clairctl report -host <URL> quay.io/voravitl/todo:latest
   clairctl report -host <URL> ubuntu:focal
   ```
 - for private registry, required login by docker/podman befor run above command.
