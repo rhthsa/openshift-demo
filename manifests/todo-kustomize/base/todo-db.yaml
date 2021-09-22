@@ -10,7 +10,7 @@ metadata:
 type: Opaque
 data:
   database-name: dG9kbw==
-  database-password: dG9kb1Bhc3N3MHJk
+  database-password: dG9kb1Bhc3N3b3JkCg==
   database-user: dG9kbw==
 ---
 apiVersion: v1
@@ -106,8 +106,6 @@ spec:
           periodSeconds: 10
           successThreshold: 1
           timeoutSeconds: 1
-        securityContext:
-          capabilities: {}
           privileged: false
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
@@ -117,7 +115,11 @@ spec:
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
-      securityContext: {}
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        drop: ALL
+        readOnlyRootFilesystem: true
       terminationGracePeriodSeconds: 30
       volumes:
       - name: todo-db-data
