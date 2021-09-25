@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanos-querier
+  labels:
+    app: thanos-querier
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos-querier
+  template:
+    metadata:
+      labels:
+        app: thanos-querier
+    spec:
+      serviceAccountName: thanos-querier
+      containers:
+      - args:
+        - -provider=openshift
+        - -https-address=:9091
+        - -http-address=
+        - -email-domain=*
+        - -upstream=http://localhost:10902
+        - -openshift-service-account=thanos-querier
+        - '-openshift-sar={"resource": "namespaces", "verb": "get"}'
+        - -tls-cert=/etc/tls/private/tls.crt
+        - -tls-key=/etc/tls/private/tls.key
+        - -cookie-secret-file=/etc/proxy/secrets/session_secret
+        - -skip-auth-regex=^/metrics
+        image: quay.io/openshift/origin-oauth-proxy:4.1
+        name: oauth-proxy
+        ports:
+        - containerPort: 9091
+          name: web-proxy
+        volumeMounts:
+        - mountPath: /etc/tls/private
+          name: secret-thanos-querier-tls
+        - mountPath: /etc/proxy/secrets
+          name: secret-thanos-querier-proxy 
+      - name: thanos
+        image: quay.io/thanos/thanos:v0.8.1
+        args:
+        - query
+        - --query.replica-label=replica
+        # Discover local store APIs using DNS SRV.
+        - --store=dnssrv+thanos-store-gateway.thanos.svc.cluster.local
+        - --store=dns+thanos-receive.thanos.svc.cluster.local:19891
+        ports:
+        - name: http
+          containerPort: 10902
+        - name: grpc
+          containerPort: 10901
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+      volumes:
+      - name: secret-thanos-querier-tls
+        secret:
+          secretName: thanos-querier-tls
+      - name: secret-thanos-querier-proxy 
+        secret:
+          secretName: thanos-querier-proxy 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.alpha.openshift.io/serving-cert-secret-name: thanos-querier-tls
+  labels:
+    app: thanos-querier
+  name: thanos-querier
+spec:
+  ports:
+  - port: 9091
+    protocol: TCP
+    targetPort: web-proxy
+    name: web-proxy
+  - port: 9090
+    protocol: TCP
+    targetPort: http
+    name: grafana-access
+  selector:
+    app: thanos-querier
+  type: ClusterIP
