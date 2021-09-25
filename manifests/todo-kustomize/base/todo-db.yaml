@@ -10,7 +10,7 @@ metadata:
 type: Opaque
 data:
   database-name: dG9kbw==
-  database-password: dG9kb1Bhc3N3b3JkCg==
+  database-password: dG9kb1Bhc3N3b3Jk
   database-user: dG9kbw==
 ---
 apiVersion: v1
