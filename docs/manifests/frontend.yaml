@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: quay.io/voravitl/frontend-js:v2
+        image: quay.io/voravitl/frontend-js:v1
         imagePullPolicy: Always
         env:
           - name: BACKEND_URL
