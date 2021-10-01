@@ -1,5 +1,6 @@
 # OpenShift Service Mesh
 <!-- TOC -->
+
 - [OpenShift Service Mesh](#openshift-service-mesh)
   - [Overview](#overview)
   - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
@@ -29,6 +30,7 @@
   - [Control Plane with High Availability](#control-plane-with-high-availability)
     - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
     - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
+
 <!-- /TOC -->
 
 ## Overview
@@ -487,7 +489,7 @@ Sample application
 - Test with URI /version1 and /ver1
   
   ```bash
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
   curl $FRONTEND_ISTIO_ROUTE/version1
   curl $FRONTEND_ISTIO_ROUTE/vers1
   curl $FRONTEND_ISTIO_ROUTE/ver1
@@ -496,7 +498,7 @@ Sample application
 - Test with URI /
   
   ```bash
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
   curl $FRONTEND_ISTIO_ROUTE/
   ```
   
@@ -532,6 +534,25 @@ Sample application
             number: 8080
           subset: v1
   ```
+- Apply [Virtual Service](manifests/frontend-virtual-service-with-header.yaml)
+  
+  ```bash
+  oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
+  ```
+  
+  or use following bash command 
+
+  ```bash
+  DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests/frontend-virtual-service-with-header.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
+  ```
+  
+- Test with cURL with HTTP header User-Agent contains Firefox
+  ```bash
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
+  curl -H "User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0" $FRONTEND_ISTIO_ROUTE
+  ```
+
 ## Traffic Mirroring (Dark Launch)
 
 - Deploy backend application
@@ -576,7 +597,7 @@ Sample application
   - cURL frontend
   
   ```bash
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
   curl $FRONTEND_ISTIO_ROUTE
   ```
 
@@ -588,24 +609,7 @@ Sample application
   
   ![](images/mirror-log.png)
 
-- Apply [Virtual Service](manifests/frontend-virtual-service-with-header.yaml)
-  
-  ```bash
-  oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
-  ```
-  
-  or use following bash command 
 
-  ```bash
-  DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
-  cat manifests/frontend-virtual-service-with-header.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
-  ```
-  
-- Test with cURL with HTTP header User-Agent contains Firefox
-```bash
-FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
-  curl -H "User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0" $FRONTEND_ISTIO_ROUTE
-```
 
 ## Observability
 
@@ -625,7 +629,7 @@ FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-g
 
   ```bash
   oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
-  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk '{print $2}')
+  FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
   while [ 1 ];
   do
           OUTPUT=$(curl -s $FRONTEND_ISTIO_ROUTE)
