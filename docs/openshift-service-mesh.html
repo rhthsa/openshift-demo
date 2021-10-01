@@ -591,13 +591,13 @@
 <li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
 <li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
 <li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
-<li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a><!-- /TOC -->
-</li>
+<li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
+<!-- /TOC -->
 <h2 id="overview">Overview</h2>
 <p>Sample application</p>
 <p><img src="images/service-mesh-sample-app.png" alt=""></p>
@@ -1007,14 +1007,14 @@ cat manifests/frontend-virtual-service-with-uri.yaml | sed &apos;s/DOMAIN/&apos;
 </code></pre>
 </li>
 <li><p>Test with URI /version1 and /ver1</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl $FRONTEND_ISTIO_ROUTE/version1
 curl $FRONTEND_ISTIO_ROUTE/vers1
 curl $FRONTEND_ISTIO_ROUTE/ver1
 </code></pre>
 </li>
 <li><p>Test with URI /</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl $FRONTEND_ISTIO_ROUTE/
 </code></pre>
 </li>
@@ -1052,8 +1052,23 @@ spec:
           number: 8080
         subset: v1
 </code></pre>
-<h2 id="traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</h2>
 </li>
+<li><p>Apply <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
+</code></pre>
+<p>or use following bash command </p>
+<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service-with-header.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+</code></pre>
+</li>
+<li><p>Test with cURL with HTTP header User-Agent contains Firefox</p>
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
+curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot; $FRONTEND_ISTIO_ROUTE
+</code></pre>
+</li>
+</ul>
+<h2 id="traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</h2>
+<ul>
 <li><p>Deploy backend application</p>
 <pre><code class="lang-bash">oc apply -f manifests/backend.yaml -n project1
 oc apply -f manifests/backend-destination-rule.yaml -n project1
@@ -1085,7 +1100,7 @@ oc get pods -n project1
 <ul>
 <li>cURL frontend</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 curl $FRONTEND_ISTIO_ROUTE
 </code></pre>
 <ul>
@@ -1094,19 +1109,6 @@ curl $FRONTEND_ISTIO_ROUTE
 <pre><code class="lang-bash">oc logs -f $(oc get pods --no-headers | grep audit|head -n 1|awk &apos;{print $1}&apos;) -c backend -n project1
 </code></pre>
 <p><img src="images/mirror-log.png" alt=""></p>
-</li>
-<li><p>Apply <a href="manifests/frontend-virtual-service-with-header.yaml">Virtual Service</a></p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend-virtual-service-with-header.yaml -n project1
-</code></pre>
-<p>or use following bash command </p>
-<pre><code class="lang-bash">DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
-cat manifests/frontend-virtual-service-with-header.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
-</code></pre>
-</li>
-<li><p>Test with cURL with HTTP header User-Agent contains Firefox</p>
-<pre><code class="lang-bash">FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
-curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) Gecko/20100101 Firefox/78.0&quot; $FRONTEND_ISTIO_ROUTE
-</code></pre>
 </li>
 </ul>
 <h2 id="observability">Observability</h2>
@@ -1124,7 +1126,7 @@ curl -H &quot;User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0) 
 </li>
 <li><p>Run following command</p>
 <pre><code class="lang-bash">oc patch virtualservice frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/http/0&quot;,&quot;value&quot;:{&quot;route&quot;:[{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v1&quot;},&quot;weight&quot;:70},{&quot;destination&quot;:{&quot;host&quot;:&quot;frontend.project1.svc.cluster.local&quot;,&quot;port&quot;:{&quot;number&quot;:8080},&quot;subset&quot;:&quot;v2&quot;},&quot;weight&quot;:30}]}}]&apos; -n project1
-FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep istio-system-frontend-gateway |awk &apos;{print $2}&apos;)
+FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
 while [ 1 ];
 do
         OUTPUT=$(curl -s $FRONTEND_ISTIO_ROUTE)
@@ -2058,7 +2060,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-09-25T14:01:44.235Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-09-25T14:02:31.917Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-10-01T05:14:59.206Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-01T05:15:49.484Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
