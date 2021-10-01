@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: todo
+  labels:
+    app: todo
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  endpoints:
+  - interval: 60s
+    port: http
+    path: /q/metrics
+    scheme: http
+    targetPort: 8080
+  - interval: 60s
+    port: http
+    path: /q/metrics/application
+    scheme: http
+    targetPort: 8080
+  selector:
+    matchLabels:
+      app: todo
+
