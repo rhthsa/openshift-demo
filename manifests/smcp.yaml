@@ -7,8 +7,8 @@ spec:
   version: v2.0
   security:
     dataPlane:
-      mtls: true
-      automtls: true
+      mtls: false
+      automtls: false
     controlPlane:
       mtls: false
       automtls: false
