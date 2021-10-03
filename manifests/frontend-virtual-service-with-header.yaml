@@ -7,6 +7,11 @@ spec:
   - frontend.apps.DOMAIN
   gateways:
   - project1/frontend-gateway
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    tls:
+      mode: DISABLE #ISTIO_MUTUAL
   http:
   - match:
     - headers:

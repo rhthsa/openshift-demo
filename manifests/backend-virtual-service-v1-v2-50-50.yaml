@@ -5,6 +5,11 @@ metadata:
 spec:
   hosts:
   - backend
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    tls:
+      mode: DISABLE #ISTIO_MUTUAL
   http:
   - route:
     - destination:
