@@ -80,6 +80,8 @@ spec:
         image: quay.io/voravitl/frontend-js:v1
         imagePullPolicy: Always
         env:
+          - name: VERSION
+            value: v2
           - name: BACKEND_URL
             value: http://localhost:8080/version
         resources:
