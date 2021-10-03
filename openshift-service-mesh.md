@@ -755,7 +755,7 @@ Sample application
       MAX=$1
       while [ $COUNT -lt $MAX ];
       do
-        curl -s http://$FRONTEND_ISTIO_ROUTE | awk -F',' '{print $5 "=>" $6}'
+        curl -s http://$FRONTEND_ISTIO_ROUTE | awk -F',' '{print $5 "=>" $2}'
         COUNT=$(expr $COUNT + 1 )
       done
     }
