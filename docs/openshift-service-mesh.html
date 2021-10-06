@@ -564,7 +564,7 @@
 <li><a href="#ab-with-istio-virtual-service">A/B with Istio Virtual Service</a></li>
 </ul>
 </li>
-<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring (Dark Launch)</a></li>
+<li><a href="#traffic-mirroring-dark-launch">Traffic Mirroring Dark Launch</a></li>
 <li><a href="#observability">Observability</a><ul>
 <li><a href="#traffic-analysis">Traffic Analysis</a></li>
 <li><a href="#distributed-tracing">Distributed Tracing</a></li>
@@ -588,10 +588,14 @@
 <li><a href="#requestauthentication-and-authorization-policy">RequestAuthentication and Authorization Policy</a></li>
 </ul>
 </li>
-<li><a href="#service-level-objective-slo">Service Level Objective (SLO)</a></li>
+<li><a href="#service-level-objective-slo">Service Level Objective SLO</a></li>
 <li><a href="#control-plane-with-high-availability">Control Plane with High Availability</a><ul>
 <li><a href="#openshift-service-mesh-1x">OpenShift Service Mesh 1.x</a></li>
 <li><a href="#openshift-service-mesh-2x">OpenShift Service Mesh 2.x</a></li>
+</ul>
+</li>
+<li><a href="#rate-limit">Rate Limit</a><ul>
+<li><a href="#openshift-service-mesh-20x-or-istio-16x">OpenShift Service Mesh 2.0.x or Istio 1.6.x</a></li>
 </ul>
 </li>
 </ul>
@@ -2018,6 +2022,147 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     ----    ------  ----                   ----               -------
     Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
   ``` -->
+<h2 id="rate-limit">Rate Limit</h2>
+<h3 id="openshift-service-mesh-20x-or-istio-16x">OpenShift Service Mesh 2.0.x or Istio 1.6.x</h3>
+<p>Support Rate Limiting feature in OSSM 2.1.x, OSSM 2.0.x was built on upstream istio 1.6 and we tested Rating Limiting case by</p>
+<ol>
+<li><p>Enable SMCP Policy Mixer Plugins: (change smcp/basic to another your control plane)</p>
+<pre><code class="lang-bash">oc patch -n istio-system smcp/basic --type merge -p &apos;{&quot;spec&quot;:{&quot;policy&quot;:{&quot;type&quot;: &quot;Mixer&quot;, &quot;mixer&quot;:{&quot;enableChecks&quot;:true}}}}&apos;
+</code></pre>
+<p>wait until operator create istio-policy pod complete.</p>
+<p>  <img src="images/smcp-policy.jpg" alt=""></p>
+</li>
+<li><p>Create Sample Microservice for Test this feature</p>
+<pre><code class="lang-bash">oc delete all --all -n project1
+oc delete gateway --all -n project1
+oc delete dr,vs --all -n project1
+oc apply -f manifests/frontend.yaml -n project1
+oc patch deployment/frontend-v1 -p &apos;{&quot;spec&quot;:{&quot;template&quot;:{&quot;metadata&quot;:{&quot;annotations&quot;:{&quot;sidecar.istio.io/inject&quot;:&quot;true&quot;}}}}}&apos; -n project1
+oc apply -f manifests/backend.yaml -n project1
+oc delete deployment/frontend-v2 -n project1
+oc delete deployment/backend-v2 -n project1
+oc delete route frontend -n project1
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+oc annotate deployment frontend-v1 &apos;app.openshift.io/connects-to=[{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v1&quot;},{&quot;apiVersion&quot;:&quot;apps/v1&quot;,&quot;kind&quot;:&quot;Deployment&quot;,&quot;name&quot;:&quot;backend-v2&quot;}]&apos; -n project1
+oc scale deployment backend-v1 --replicas=3 -n project1
+oc apply -f manifests/backend-destination-rule-v1-only.yaml -n project1
+oc apply -f manifests/backend-virtual-service.yaml -n project1
+oc apply -f manifests/frontend-destination-rule-v1-only.yaml -n project1
+DOMAIN=$(oc whoami --show-console|awk -F&apos;apps.&apos; &apos;{print $2}&apos;)
+cat manifests/frontend-virtual-service.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+cat manifests/frontend-gateway.yaml | sed &apos;s/DOMAIN/&apos;$DOMAIN&apos;/&apos;|oc apply -n project1 -f -
+watch oc get pods -n project1
+</code></pre>
+<p>after finish</p>
+<p><img src="images/dev-console-app-for-cb.png" alt=""></p>
+</li>
+</ol>
+<p>   Test with cURL</p>
+<pre><code class="lang-bash">   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk &apos;{print $2}&apos;)
+   curl http://$FRONTEND_ISTIO_ROUTE
+</code></pre>
+<p>   Sample output - Check for field Host that is backend pod that processed for this request</p>
+<pre><code class="lang-bash">   Frontend version: 1.0.0 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
+</code></pre>
+<ol>
+<li><p>Follow upstream istio 1.6 Rate Limiting documentation for test rate limit : <a href="https://istio.io/v1.6/docs/tasks/policy-enforcement/rate-limiting/" target="_blank">https://istio.io/v1.6/docs/tasks/policy-enforcement/rate-limiting/</a> or use this example (memquota example)</p>
+<ul>
+<li><p>create rate limit configuration (QuotaSpecBinding, QuotaSpec, instance, rule, handler), see detail in <a href="manifests/mesh/rate-limit-memquota.yaml">rate-limit-memquota.yaml</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/mesh/rate-limit-memquota.yaml
+</code></pre>
+</li>
+<li><p>set handler for manage receive only 1 req/min</p>
+<pre><code class="lang-yaml">apiVersion: config.istio.io/v1alpha2
+kind: handler
+metadata:
+  name: quotahandler
+  namespace: istio-system
+spec:
+  compiledAdapter: memquota
+  params:
+    quotas:
+    - name: requestcountquota.instance.istio-system
+      maxAmount: 1
+      validDuration: 60s
+</code></pre>
+</li>
+<li><p>set service for rate limit</p>
+<pre><code class="lang-yaml">apiVersion: config.istio.io/v1alpha2
+kind: QuotaSpecBinding
+metadata:
+  name: request-count
+  namespace: istio-system
+spec:
+  quotaSpecs:
+  - name: request-count
+    namespace: istio-system
+  services:
+  - name: frontend
+    namespace: project1 # default
+  #- service: &apos;*&apos;  # Uncomment this to bind *all* services to request-count
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Test with cURL</p>
+<ul>
+<li><p>call first time</p>
+<pre><code class="lang-bash">curl -v http://$FRONTEND_ISTIO_ROUTE
+</code></pre>
+<p>example result </p>
+<pre><code class="lang-bash">*   Trying 3.131.170.108...
+* TCP_NODELAY set
+* Connected to frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com (3.131.170.108) port 80 (#0)
+&gt; GET / HTTP/1.1
+&gt; Host: frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com
+&gt; User-Agent: curl/7.64.1
+&gt; Accept: */*
+&gt;
+&lt; HTTP/1.1 200 OK
+&lt; x-correlation-id: 79e46c33-987c-49a4-8c4b-5844d1ab1095
+&lt; x-powered-by: Express
+&lt; content-type: text/html; charset=utf-8
+&lt; content-length: 181
+&lt; etag: W/&quot;b5-44EZPxVbVPm/rx6FVPtx2E/v4RQ&quot;
+&lt; date: Wed, 06 Oct 2021 08:35:18 GMT
+&lt; x-envoy-upstream-service-time: 73
+&lt; server: istio-envoy
+&lt; set-cookie: 56146e318a5c046b870cb6cd1fd45ebf=9e6c14811364e963dccffa42a2e0f2f2; path=/; HttpOnly
+&lt; cache-control: private
+&lt;
+* Connection #0 to host frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com left intact
+Frontend version: v1 =&gt; [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-79668c5b99-tkqjn, Status:200, Message: Hello, Quarkus]* Closing connection 0
+</code></pre>
+</li>
+<li><p>call it again for check rate limit, openshift service mesh will return HTTP Status 429 Too Many Requests</p>
+<pre><code class="lang-bash">curl -v http://$FRONTEND_ISTIO_ROUTE
+</code></pre>
+<p>example result </p>
+<pre><code class="lang-bash">*   Trying 3.131.170.108...
+* TCP_NODELAY set
+* Connected to frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com (3.131.170.108) port 80 (#0)
+&gt; GET / HTTP/1.1
+&gt; Host: frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com
+&gt; User-Agent: curl/7.64.1
+&gt; Accept: */*
+&gt;
+&lt; HTTP/1.1 429 Too Many Requests
+&lt; content-length: 60
+&lt; content-type: text/plain
+&lt; date: Wed, 06 Oct 2021 08:36:42 GMT
+&lt; server: istio-envoy
+&lt; set-cookie: 56146e318a5c046b870cb6cd1fd45ebf=9e6c14811364e963dccffa42a2e0f2f2; path=/; HttpOnly
+&lt;
+* Connection #0 to host frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com left intact
+RESOURCE_EXHAUSTED:Quota is exhausted for: requestcountquota* Closing connection 0
+</code></pre>
+</li>
+<li><p>retest again after 1 minute, service will back response with HTTP Status 200</p>
+</li>
+</ul>
+</li>
+</ol>
+
                                 
                                 </section>
                             
@@ -2060,7 +2205,7 @@ prometheus-565c997f45-s7q2t             ip-10-0-166-202.us-east-2.compute.intern
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-10-04T01:41:10.381Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-04T01:42:05.654Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-10-06T08:42:02.060Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-10-06T08:42:48.820Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
