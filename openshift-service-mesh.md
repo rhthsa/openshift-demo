@@ -2,34 +2,36 @@
 <!-- TOC -->
 
 - [OpenShift Service Mesh](#openshift-service-mesh)
-  - [Overview](#overview)
-  - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
-  - [Traffic Management](#traffic-management)
-    - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
-      - [Kiali](#kiali)
-      - [CLI/YAML](#cliyaml)
-    - [Test Istio Gateway](#test-istio-gateway)
-    - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
-    - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
-    - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
-  - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
-  - [Observability](#observability)
-    - [Traffic Analysis](#traffic-analysis)
-    - [Distributed Tracing](#distributed-tracing)
-    - [Envoy Access Log](#envoy-access-log)
-  - [Service Resilience](#service-resilience)
-    - [Circuit Breaker](#circuit-breaker)
-  - [Secure with mTLS](#secure-with-mtls)
-    - [Within Service Mesh](#within-service-mesh)
-      - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
-    - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
-  - [JWT Token](#jwt-token)
-    - [Red Hat Single Sign-On](#red-hat-single-sign-on)
-    - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
-  - [Service Level Objective (SLO)](#service-level-objective-slo)
-  - [Control Plane with High Availability](#control-plane-with-high-availability)
-    - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
-    - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
+    - [Overview](#overview)
+    - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
+    - [Traffic Management](#traffic-management)
+        - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
+            - [Kiali](#kiali)
+            - [CLI/YAML](#cliyaml)
+        - [Test Istio Gateway](#test-istio-gateway)
+        - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
+        - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
+        - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
+    - [Traffic Mirroring Dark Launch](#traffic-mirroring-dark-launch)
+    - [Observability](#observability)
+        - [Traffic Analysis](#traffic-analysis)
+        - [Distributed Tracing](#distributed-tracing)
+        - [Envoy Access Log](#envoy-access-log)
+    - [Service Resilience](#service-resilience)
+        - [Circuit Breaker](#circuit-breaker)
+    - [Secure with mTLS](#secure-with-mtls)
+        - [Within Service Mesh](#within-service-mesh)
+            - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
+        - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
+    - [JWT Token](#jwt-token)
+        - [Red Hat Single Sign-On](#red-hat-single-sign-on)
+        - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
+    - [Service Level Objective SLO](#service-level-objective-slo)
+    - [Control Plane with High Availability](#control-plane-with-high-availability)
+        - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
+        - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
+    - [Rate Limit](#rate-limit)
+        - [OpenShift Service Mesh 2.0.x or Istio 1.6.x](#openshift-service-mesh-20x-or-istio-16x)
 
 <!-- /TOC -->
 
@@ -1701,3 +1703,169 @@ We can use Service Level Indicator (SLI) and Service Level Objective (SLO) to de
     ----    ------  ----                   ----               -------
     Normal  NoPods  2m17s (x2 over 2m17s)  controllermanager  No matching pods found
   ``` -->
+
+## Rate Limit
+
+### OpenShift Service Mesh 2.0.x or Istio 1.6.x
+
+Support Rate Limiting feature in OSSM 2.1.x, OSSM 2.0.x was built on upstream istio 1.6 and we tested Rating Limiting case by
+
+1. Enable SMCP Policy Mixer Plugins: (change smcp/basic to another your control plane)
+   
+   ```bash
+   oc patch -n istio-system smcp/basic --type merge -p '{"spec":{"policy":{"type": "Mixer", "mixer":{"enableChecks":true}}}}'
+   ```
+   
+   wait until operator create istio-policy pod complete.
+
+     ![](images/smcp-policy.jpg)
+   
+2. Create Sample Microservice for Test this feature
+
+   ```bash
+   oc delete all --all -n project1
+   oc delete gateway --all -n project1
+   oc delete dr,vs --all -n project1
+   oc apply -f manifests/frontend.yaml -n project1
+   oc patch deployment/frontend-v1 -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' -n project1
+   oc apply -f manifests/backend.yaml -n project1
+   oc delete deployment/frontend-v2 -n project1
+   oc delete deployment/backend-v2 -n project1
+   oc delete route frontend -n project1
+   oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+   oc annotate deployment frontend-v1 'app.openshift.io/connects-to=[{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"}]' -n project1
+   oc scale deployment backend-v1 --replicas=3 -n project1
+   oc apply -f manifests/backend-destination-rule-v1-only.yaml -n project1
+   oc apply -f manifests/backend-virtual-service.yaml -n project1
+   oc apply -f manifests/frontend-destination-rule-v1-only.yaml -n project1
+   DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+   cat manifests/frontend-virtual-service.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
+   cat manifests/frontend-gateway.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
+   watch oc get pods -n project1
+   ```
+  
+   after finish
+  
+   ![](images/dev-console-app-for-cb.png)
+
+
+   Test with cURL
+
+   ```bash
+   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
+   curl http://$FRONTEND_ISTIO_ROUTE
+   ```
+
+   Sample output - Check for field Host that is backend pod that processed for this request
+
+   ```bash
+   Frontend version: 1.0.0 => [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-f4dbf777f-h7rwg, Status:200, Message: Hello, Quarkus]
+   ```   
+   
+3. Follow upstream istio 1.6 Rate Limiting documentation for test rate limit : https://istio.io/v1.6/docs/tasks/policy-enforcement/rate-limiting/ or use this example (memquota example)
+   
+   - create rate limit configuration (QuotaSpecBinding, QuotaSpec, instance, rule, handler), see detail in [rate-limit-memquota.yaml](manifests/mesh/rate-limit-memquota.yaml)
+     
+     ```bash
+     oc apply -f manifests/mesh/rate-limit-memquota.yaml
+     ```
+     
+   - set handler for manage receive only 1 req/min
+    
+     ```yaml
+     apiVersion: config.istio.io/v1alpha2
+     kind: handler
+     metadata:
+       name: quotahandler
+       namespace: istio-system
+     spec:
+       compiledAdapter: memquota
+       params:
+         quotas:
+         - name: requestcountquota.instance.istio-system
+           maxAmount: 1
+           validDuration: 60s
+     ```
+  
+   - set service for rate limit
+  
+     ```yaml
+     apiVersion: config.istio.io/v1alpha2
+     kind: QuotaSpecBinding
+     metadata:
+       name: request-count
+       namespace: istio-system
+     spec:
+       quotaSpecs:
+       - name: request-count
+         namespace: istio-system
+       services:
+       - name: frontend
+         namespace: project1 # default
+       #- service: '*'  # Uncomment this to bind *all* services to request-count
+     ```
+
+4. Test with cURL
+   
+   - call first time
+     
+     ```bash
+     curl -v http://$FRONTEND_ISTIO_ROUTE
+     ```
+    
+     example result 
+
+     ```bash
+     *   Trying 3.131.170.108...
+     * TCP_NODELAY set
+     * Connected to frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com (3.131.170.108) port 80 (#0)
+     > GET / HTTP/1.1
+     > Host: frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com
+     > User-Agent: curl/7.64.1
+     > Accept: */*
+     >
+     < HTTP/1.1 200 OK
+     < x-correlation-id: 79e46c33-987c-49a4-8c4b-5844d1ab1095
+     < x-powered-by: Express
+     < content-type: text/html; charset=utf-8
+     < content-length: 181
+     < etag: W/"b5-44EZPxVbVPm/rx6FVPtx2E/v4RQ"
+     < date: Wed, 06 Oct 2021 08:35:18 GMT
+     < x-envoy-upstream-service-time: 73
+     < server: istio-envoy
+     < set-cookie: 56146e318a5c046b870cb6cd1fd45ebf=9e6c14811364e963dccffa42a2e0f2f2; path=/; HttpOnly
+     < cache-control: private
+     <
+     * Connection #0 to host frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com left intact
+     Frontend version: v1 => [Backend: http://backend:8080/, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-79668c5b99-tkqjn, Status:200, Message: Hello, Quarkus]* Closing connection 0
+     ```
+
+   - call it again for check rate limit, openshift service mesh will return HTTP Status 429 Too Many Requests
+
+     ```bash
+     curl -v http://$FRONTEND_ISTIO_ROUTE
+     ```
+    
+     example result 
+
+     ```bash
+     *   Trying 3.131.170.108...
+     * TCP_NODELAY set
+     * Connected to frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com (3.131.170.108) port 80 (#0)
+     > GET / HTTP/1.1
+     > Host: frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com
+     > User-Agent: curl/7.64.1
+     > Accept: */*
+     >
+     < HTTP/1.1 429 Too Many Requests
+     < content-length: 60
+     < content-type: text/plain
+     < date: Wed, 06 Oct 2021 08:36:42 GMT
+     < server: istio-envoy
+     < set-cookie: 56146e318a5c046b870cb6cd1fd45ebf=9e6c14811364e963dccffa42a2e0f2f2; path=/; HttpOnly
+     <
+     * Connection #0 to host frontend.apps.cluster-deff.deff.sandbox1488.opentlc.com left intact
+     RESOURCE_EXHAUSTED:Quota is exhausted for: requestcountquota* Closing connection 0
+     ```   
+     
+   - retest again after 1 minute, service will back response with HTTP Status 200

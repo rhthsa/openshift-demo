@@ -65,6 +65,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - JWT Token (with RHSSO)
     - Service Level Objective (SLO)
     - Control Plane with High Availability
+    - Rate Limit (OSSM 2.0.x or ISTIO 1.6)
   - [User Workload Monitoring](application-metrics.md)
     - Setup User Workload Monitoring
     - Monitor Custom Metrics
