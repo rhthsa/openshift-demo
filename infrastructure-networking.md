@@ -502,10 +502,10 @@ In OpenShift Container Platform you can enable automatic assignment of an egress
     [root@centos7-tools1 ~]# tcpdump -i ens160 icmp
     tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
     listening on ens160, link-type EN10MB (Ethernet), capture size 262144 bytes
-    08:37:18.756559 IP 198.18.1.18 > tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 1, length 64
-    08:37:18.756627 IP tools1.dcloud.cisco.com > 198.18.1.18: ICMP echo reply, id 3, seq 1, length 64
-    08:37:19.757960 IP 198.18.1.18 > tools1.dcloud.cisco.com: ICMP echo request, id 3, seq 2, length 64
-    08:37:19.758014 IP tools1.dcloud.cisco.com > 198.18.1.18: ICMP echo reply, id 3, seq 2, length 64
+    08:37:18.756559 IP 198.18.1.18 > registry0.example.com: ICMP echo request, id 3, seq 1, length 64
+    08:37:18.756627 IP registry0.example.com > 198.18.1.18: ICMP echo reply, id 3, seq 1, length 64
+    08:37:19.757960 IP 198.18.1.18 > registry0.example.com: ICMP echo request, id 3, seq 2, length 64
+    08:37:19.758014 IP registry0.example.com > 198.18.1.18: ICMP echo reply, id 3, seq 2, length 64
     ```
 2. Update the NetNamespace object with the egress IP address using the following JSON:
     ```bash
