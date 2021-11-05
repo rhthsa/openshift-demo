@@ -24,14 +24,15 @@
   Output
   
   ```bash
-  NAME                                                        READY   STATUS    RESTARTS   AGE
-  cluster-5b574cff45-szpsl                                    1/1     Running   0          36s
-  kam-7f65f49f56-2bd7g                                        1/1     Running   0          35s
-  openshift-gitops-application-controller-0                   1/1     Running   0          35s
-  openshift-gitops-applicationset-controller-769bc45f-qbhs6   1/1     Running   0          35s
-  openshift-gitops-redis-7765dd9fc9-gbc42                     1/1     Running   0          35s
-  openshift-gitops-repo-server-7c46884cf6-jjrn8               1/1     Running   0          35s
-  openshift-gitops-server-7975f7b985-56tn7                    1/1     Running   0          35s
+  NAME                                                          READY   STATUS    RESTARTS   AGE
+  cluster-d469b8c87-hj4td                                       1/1     Running   0          68s
+  kam-6976788946-fdhfd                                          1/1     Running   0          68s
+  openshift-gitops-application-controller-0                     1/1     Running   0          66s
+  openshift-gitops-applicationset-controller-66db7bd58c-mfp4v   1/1     Running   0          66s
+  openshift-gitops-dex-server-8bd64f9f7-c5lt4                   1/1     Running   0          65s
+  openshift-gitops-redis-7867d74fb4-6mnwk                       1/1     Running   0          66s
+  openshift-gitops-repo-server-55959654b4-t6jrh                 1/1     Running   0          66s
+  openshift-gitops-server-6776b46d54-czc89                      1/1     Running   0          66s
   ```
 
 - Access ArgoCD Console. 
