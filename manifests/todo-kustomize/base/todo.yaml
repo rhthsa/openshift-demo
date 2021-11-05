@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    app.openshift.io/connects-to: '[{"apiVersion":"apps.openshift.io/v1","kind":"Deployment","name":"todo-db"}]'
+    app.openshift.io/vcs-ref: "master"
+    app.openshift.io/vcs-uri: https://github.com/voraviz/quarkus-todo-app
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "1"
+  labels:
+    app: todo
+    app.kubernetes.io/component: todo
+    app.kubernetes.io/instance: todo
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: todo-app
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: 2.2.3
+  name: todo
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: todo
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: todo
+        version: v1
+        maistra.io/expose-route: 'true'
+      annotations:
+        sidecar.istio.io/inject: "false"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        app.openshift.io/connects-to: '[{"apiVersion":"apps.openshift.io/v1","kind":"Deployment","name":"todo-db"}]'
+    spec:
+      containers:
+      - name: todo
+        image: quay.io/voravitl/todo:native
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "0.05"
+            memory: 40Mi
+          limits:
+            cpu: "0.1"
+            memory: 200Mi
+        env:
+        - name: quarkus.http.access-log.enabled
+          value: "false"  
+        readinessProbe:
+          httpGet:
+            path: /q/health/ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSecods: 120   
+        livenessProbe:
+          httpGet:
+            path: /q/health/live
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 180             
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60   
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        drop: ALL
+        readOnlyRootFilesystem: true
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo
+  labels:
+    app: todo
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: todo
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: todo
+  labels:
+    app: todo
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: todo
+    weight: 100
+  wildcardPolicy: None
+
