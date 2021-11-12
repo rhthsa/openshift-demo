@@ -77,6 +77,9 @@
   Context 'openshift-gitops-server-openshift-gitops.apps.cluster-0e2b.0e2b.sandbox563.opentlc.com' updated
   ```
 - Use oc or kubectl CLI to login to target cluster and rename context
+
+  *Remark: In this demo, Target cluster is the same cluster as ArgoCD cluster. If target cluster is another cluster then use oc command to login to target cluster first.*
+
   ```bash
   oc config rename-context $(oc config current-context) dev-cluster
   ```
