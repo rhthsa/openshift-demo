@@ -1,5 +1,6 @@
 #!/bin/bash
-CONTROL_PLANE=$1
+SMCP=$1
+CONTROL_PLANE=$2
 DONE=1
 while [ $DONE -ne 0 ];
 do
@@ -8,14 +9,14 @@ do
   oc get smcp -n $CONTROL_PLANE
   echo
   echo
-  CURRENT_STATUS=$(oc get smcp basic -n $CONTROL_PLANE -o jsonpath='{.status.annotations.readyComponentCount}')
+  CURRENT_STATUS=$(oc get smcp $SMCP -n $CONTROL_PLANE -o jsonpath='{.status.annotations.readyComponentCount}')
   printf "Ready Component Count: %s\n" "$CURRENT_STATUS"
   READY=$(echo $CURRENT_STATUS|awk -F'/' '{print $1}')
   TOTAL=$(echo $CURRENT_STATUS|awk -F'/' '{print $2}')
   if [ $READY -gt 0 ];
   then
     printf "Ready: \n"
-    for i in $(oc get smcp basic-install -n $CONTROL_PLANE -o jsonpath='{.status.readiness.components.ready[*]}')
+    for i in $(oc get smcp $SMCP -n $CONTROL_PLANE -o jsonpath='{.status.readiness.components.ready[*]}')
     do
       printf "=> %s\n" "$i"
     done

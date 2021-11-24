@@ -2,36 +2,35 @@
 <!-- TOC -->
 
 - [OpenShift Service Mesh](#openshift-service-mesh)
-    - [Overview](#overview)
-    - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
-    - [Traffic Management](#traffic-management)
-        - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
-            - [Kiali](#kiali)
-            - [CLI/YAML](#cliyaml)
-        - [Test Istio Gateway](#test-istio-gateway)
-        - [Weight-Routing with Istio Virtual Service](#weight-routing-with-istio-virtual-service)
-        - [Routing by condition based on URI](#routing-by-condition-based-on-uri)
-        - [A/B with Istio Virtual Service](#ab-with-istio-virtual-service)
-    - [Traffic Mirroring Dark Launch](#traffic-mirroring-dark-launch)
-    - [Observability](#observability)
-        - [Traffic Analysis](#traffic-analysis)
-        - [Distributed Tracing](#distributed-tracing)
-        - [Envoy Access Log](#envoy-access-log)
-    - [Service Resilience](#service-resilience)
-        - [Circuit Breaker](#circuit-breaker)
-    - [Secure with mTLS](#secure-with-mtls)
-        - [Within Service Mesh](#within-service-mesh)
-            - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
-        - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
-    - [JWT Token](#jwt-token)
-        - [Red Hat Single Sign-On](#red-hat-single-sign-on)
-        - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
-    - [Service Level Objective SLO](#service-level-objective-slo)
-    - [Control Plane with High Availability](#control-plane-with-high-availability)
-        - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
-        - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
-    - [Rate Limit](#rate-limit)
-        - [OpenShift Service Mesh 2.0.x or Istio 1.6.x](#openshift-service-mesh-20x-or-istio-16x)
+  - [Overview](#overview)
+  - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
+  - [Traffic Management](#traffic-management)
+    - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
+      - [Kiali](#kiali)
+      - [CLI/YAML](#cliyaml)
+    - [Test Istio Gateway](#test-istio-gateway)
+    - [A/B Deployment with Weight-Routing](#ab-deployment-with-weight-routing)
+    - [Conditional Routing by URI](#conditional-routing-by-uri)
+    - [Canary Deployment using HTTP headers](#canary-deployment-using-http-headers)
+  - [Traffic Mirroring (Dark Launch)](#traffic-mirroring-dark-launch)
+  - [Observability](#observability)
+    - [Traffic Analysis](#traffic-analysis)
+    - [Distributed Tracing](#distributed-tracing)
+    - [Application Tracing with OpenTracing](#application-tracing-with-opentracing)
+    - [Envoy Access Log](#envoy-access-log)
+  - [Service Resilience](#service-resilience)
+    - [Circuit Breaker](#circuit-breaker)
+  - [Secure with mTLS](#secure-with-mtls)
+    - [Within Service Mesh](#within-service-mesh)
+      - [Pod Liveness and Readiness](#pod-liveness-and-readiness)
+    - [Istio Gateway with mTLS](#istio-gateway-with-mtls)
+  - [JWT Token](#jwt-token)
+    - [Red Hat Single Sign-On](#red-hat-single-sign-on)
+    - [RequestAuthentication and Authorization Policy](#requestauthentication-and-authorization-policy)
+  - [Service Level Objective (SLO)](#service-level-objective-slo)
+  - [Control Plane with High Availability](#control-plane-with-high-availability)
+    - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
+    - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
 
 <!-- /TOC -->
 
@@ -45,9 +44,11 @@ Sample application
 
 - Install following Operators from OperatorHub
   - ElasticSearch
-  - Jaeger
+  - Red Hat OpenShift distributed tracing platform (Jaeger for OpenShift Service Mesh earlier than version 2.1)
   - Kiali
   - OpenShift Service Mesh
+
+    ![](images/ossm-installed-operators.png)
  
 - Create control plane by create ServiceMeshControlPlane CRD
   
@@ -76,9 +77,9 @@ Sample application
   
       ![](images/smcp-outbound-allow-any.png)
     
-    - Set auto mTLS
+    <!-- - Set auto mTLS to false
 
-      ![](images/smcp-mtls.png)
+      ![](images/smcp-mtls.png) -->
     
     - Verify YAML
   
@@ -86,17 +87,17 @@ Sample application
 
     - Create
   
-- Check for control plane([get-smcp-status.sh](bin/get-smcp-status.sh))
+- Check for control plane creating status
 
   ![](images/admin-console-smcp-status.png)
 
-  Or using CLI
+  or Bash shell [get-smcp-status.sh](bin/get-smcp-status.sh)
 
   ```bash
-  bin/get-smcp-status.sh istio-system
+  bin/get-smcp-status.sh basic istio-system
   ```
 
-  or
+  or just CLI
 
   ```bash
   oc get smcp/basic -n istio-system
@@ -106,7 +107,7 @@ Sample application
 
   ```bash
   NAME    READY   STATUS            PROFILES      VERSION   AGE
-  basic   9/9     ComponentsReady   ["default"]   2.0.7.1   9m54s
+  basic   10/10   ComponentsReady   ["default"]   2.1.0     78s
   ```
   
 - Join project1 into control plane
@@ -133,11 +134,13 @@ Sample application
     ```bash
     oc create -f manifests/smmr.yaml -n istio-system
     ```
+
   - Check for ServiceMeshMemberRoll status
 
     ```bash
     oc describe smmr/default -n istio-system | grep -A2 Spec:
     ```
+    
 - Deploy sidecar to frontend app in project1
   
   ```bash
@@ -272,6 +275,7 @@ Sample application
     ```
     
 - Create Gateway for frontend app
+
   - Check for cluster's sub-domain
 
     ```bash
@@ -292,11 +296,10 @@ Sample application
     servers:
     - port:
         number: 80
-        name: http2
+        name: http
         protocol: HTTP
         hosts:
         - 'frontend.apps.DOMAIN'
-        
     ```
 
   - Replace DOMAIN with your clsuter sub-domain and Create [gateway](manifests/frontend-gateway.yaml)
@@ -321,7 +324,7 @@ Sample application
     Sample outout
 
     ```bash
-    project1-frontend-gateway-5f5077c573bd9294   frontend.apps.cluster-27bb.27bb.sandbox664.opentlc.com                                   istio-ingressgateway   http2                        None
+    project1-frontend-gateway-5f5077c573bd9294   frontend.apps.cluster-27bb.27bb.sandbox664.opentlc.com                                   istio-ingressgateway   http                        None
     ```
 <!-- - Create Route (configured with Istio Gateway) for frontend app
   - Review [Route](manifests/frontend-route-istio.yaml), Replace DOMAIN with cluster's DOMAIN
@@ -361,37 +364,38 @@ Sample application
   curl http://$FRONTEND_ISTIO_ROUTE
   ```
 
-### Weight-Routing with Istio Virtual Service
+### A/B Deployment with Weight-Routing 
 
 - Set weight routing between 2 services with virtual service
   Remark: if you use above Kiali steps then you already set 100% traffic to frontend-v1
   
   - Check for [virtual service with weight routing](manifests/frontend-virtual-service-with-weight-routing.yaml), Replace DOMAIN with cluster's DOMAIN
-  ```yaml
-  apiVersion: networking.istio.io/v1alpha3
-  kind: VirtualService
-  metadata:
-    name: frontend
-  spec:
-    hosts:
-    - frontend.apps.DOMAIN
-    gateways:
-    - project1/frontend-gateway
-    http:
-    - route:
-      - destination:
-          port:
-            number: 8080
-          host: frontend.project1.svc.cluster.local
-          subset: v1
-        weight: 100
-      - destination:
-          port:
-            number: 8080
-          host: frontend.project1.svc.cluster.local
-          subset: v2
-        weight: 0
-  ```
+
+    ```yaml
+    apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+    metadata:
+      name: frontend
+    spec:
+      hosts:
+      - frontend.apps.DOMAIN
+      gateways:
+      - project1/frontend-gateway
+      http:
+      - route:
+        - destination:
+            port:
+              number: 8080
+            host: frontend.project1.svc.cluster.local
+            subset: v1
+          weight: 100
+        - destination:
+            port:
+              number: 8080
+            host: frontend.project1.svc.cluster.local
+            subset: v2
+          weight: 0
+    ```
   
    - Apply [virtual service](manifests/frontend-virtual-service-with-weight-routing.yaml) for Blue/Green deployment with route all traffic to v1
     
@@ -399,22 +403,27 @@ Sample application
     DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
     cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
     ```
-    
-  - Test with cURL to verify that all requests are routed to v1
-  - Blue/Green deployment by route all requests to v2
-   
-    ```bash
-    oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":0},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":100}]}}]' -n project1
-    ```
 
-  - Test with cURL to verify that all requests are routed to v2
-  - Canary deployment by weight requests between v1 and v2 with 70% and 30%
+    #### CLI
+
+    - Test with cURL to verify that all requests are routed to v1
+    - Blue/Green deployment by route all requests to v2
+     
+      ```bash
+      oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":0},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":100}]}}]' -n project1
+      ```
+
+    - Test with cURL to verify that all requests are routed to v2
+    - Adjust traffic 30% to v2
+      
+      ```bash
+      oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
+      ```
+
+    #### Kiali
+    - 
     
-    ```bash
-    oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
-    ```
-    
-- Test canary deployment
+- Test A/B deployment
   - Run 100 requests
   
     ```bash
@@ -434,12 +443,13 @@ Sample application
   - Check result for comparing percentage of requests to v1 and v2
     
     ```bash
-    printf "Version 1: %s\n" $(cat result.txt | grep "1.0.0" | wc -l)
-    printf "Version 2: %s\n" $(cat result.txt | grep "2.0.0" | wc -l)
+    printf "Version 1: %s\n" $(cat result.txt | grep "v1" | wc -l)
+    printf "Version 2: %s\n" $(cat result.txt | grep "v2" | wc -l)
     rm -f result.txt
     ```
     
-### Routing by condition based on URI
+### Conditional Routing by URI
+
 - Set conditional routing between 2 services with virtual service
   - Check for [virtual service by URI](manifests/frontend-virtual-service-with-uri.yaml), Replace DOMAIN with cluster's DOMAIN. Condition with regular expression
       - Route to v1 if request URI start with "/ver" and end with "1"
@@ -492,20 +502,21 @@ Sample application
   
   ```bash
   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
-  curl $FRONTEND_ISTIO_ROUTE/version1
-  curl $FRONTEND_ISTIO_ROUTE/vers1
-  curl $FRONTEND_ISTIO_ROUTE/ver1
+  curl -w"\n\n" $FRONTEND_ISTIO_ROUTE/version1
+  curl -w"\n\n" $FRONTEND_ISTIO_ROUTE/vers1
+  curl -w"\n\n" $FRONTEND_ISTIO_ROUTE/ver1
   ```
   
 - Test with URI /
   
   ```bash
   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
-  curl $FRONTEND_ISTIO_ROUTE/
+  curl -w"\n\n" $FRONTEND_ISTIO_ROUTE/
   ```
   
-### A/B with Istio Virtual Service
-- A/B testing by investigating User-Agent header with [Virtual Service](manifests/frontend-virtual-service-with-header.yaml), Replace DOMAIN with cluster's sub-domain.
+### Canary Deployment using HTTP headers
+
+- Canary Deployment by checking User-Agent header with [Virtual Service](manifests/frontend-virtual-service-with-header.yaml), Replace DOMAIN with cluster's sub-domain.
   - If HTTP header User-Agent contains text Firewall, request will be routed to frontend v2
    
   ```yaml
@@ -536,6 +547,7 @@ Sample application
             number: 8080
           subset: v1
   ```
+
 - Apply [Virtual Service](manifests/frontend-virtual-service-with-header.yaml)
   
   ```bash
@@ -565,6 +577,13 @@ Sample application
   oc apply -f manifests/backend-virtual-service-v1-v2-50-50.yaml -n project1
   oc get pods -n project1
   ```
+- Configure frontend to request to backend
+  
+  ```bash
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+  ```
+
   
 - **Optional**: Draw connetion from frontend to backend in Developer Console
 
@@ -574,13 +593,6 @@ Sample application
   ```
   
   ![](images/dev-console-topology-frontend-v1-v2-backend-v1-v2.png)
-
-- Configure frontend to request to backend
-  
-  ```bash
-  oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-  oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-  ```
 
 - Deploy audit app and mirror every requests that frontend call backend to audit app
   
@@ -612,6 +624,10 @@ Sample application
   ![](images/mirror-log.png)
 
 
+  Kiali Graph
+
+  ![](images/kiali-frontend-backend-audit.png)
+
 
 ## Observability
 
@@ -625,11 +641,13 @@ Sample application
 
 - Login to Kiali Console and select Graph
   -  Namespace: select checkbox "project1"
-  -  Display: select checkbox "Requests percentage" and "Traffic animation"
+  -  Display: select checkbox "Request distribution" and "Traffic animation"
 
 - Run following command
 
   ```bash
+  DOMAIN=$(oc whoami --show-console|awk -F'apps.' '{print $2}')
+  cat manifests/frontend-virtual-service-with-weight-routing.yaml | sed 's/DOMAIN/'$DOMAIN'/'|oc apply -n project1 -f -
   oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
   FRONTEND_ISTIO_ROUTE=$(oc get route -n istio-system|grep frontend-gateway |awk '{print $2}')
   while [ 1 ];
@@ -664,23 +682,81 @@ Sample application
     ![](images/jaeger-transaction.png) 
   
   - Simulate error on backend app 
-    - set backend pod to 
+    - set weight to 50/50
+
+      ```bash
+        oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":50},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":50}]}}]' -n project1
+      ```
+
+    - set backend pod to return 504
       
       ```bash
-      oc exec backend-v1-7c7d56c9d5-gvkbr -- curl http://localhost:8080/stop
+      oc exec -c backend -n project1 $(oc get pods -n project1 -l app=backend --no-headers -o=custom-columns="NAME:.metadata.name"|head -n 1) -- curl -w "\n\n" -s http://localhost:8080/stop
       ```
 
     - Request to frontend app
 
       ```bash
-      curl -s $FRONTEND_ISTIO_ROUTE
+      curl -s -w "\n" $FRONTEND_ISTIO_ROUTE
+      curl -s -w "\n" $FRONTEND_ISTIO_ROUTE
       ```
 
     - Query Jaeger with tag http.status_code=504. Check detail trace to verify that envoy retry request to backend service
       
       ![](images/jaeger-with-http-504.png)
-    
+
+      Drill down into detail of transaction
+
+      ![](images/jaeger-with-http-504-drill-down.png)
+
+    - set backend pod to return 200
+      
+      ```bash
+      oc exec -c backend -n project1 $(oc get pods -n project1 -l app=backend --no-headers -o=custom-columns="NAME:.metadata.name"|head -n 1) -- curl -w "\n\n" -s http://localhost:8080/start
+      ```
+### Application Tracing with OpenTracing
+
+- Deploy todo application with Kustomize
   
+  ```bash
+   oc create -k manifests/todo-kustomize/base
+   watch oc get pods -n todo
+  ```
+- Todo Application
+
+  ![](images/todo-app.png)
+
+- Add namespace todo to ServiceMeshMemberRoll
+
+  ```bash
+  oc patch smmr default -n istio-system --type='json' -p='[{"op":"add","path":"/spec/members/-","value":"todo"}]'
+  ```
+- Add istio sidecar to deployment todo
+  
+  ```bash
+   oc patch deployment todo -n todo -p '{"spec":{"template":{"metadata":{"annotations":{"sidecar.istio.io/inject":"true"}}}}}' 
+  ```
+- Change todo container image to *quay.io/voravitl/todo:trace* and set JDBC URL to use tracing driver
+  
+  ```bash
+  oc patch deployment todo -n todo --type='json' -p='[{"op":"replace","path":"/spec/template/spec/containers/0/image","value":"quay.io/voravitl/todo:trace"}]'
+  oc set env deployment todo -n todo  quarkus.datasource.jdbc.url=jdbc:tracing:postgresql://todo-db/todo
+  oc set env deployment todo -n todo  quarkus.jaeger.endpoint=http://jaeger-collector.istio-system:14268/api/traces
+  ```
+
+- Create, update and delete tasks in todo application then Check Kiali console.
+  - Select by query tyep
+    
+    ![](images/todo-trace-jaeger.png)
+
+  - Transaction with query statement
+    
+    ![](images/todo-trace-select.png)
+  
+  - Transaction with delete statement
+
+    ![](images/todo-trace-delete.png)
+
 ### Envoy Access Log
 - Envoy access log already enabled with [ServiceMeshControlPlane CRD](manifests/smcp.yaml)
   
@@ -693,9 +769,13 @@ Sample application
         encoding: TEXT
         name: /dev/stdout
   ```
+
 - Check access log
+
   ```bash
-  oc logs -f $(oc get pods -n project1 --no-headers|grep frontend|head -n 1|awk '{print $1}') -c istio-proxy -n project1
+  oc logs -f \
+  $(oc get pods -n project1 --no-headers -o=custom-columns="NAME:.metadata.name" -l app=frontend|head -n 1) \
+  -c istio-proxy -n project1
   ```
   
   Sample output
