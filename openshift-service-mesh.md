@@ -745,18 +745,24 @@ Sample application
   ```
 
 - Create, update and delete tasks in todo application then Check Kiali console.
-  - Select by query tyep
+  
+  - Select by query type
     
     ![](images/todo-trace-jaeger.png)
 
-  - Transaction with query statement
+  - Transaction with create todo item
+
+    ![](images/todo-trace-create.png)
+
+  - Transaction with query todo items
     
     ![](images/todo-trace-select.png)
   
-  - Transaction with delete statement
+  - Transaction with deleting todo item
 
     ![](images/todo-trace-delete.png)
   
+ 
   - Check for traceid in todo pod's log
     
     ```bash
