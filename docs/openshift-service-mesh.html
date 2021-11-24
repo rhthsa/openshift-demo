@@ -1223,15 +1223,22 @@ oc set env deployment todo -n todo  quarkus.jaeger.endpoint=http://jaeger-collec
 </li>
 <li><p>Create, update and delete tasks in todo application then Check Kiali console.</p>
 <ul>
-<li><p>Select by query tyep</p>
+<li><p>Select by query type</p>
 <p><img src="images/todo-trace-jaeger.png" alt=""></p>
 </li>
-<li><p>Transaction with query statement</p>
+<li><p>Transaction with create todo item</p>
+<p><img src="images/todo-trace-create.png" alt=""></p>
+</li>
+<li><p>Transaction with query todo items</p>
 <p><img src="images/todo-trace-select.png" alt=""></p>
 </li>
-<li><p>Transaction with delete statement</p>
+<li><p>Transaction with deleting todo item</p>
 <p><img src="images/todo-trace-delete.png" alt=""></p>
 </li>
+</ul>
+</li>
+</ul>
+<ul>
 <li><p>Check for traceid in todo pod&apos;s log</p>
 <pre><code class="lang-bash">oc logs -f \
 $(oc get pods -l app=todo -n todo --no-headers -o=custom-columns=&quot;NAME:.metadata.name&quot;|head -n 1) \
@@ -1242,8 +1249,6 @@ $(oc get pods -l app=todo -n todo --no-headers -o=custom-columns=&quot;NAME:.met
 09:54:27 INFO  x-b3-traceid=447bbafa3ed323909180faf410d181f5, , parentId=9180faf410d181f5, x-b3-spanid=a7a9d4b287917f5f, sampled=true [io.qu.sa.TodoResource] (executor-thread-0) update id:10
 09:54:32 INFO  x-b3-traceid=32c779ecb20641fa3823e3b6d448c41e, , parentId=3823e3b6d448c41e, x-b3-spanid=bf61443edfc58082, sampled=true [io.qu.sa.TodoResource] (executor-thread-0) getAll
 </code></pre>
-</li>
-</ul>
 </li>
 </ul>
 <h3 id="envoy-access-log">Envoy Access Log</h3>
@@ -2276,7 +2281,7 @@ RESOURCE_EXHAUSTED:Quota is exhausted for: requestcountquota* Closing connection
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-11-24T11:24:53.038Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-24T11:25:35.655Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.4.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.4.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.4.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2021-11-24T11:49:58.868Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-11-24T11:50:48.545Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
