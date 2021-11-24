@@ -756,6 +756,22 @@ Sample application
   - Transaction with delete statement
 
     ![](images/todo-trace-delete.png)
+  
+  - Check for traceid in todo pod's log
+    
+    ```bash
+    oc logs -f \
+    $(oc get pods -l app=todo -n todo --no-headers -o=custom-columns="NAME:.metadata.name"|head -n 1) \
+     -n todo -c todo
+    ```
+
+    output
+
+    ```log
+    09:54:27 INFO  x-b3-traceid=510dc04de55eb770167efec4a8cd622a, , parentId=167efec4a8cd622a, x-b3-spanid=5ad367c2c286947e, sampled=true [io.qu.sa.TodoResource] (executor-thread-0) update id:9
+    09:54:27 INFO  x-b3-traceid=447bbafa3ed323909180faf410d181f5, , parentId=9180faf410d181f5, x-b3-spanid=a7a9d4b287917f5f, sampled=true [io.qu.sa.TodoResource] (executor-thread-0) update id:10
+    09:54:32 INFO  x-b3-traceid=32c779ecb20641fa3823e3b6d448c41e, , parentId=3823e3b6d448c41e, x-b3-spanid=bf61443edfc58082, sampled=true [io.qu.sa.TodoResource] (executor-thread-0) getAll
+    ```
 
 ### Envoy Access Log
 - Envoy access log already enabled with [ServiceMeshControlPlane CRD](manifests/smcp.yaml)
