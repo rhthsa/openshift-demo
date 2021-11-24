@@ -4,7 +4,19 @@ kind: ServiceMeshControlPlane
 metadata:
   name: basic
 spec:
-  version: v2.0
+  version: v2.1  # Change this to match your OSSM Version
+  tracing:
+    sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
+    type: Jaeger
+  proxy:
+   networking:
+    trafficControl:
+      outbound:
+        policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
+    accessLogging:
+      file:
+        encoding: TEXT
+        name: /dev/stdout 
   security:
     dataPlane:
       mtls: false
@@ -12,12 +24,16 @@ spec:
     controlPlane:
       mtls: false
       automtls: false
+  policy:
+    type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
+  telemetry:
+    type: Istiod
   gateways:
     openshiftRoute:
       enabled: true
     ingress:
         enabled: true
-        ingress: false
+        # ingress: true
         runtime:
           container:
             resources:
@@ -41,17 +57,16 @@ spec:
                 operator: Exists
                 effect: NoExecute
                 tolerationSeconds: 60
-        service:
-          type: ClusterIP
-    egress:
-        enabled: false
+        # service:
+        #   type: ClusterIP
+    # egress:
+    #     enabled: false
   general:
     logging:
-      componentLevels:
-        default: info
+      # componentLevels:
+      #   default: info
       logAsJSON: false
-  policy:
-    type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
+      validationMessages: false
   addons:
     grafana:
       enabled: true
@@ -82,19 +97,4 @@ spec:
     #     podDisruption:
     #       enabled: false
     #       minAvailable: 1
-  telemetry:
-    type: Istiod
-  proxy:
-   networking:
-    trafficControl:
-      outbound:
-        policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
-    accessLogging:
-      #envoyService:
-      #  enabled: false # Envoy log at ...
-      file:
-        encoding: TEXT
-        name: /dev/stdout 
-  tracing:
-    sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
-    type: Jaeger
+

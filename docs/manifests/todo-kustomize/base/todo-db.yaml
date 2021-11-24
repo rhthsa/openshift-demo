@@ -4,6 +4,7 @@ metadata:
   labels:
     app: todo-db
   name: todo-db
+  namespace: todo
   annotations:
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/sync-wave: "-1"
@@ -17,6 +18,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: todo-db
+  namespace: todo
   annotations:
     volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
     argocd.argoproj.io/hook: PreSync
@@ -42,6 +44,7 @@ metadata:
     app.openshift.io/runtime: postgresql
     app: todo-db
   name: todo-db
+  namespace: todo
   annotations:
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/sync-wave: "1"
@@ -130,6 +133,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: todo-db
+  namespace: todo
   labels:
     app: todo-db
   annotations:

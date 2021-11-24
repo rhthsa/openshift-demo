@@ -8,7 +8,7 @@ spec:
   servers:
   - port:
       number: 80
-      name: http2
+      name: http
       protocol: HTTP
     hosts:
     - 'frontend.apps.DOMAIN'
