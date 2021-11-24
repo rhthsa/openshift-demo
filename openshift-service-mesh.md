@@ -16,7 +16,7 @@
   - [Observability](#observability)
     - [Traffic Analysis](#traffic-analysis)
     - [Distributed Tracing](#distributed-tracing)
-    - [Application Tracing with OpenTracing](#application-tracing-with-opentracing)
+    - [JDBC Tracing with OpenTracing](#jdbc-tracing-with-opentracing)
     - [Envoy Access Log](#envoy-access-log)
   - [Service Resilience](#service-resilience)
     - [Circuit Breaker](#circuit-breaker)
@@ -714,7 +714,7 @@ Sample application
       ```bash
       oc exec -c backend -n project1 $(oc get pods -n project1 -l app=backend --no-headers -o=custom-columns="NAME:.metadata.name"|head -n 1) -- curl -w "\n\n" -s http://localhost:8080/start
       ```
-### Application Tracing with OpenTracing
+### JDBC Tracing with OpenTracing
 
 - Deploy todo application with Kustomize
   
