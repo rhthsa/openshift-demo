@@ -803,9 +803,16 @@ Sample application
   Sample output
 
   ```log
-  [2020-12-25T10:33:04.848Z] "GET / HTTP/1.1" 200 - "-" "-" 0 103 5750 5749 "-" "-" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "backend:8080" "10.128.2.133:8080" outbound|8080|v2|backend.project1.svc.cluster.local 10.128.2.131:48300 172.30.116.252:8080 10.128.2.131:36992 - -
-  [2020-12-25T10:33:04.846Z] "GET / HTTP/1.1" 200 - "-" "-" 0 184 5756 5755 "184.22.250.124,10.131.0.4" "curl/7.64.1" "0c3ce34a-f5a0-9340-b84f-3631cd8eb444" "frontend.apps.cluster-1138.1138.example.opentlc.com" "127.0.0.1:8080" inbound|8080|http|frontend-v1.project1.svc.cluster.local 127.0.0.1:56540 10.128.2.131:8080 10.131.0.4:0 outbound_.8080_.v1_.frontend.project1.svc.cluster.local default
+  03:17:46 INFO  x-b3-traceid=7256eae02a1f11166d5add572165bfa0, , parentId=6d5add572165bfa0, x-b3-spanid=41e2c3434fbb022a, sampled=true [io.qu.sa.TodoResource] (executor-thread-2) getAll
   ```
+  
+  Search by x-b3-traceid 
+
+  ![](images/jaeger-by-trace-id.png)
+
+  View trace
+
+  ![](image/../images/jaeger-by-trace-id-tx.png)
 
 ## Service Resilience
 
