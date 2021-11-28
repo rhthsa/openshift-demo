@@ -719,7 +719,7 @@ Sample application
 - Deploy todo application with Kustomize
   
   ```bash
-   oc create -k manifests/todo-kustomize/base
+   oc create -k manifests/todo-kustomize/overlays/dev
    watch oc get pods -n todo
   ```
 - Todo Application
