@@ -1,6 +1,12 @@
 #!/bin/bash
-SMCP=$1
-CONTROL_PLANE=$2
+if [ $# -eq 2 ];
+then
+ SMCP=$1
+ CONTROL_PLANE=$2
+else
+ SMCP=basic
+ CONTROL_PLANE=istio-system
+fi
 DONE=1
 while [ $DONE -ne 0 ];
 do
