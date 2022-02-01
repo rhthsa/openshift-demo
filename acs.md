@@ -1,14 +1,68 @@
 # ACS
 - [ACS](#acs)
   - [Installation](#installation)
-    - [CLI](#cli)
-    - [Configure helm repo](#configure-helm-repo)
     - [Central](#central)
     - [Secured Cluster Services](#secured-cluster-services)
+      - [Operator](#operator)
     - [Test](#test)
 
 ## Installation
-### CLI
+
+### Central
+- Install *roxctl* CLI
+  - Download latest binary from [here](https://mirror.openshift.com/pub/rhacs/assets/latest/bin/)
+  - For OSX
+    
+    ```bash
+    curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
+    ```
+
+- Install Operator *Advanced Cluster Security for Kubernetes*
+- Create namespace
+
+  ```bash
+  oc new-project stackrox
+  ```
+
+- *Optional:* Copy default TLS from default router
+  
+  ```bash
+  oc get secret $(oc get secret -n openshift-ingress -o=custom-columns="NAME:.metadata.name" --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed 's/namespace: .*/namespace: stackrox/' | sed 's/name: .*/name: acs-central/' | oc apply -n stackrox  -f -
+  ```
+- Create ACS Central
+
+  ```bash
+  oc create -f manifests/acs-central.yaml 
+  oc describe central/stackrox-central-services
+  ```
+
+- Check status
+  
+  ```bash
+  watch oc get pods -n stackrox
+  ```
+
+  Output
+  
+  ```bash
+  NAME                          READY   STATUS    RESTARTS   AGE
+  central-768b975cb4-pznx2      1/1     Running   0          2m36s
+  scanner-774867b7f5-vnlds      1/1     Running   0          3m17s
+  scanner-db-7784db6d56-7kqvq   1/1     Running   0          3m17s
+  ```
+
+- URL and password to access ACS Console
+  
+  ```bash
+  ROX_URL=https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
+  ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
+  ROX_PASSWORD=$(oc -n stackrox get secret central-htpasswd -n stackrox -o go-template='{{index .data "password" | base64decode}}')
+  ```
+
+<!-- ### CLI
+
+
+
 
 - Install roxctl CLI on OSX
 
@@ -76,9 +130,53 @@
   
     ```bash
     echo "https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')"
-    ```
+    ``` -->
 
 ### Secured Cluster Services
+- Login to ACS console
+- Generate cluster init bundle
+  - Platform Configuration -> Integrations -> Cluster Init Bundle -> Generate Bundle
+  - Input cluster name
+  - Download *Helm values file* for installation with roxctl or download *Kubernetes Secrets file* for installation with Operator
+
+#### Operator
+- Create namespace for *Secured Cluster Services*
+  
+  ```bash
+  oc new-project stackrox-cluster
+  ```
+- Create secret
+  
+  ```bash
+   oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
+  ```
+- Create Secured Cluster Service
+  
+  ```bash
+  oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
+  ```
+
+- Check status
+  
+  ```bash
+  watch oc get pods -n stackrox-cluster
+  ```
+
+  Output
+
+  ```bash
+  NAME                                READY   STATUS    RESTARTS   AGE
+  admission-control-cb5997c68-4ddp8   1/1     Running   0          28s
+  admission-control-cb5997c68-7vtgh   1/1     Running   0          28s
+  admission-control-cb5997c68-qhbqc   1/1     Running   0          28s
+  collector-59kzw                     2/2     Running   0          28s
+  collector-bx2w2                     2/2     Running   0          28s
+  collector-kgp57                     2/2     Running   0          28s
+  collector-tmscm                     2/2     Running   0          28s
+  collector-x9h8n                     2/2     Running   0          28s
+  ```
+
+<!-- #### StackRox CLI
 - Create *authentication token*
   - Login to Central
   - Platform Configuration -> Integrations -> Authentication Tokens Select StackRox API Token then generate token and copy token to clipboard
@@ -151,19 +249,19 @@
     ```
 - Check managed clusters on ACS console. Platform Configuration -> Clusters
   
-  ![](images/acs-console-managed-clusters.png)
+  ![](images/acs-console-managed-clusters.png) -->
 
 ### Test
 - Deploy sample application
 
     ```bash
     oc new-project test
-    oc run sample-vul --labels=app=backend --image=quay.io/voravitl/backend:vul -n test 
+    oc run log4shell --labels=app=log4shell --image=quay.io/voravitl/log4shell:latest -n test 
     watch oc get pods -n test
     ```
-- Check ACS console
+- Check ACS console: Vulnerability Management -> IMAGES -> Search for CVE-2021-44228
   
-  ![](images/acs-backend-vul.png)
+  ![](images/acs-image-cve-44228.png)
 
   Details
 
