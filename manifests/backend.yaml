@@ -47,16 +47,16 @@ spec:
             value: 'false'
         ports:
         - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 60  
-      securityContext:
-        allowPrivilegeEscalation: false
-        runAsNonRoot: true
-        drop: ALL
-        readOnlyRootFilesystem: true
       terminationGracePeriodSeconds: 10   
 ---
 apiVersion: apps/v1
@@ -108,16 +108,16 @@ spec:
             value: 'false'
         ports:
         - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 60
-      securityContext:
-        allowPrivilegeEscalation: false
-        runAsNonRoot: true
-        drop: ALL
-        readOnlyRootFilesystem: true
       terminationGracePeriodSeconds: 10    
 ---
 apiVersion: v1
