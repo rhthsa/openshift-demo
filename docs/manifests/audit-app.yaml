@@ -45,6 +45,11 @@ spec:
             value: v3
           - name: quarkus.log.console.color
             value: 'false'
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: true
         ports:
         - containerPort: 8080
 ---
