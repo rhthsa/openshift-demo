@@ -50,7 +50,6 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
           readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
@@ -111,7 +110,6 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
           readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
