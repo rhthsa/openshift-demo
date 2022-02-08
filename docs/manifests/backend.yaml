@@ -51,7 +51,7 @@ spec:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
           drop: ALL
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
@@ -112,7 +112,7 @@ spec:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
           drop: ALL
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
