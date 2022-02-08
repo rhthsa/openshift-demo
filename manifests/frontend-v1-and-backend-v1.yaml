@@ -139,7 +139,7 @@ spec:
         allowPrivilegeEscalation: false
         runAsNonRoot: true
         drop: ALL
-        readOnlyRootFilesystem: true
+        readOnlyRootFilesystem: false
       terminationGracePeriodSeconds: 10   
 ---
 apiVersion: v1

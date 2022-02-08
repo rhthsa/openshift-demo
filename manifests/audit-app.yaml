@@ -49,7 +49,7 @@ spec:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
           drop: ALL
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
         ports:
         - containerPort: 8080
 ---
