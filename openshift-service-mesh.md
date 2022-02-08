@@ -1128,7 +1128,7 @@ Sample application
   ```bash
   mkdir -p certs
   DOMAIN=$(oc whoami --show-console  | awk -F'apps.' '{print $2}')
-  CN=frontend.apps.$SDOMAIN
+  CN=frontend.apps.$DOMAIN
   echo "Create Root CA and Private Key"
   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' \
   -keyout certs/example.com.key -out certs/example.com.crt
