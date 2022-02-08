@@ -1,2 +1,0 @@
-1. Get the application URL by running these commands:
-http://{{ include "backend-chart.name" . }}:{{ .Values.service.port }}
