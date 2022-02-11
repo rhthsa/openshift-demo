@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '8'
+    #app.openshift.io/runtime-version: '11'
 spec:
   replicas: 1
   selector:
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '8'
+    #app.openshift.io/runtime-version: '11'
 spec:
   replicas: 1
   selector:
@@ -118,7 +118,7 @@ spec:
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 60
-      terminationGracePeriodSeconds: 10    
+      terminationGracePeriodSeconds: 10
 ---
 apiVersion: v1
 kind: Service
