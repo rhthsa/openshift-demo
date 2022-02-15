@@ -5,8 +5,9 @@ metadata:
   namespace: stackrox
 spec:
   central:
-    defaultTLSSecret:
-      name: acs-central
+    # To use your own secret
+    # defaultTLSSecret:
+    #   name: acs-central
     exposure:
       loadBalancer:
         enabled: false
@@ -27,4 +28,11 @@ spec:
         maxReplicas: 2
         minReplicas: 1
         replicas: 1
+    # db:
+    #   nodeSelector:
+    #     node-role.kubernetes.io/acs: ""
+    #   tolerations:
+    #   - key: infra-acs
+    #     value: reserved
+    #     effect: NoSchedule   
     scannerComponent: Enabled

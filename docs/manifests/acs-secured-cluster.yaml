@@ -18,4 +18,4 @@ spec:
       imageFlavor: Regular
     taintToleration: TolerateTaints
   clusterName: cluster1
-  centralEndpoint: 'central.stackrox.svc:443'
+  centralEndpoint: 'central.stackrox.svc:443' # Central is created in namespace stackrox
