@@ -12,6 +12,19 @@ spec:
     listenOnCreates: true
     timeoutSeconds: 3
     listenOnEvents: true
+    nodeSelector:
+      node-role.kubernetes.io/acs: ""
+    tolerations:
+    - key: infra-acs
+      value: reserved
+      effect: NoSchedule
+  sensor:
+    nodeSelector:
+      node-role.kubernetes.io/acs: ""
+    tolerations:
+    - key: infra-acs
+      value: reserved
+      effect: NoSchedule
   perNode:
     collector:
       collection: KernelModule

@@ -1,44 +1,83 @@
 # ACS
 - [ACS](#acs)
   - [Installation](#installation)
-    - [Central](#central)
-    - [Secured Cluster Services](#secured-cluster-services)
+    - [Central Installation](#central-installation)
+      - [[Optional] Create Central at Infra Nodes](#optional-create-central-at-infra-nodes)
+      - [Access Central](#access-central)
+    - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
-    - [Test](#test)
+    - [Quick Test](#quick-test)
+      - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
+      - [Detecting suspect behaviors](#detecting-suspect-behaviors)
+      - [Scan container images with roxctl](#scan-container-images-with-roxctl)
+  - [Integration with Container Registry (WIP)](#integration-with-container-registry-wip)
 
 ## Installation
 
-### Central
-- Install *roxctl* CLI
-  - Download latest binary from [here](https://mirror.openshift.com/pub/rhacs/assets/latest/bin/)
-  - For OSX
-    
-    ```bash
-    curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
-    ```
+### Central Installation
 
-- Install Operator *Advanced Cluster Security for Kubernetes*
-- Create namespace
+
+
+- Install Operator 
+  
+  - Select *Advanced Cluster Security for Kubernetes* 
+
+
+  ![](images/acs-install-operator-01.png)
+
+
+  - Accept default parameters
+
+  
+  ![](images/acs-install-operator-02.png)
+
+  
+- Create namespace for central server and scanner.
 
   ```bash
   oc new-project stackrox
   ```
 
-- *Optional:* Copy default TLS from default router
+- Install *roxctl* CLI
+  - Download latest binary from [here](https://mirror.openshift.com/pub/rhacs/assets/latest/bin/)
+    
+    - For OSX
+      
+      ```bash
+      curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
+      ```
+
+- Create ACS Central with [acs-central.yaml](manifests/acs-central.yaml3)
   
-  ```bash
-  oc get secret $(oc get secret -n openshift-ingress -o=custom-columns="NAME:.metadata.name" --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed 's/namespace: .*/namespace: stackrox/' | sed 's/name: .*/name: acs-central/' | oc apply -n stackrox  -f -
-  ```
-- Create ACS Central
+  - If you want to use custom certificate storedfor central add following section to [acs-central.yaml](manifests/acs-central.yaml)
+  
+    ```yaml
+    spec:
+      central:
+        defaultTLSSecret:
+          name: acs-central
+    ```
+
+    - *Optional:* Copy default TLS from default router to secret name *acs-central*
+    
+      ```bash
+      oc get secret $(oc get secret -n openshift-ingress -o=custom-columns="NAME:.metadata.name" --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed 's/namespace: .*/namespace: stackrox/' | sed 's/name: .*/name: acs-central/' | oc apply -n stackrox  -f -
+      ```
+
+- Create Central
 
   ```bash
-  oc create -f manifests/acs-central.yaml 
-  oc describe central/stackrox-central-services
+  oc create -f manifests/acs-central.yaml -n stackrox
   ```
+
+  *Remark:*
+  - Central is configured with memory limit 8 Gi
+  - Default RWO storage for central is 100 GB
 
 - Check status
   
   ```bash
+  oc describe central/stackrox-central-services
   watch oc get pods -n stackrox
   ```
 
@@ -51,6 +90,41 @@
   scanner-db-7784db6d56-7kqvq   1/1     Running   0          3m17s
   ```
 
+#### [Optional] Create Central at Infra Nodes
+  - Infra Nodes preparation
+
+    - Label Infra nodes
+      
+      ```bash
+      oc label node <node> node-role.kubernetes.io/infra=""
+      oc label node <node> node-role.kubernetes.io/acs=""
+      ```
+    
+    - Taint infra nodes with *infra-acs*
+      
+      ```bash
+      oc adm taint node ip-10-0-204-46.us-east-2.compute.internal infra-acs=reserved:NoSchedule
+      ```
+    <!-- - Create [machine config](manifests/mcp-infra-acs.yaml) for infra nodes
+      
+      ```bash
+      oc create -f manifests/mcp-infra-acs.yaml
+      ``` -->
+
+  - Create Central with [acs-central-infra.yaml](manifests/acs-central-infra.yaml)
+    
+    ```bash
+    oc create -f manifests/acs-central-infra.yaml -n stackrox
+    ```
+
+#### Access Central
+
+<!-- - *Optional:* Change default password
+  
+  ```bash
+
+  ``` -->
+
 - URL and password to access ACS Console
   
   ```bash
@@ -58,6 +132,7 @@
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   ROX_PASSWORD=$(oc -n stackrox get secret central-htpasswd -n stackrox -o go-template='{{index .data "password" | base64decode}}')
   ```
+
 
 <!-- ### CLI
 
@@ -132,12 +207,16 @@
     echo "https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')"
     ``` -->
 
-### Secured Cluster Services
+### Secured Cluster Services (Managed Cluster)
+
 - Login to ACS console
 - Generate cluster init bundle
   - Platform Configuration -> Integrations -> Cluster Init Bundle -> Generate Bundle
+
+    ![](images/acs-init-bundle.png)
+
   - Input cluster name
-  - Download *Helm values file* for installation with roxctl or download *Kubernetes Secrets file* for installation with Operator
+  - download *Kubernetes Secrets file* for installation with *Operator* or *Helm values file* for installation with *roxctl*
 
 #### Operator
 - Create namespace for *Secured Cluster Services*
@@ -145,20 +224,30 @@
   ```bash
   oc new-project stackrox-cluster
   ```
-- Create secret
+- Create secret from previously downloaded *Kubernetes Secrets file*
   
   ```bash
    oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
   ```
-- Create Secured Cluster Service
+
+- Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
   
   ```bash
   oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
   ```
 
+  Remark: [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml) is prepared for install Secured Cluster Service within the same cluster with Central.
+
+  If you want Admission Control run on Infra Nodes with [acs-secured-cluster-infra.yaml](manifests/acs-secured-cluster-infra.yaml)
+
+  ```bash
+  oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
+  ```
+
 - Check status
   
   ```bash
+  oc describe securedcluster/cluster1  -n stackrox-cluster
   watch oc get pods -n stackrox-cluster
   ```
 
@@ -175,6 +264,33 @@
   collector-tmscm                     2/2     Running   0          28s
   collector-x9h8n                     2/2     Running   0          28s
   ```
+
+  Remark: 
+  - Adminission control is high availability with default 3 pods
+  - Collector is run on all nodes
+
+
+- Check ACS Console
+
+  - Dashboard
+
+    ![](images/acs-console-dashboard-managed-cluster.png)
+
+  - Platform Configuration -> Clusters
+
+    ![](images/acs-console-managed-clusters.png)
+
+    
+    Overall status
+
+
+    ![](images/acs-manged-cluster-dynamic-configuration-01.png)
+    
+
+    Dynamic configuration
+
+    ![](images/acs-manged-cluster-dynamic-configuration-02.png)
+
 
 <!-- #### StackRox CLI
 - Create *authentication token*
@@ -251,7 +367,10 @@
   
   ![](images/acs-console-managed-clusters.png) -->
 
-### Test
+### Quick Test
+
+#### Container Image with Vulnerabilities
+
 - Deploy sample application
 
     ```bash
@@ -259,16 +378,84 @@
     oc run log4shell --labels=app=log4shell --image=quay.io/voravitl/log4shell:latest -n test 
     watch oc get pods -n test
     ```
-- Check ACS console: Vulnerability Management -> IMAGES -> Search for CVE-2021-44228
+
+- Check ACS Dashboard. 
   
+  - 1 Criticals violation will be found.
+    
+    ![](images/acs-dashboard-1-critical.png)
+
+  - Drill down for more information
+
+
+    ![](images/acs-dashborad-log4shell-1.png)
+
+
+    CVE Information
+    
+
+    ![](images/acs-dashborad-log4shell-2.png)
+
+
+    CVSS score: https://nvd.nist.gov/vuln-metrics/cvss
+
+- Search by CVE. Vulnerability Management -> Dashboard -> IMAGES -> Search for *CVE-2021-44228*
+
+
   ![](images/acs-image-cve-44228.png)
 
-  Details
 
-  ![](images/acs-backend-vul-info.png)
+  Details information
 
-- Scan with CLI
+
+  ![](images/acs-image-cve-44228-recommendation.png)
+
+#### Detecting suspect behaviors
+
+- Deploy sample application
+
+    ```bash
+    oc run backend --labels=app=backend --image=quay.io/voravitl/backend:v1 -n test 
+    ```
+- Run curl inside backend's pod
+  
+    ```bash
+    oc exec backend -- curl http://localhost:8080/q/health
+    ```
+- Check Console
+  
+  - Navigate toDashboard -> Violation
+
+    ![](images/acs-exec-in-pod.png)
+
+  - Details information
+
+    ![](images/acs-exec-in-pod-detailed.png)
+
+
+#### Scan container images with roxctl
+
+
+- Create token for DevOps tools
+    
+   - Navigate to Platform Configuration -> Integrations -> Authentication Token -> API Token
+   - Click Generate Token
+   - Input token name and select role Continuous Integration
+   - Copy and save token.
+
+- Set API token to environment variable 
+
+  ```bash
+  export ROX_API_TOKEN=<token>
+  ```
+
+- Scan image
   
   ```bash
-  roxctl --insecure-skip-tls-verify image check -e https://${ROX_CENTRAL_ADDRESS} --image quay.io/voravitl/backend:vul
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image quay.io/voravitl/log4shell:latest --output=table
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image quay.io/voravitl/log4shell:latest --output=json| jq '.result.summary.CRITICAL'
   ```
+
+## Integration with Container Registry (WIP)
+- Setup Nexus
+- 
