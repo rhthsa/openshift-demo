@@ -70,7 +70,7 @@
   oc create -f manifests/acs-central.yaml -n stackrox
   ```
 
-  *Remark:*
+  *Remark*
   - Central is configured with memory limit 8 Gi
   - Default RWO storage for central is 100 GB
 
@@ -126,6 +126,7 @@
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   ROX_PASSWORD=$(oc -n stackrox get secret central-htpasswd -n stackrox -o go-template='{{index .data "password" | base64decode}}')
   ```
+
 ### Secured Cluster Services (Managed Cluster)
 
 - Login to ACS console
@@ -392,4 +393,4 @@
 
 ## Integration with Container Registry (WIP)
 - Setup Nexus
-- 
+- Configure ACS to integrate with Nexus
