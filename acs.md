@@ -103,14 +103,8 @@
     - Taint infra nodes with *infra-acs*
       
       ```bash
-      oc adm taint node ip-10-0-204-46.us-east-2.compute.internal infra-acs=reserved:NoSchedule
+      oc adm taint node <node> infra-acs=reserved:NoSchedule
       ```
-    <!-- - Create [machine config](manifests/mcp-infra-acs.yaml) for infra nodes
-      
-      ```bash
-      oc create -f manifests/mcp-infra-acs.yaml
-      ``` -->
-
   - Create Central with [acs-central-infra.yaml](manifests/acs-central-infra.yaml)
     
     ```bash
@@ -185,7 +179,7 @@
   collector-x9h8n                     2/2     Running   0          28s
   ```
 
-  Remark: 
+  Remark
   - Adminission control is high availability with default 3 pods
   - Collector is run on all nodes
 
@@ -362,7 +356,7 @@
 
 - Sample recommendation
   
-  ```bash
+  ```
   manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
 
   manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
