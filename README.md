@@ -90,5 +90,6 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - [EAP on OpenShift](eap-on-ocp.md)
   - [OpenShift GitOps](gitops.md)
   - [gRPC or HTTP/2 Ingress Connectivity in OpenShift](grpc.md)
+- [Advanced Cluster Security for Kubernetes - ACS](acs.md)
 - Additional Solutions
   - [Managed Multi-Cluster Application Metrics with Prometheus & Thanos](thanos-receive.md)
