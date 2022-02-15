@@ -18,8 +18,6 @@
 
 ### Central Installation
 
-
-
 - Install Operator 
   
   - Select *Advanced Cluster Security for Kubernetes* 
@@ -121,12 +119,6 @@
 
 #### Access Central
 
-<!-- - *Optional:* Change default password
-  
-  ```bash
-
-  ``` -->
-
 - URL and password to access ACS Console
   
   ```bash
@@ -134,81 +126,6 @@
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   ROX_PASSWORD=$(oc -n stackrox get secret central-htpasswd -n stackrox -o go-template='{{index .data "password" | base64decode}}')
   ```
-
-
-<!-- ### CLI
-
-
-
-
-- Install roxctl CLI on OSX
-
-  ```bash
-  curl -O https://mirror.openshift.com/pub/rhacs/assets/3.0.59.1/bin/Darwin/roxctl
-  ```
-### Configure helm repo
-- Set helm repo
-
-    ```bash
-    helm repo add rhacs https://mirror.openshift.com/pub/rhacs/charts/
-    helm search repo -l rhacs/
-    helm repo update
-    ```
-### Central
-
-- Install on OpenShift
-
-    ```bash
-    helm install -n stackrox --create-namespace \
-    stackrox-central-services rhacs/central-services \
-    --set imagePullSecrets.allowNone=true \
-    --set central.exposure.route.enabled=true
-    ```
-
-    Install with cert
-    
-    ```bash
-    helm install -n stackrox --create-namespace \
-    stackrox-central-services rhacs/central-services \
-    --set imagePullSecrets.allowNone=true \
-    --set central.exposure.route.enabled=true \
-    --set-file central.defaultTLS.cert=/path/to/tls-cert.pem \
-    --set-file central.defaultTLS.key=/path/to/tls-key.pem
-    ```
-
-- Save user/password
-  
-    ```bash
-    StackRox 3.0.59.1 has been installed.
-
-    An administrator password has been generated automatically. Use username 'admin' and the following
-    password to log in for initial setup:
-
-    Ixd3*********************Pw***
-    ```
-- Check Stackrox's Central pods
-    
-    ```bash
-    oc get pods -n stackrox
-    ```
-
-    Output
-
-    ```bash
-    NAME                          READY   STATUS    RESTARTS   AGE
-    central-99db969b8-fpbrh       1/1     Running   0          46s
-    scanner-5b4689dd74-9n64m      1/1     Running   0          46s
-    scanner-5b4689dd74-kkqdz      0/1     Running   0          46s
-    scanner-5b4689dd74-qbnqp      0/1     Running   0          46s
-    scanner-db-6bdb7845b4-qksgc   1/1     Running   0          46s
-    ```
-
-- Check for Central's route
-  
-    ```bash
-    echo "https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')"
-    ``` -->
-
 ### Secured Cluster Services (Managed Cluster)
 
 - Login to ACS console
