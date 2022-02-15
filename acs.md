@@ -6,10 +6,10 @@
       - [Access Central](#access-central)
     - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
-    - [Quick Test](#quick-test)
-      - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
-      - [Detecting suspect behaviors](#detecting-suspect-behaviors)
-      - [Scan container images with roxctl](#scan-container-images-with-roxctl)
+  - [Quick Test](#quick-test)
+    - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
+    - [Detecting suspect behaviors](#detecting-suspect-behaviors)
+    - [Scan container images with roxctl](#scan-container-images-with-roxctl)
   - [Integration with Container Registry (WIP)](#integration-with-container-registry-wip)
 
 ## Installation
@@ -367,9 +367,9 @@
   
   ![](images/acs-console-managed-clusters.png) -->
 
-### Quick Test
+## Quick Test
 
-#### Container Image with Vulnerabilities
+### Container Image with Vulnerabilities
 
 - Deploy sample application
 
@@ -410,7 +410,7 @@
 
   ![](images/acs-image-cve-44228-recommendation.png)
 
-#### Detecting suspect behaviors
+### Detecting suspect behaviors
 
 - Deploy sample application
 
@@ -433,7 +433,7 @@
     ![](images/acs-exec-in-pod-detailed.png)
 
 
-#### Scan container images with roxctl
+### Scan container images with roxctl
 
 
 - Create token for DevOps tools
