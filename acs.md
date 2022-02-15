@@ -9,7 +9,9 @@
   - [Quick Test](#quick-test)
     - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
-    - [Scan container images with roxctl](#scan-container-images-with-roxctl)
+    - [Shift Left Security](#shift-left-security)
+      - [kube-linter](#kube-linter)
+      - [Scan container images with roxctl](#scan-container-images-with-roxctl)
   - [Integration with Container Registry (WIP)](#integration-with-container-registry-wip)
 
 ## Installation
@@ -432,8 +434,23 @@
 
     ![](images/acs-exec-in-pod-detailed.png)
 
+### Shift Left Security
+#### kube-linter
+- Try kube-linter with deployment YAML
+  
+  ```bash
+  kube-linter lint manifests/backend-bad-example.yaml
+  ```
 
-### Scan container images with roxctl
+- Sample recommendation
+  
+  ```bash
+  manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
+
+  manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+  ```
+
+#### Scan container images with roxctl
 
 
 - Create token for DevOps tools
