@@ -12,7 +12,6 @@
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
       - [Scan container images with roxctl](#scan-container-images-with-roxctl)
-  - [Integration with Container Registry (WIP)](#integration-with-container-registry-wip)
 
 ## Installation
 
@@ -353,6 +352,8 @@
   ```bash
   kube-linter lint manifests/backend-bad-example.yaml
   ```
+  
+  Download kube-linter from this [link](https://github.com/stackrox/kube-linter/releases)
 
 - Sample recommendation
   
@@ -385,6 +386,6 @@
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image quay.io/voravitl/log4shell:latest --output=json| jq '.result.summary.CRITICAL'
   ```
 
-## Integration with Container Registry (WIP)
+<!-- ## Integration with Container Registry (WIP)
 - Setup Nexus
-- Configure ACS to integrate with Nexus
+- Configure ACS to integrate with Nexus -->
