@@ -1,5 +1,0 @@
-resources:
-- namespace.yaml
-- todo-db.yaml
-- todo.yaml
-- service-monitor.yaml
