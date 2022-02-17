@@ -121,7 +121,7 @@
   ```bash
   ROX_URL=https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
-  ROX_PASSWORD=$(oc -n stackrox get secret central-htpasswd -n stackrox -o go-template='{{index .data "password" | base64decode}}')
+  ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath='{.data.password}'|base64 -d)
   ```
 
 ### Secured Cluster Services (Managed Cluster)
