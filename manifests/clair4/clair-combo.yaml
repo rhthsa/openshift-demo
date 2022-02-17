@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    quay-component: clair-combo
+  name: clair-combo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      quay-component: clair-combo
+  template:
+    metadata:
+      labels:
+        quay-component: clair-combo
+    spec:
+      containers:
+        - image: quay.io/projectquay/clair:4.1.0  
+          imagePullPolicy: IfNotPresent
+          name: clair-combo
+          env:
+            - name: CLAIR_CONF
+              value: /clair/config.yaml
+            - name: CLAIR_MODE
+              value: combo
+          ports:
+            - containerPort: 8080
+              name: clair-http
+              protocol: TCP
+            - containerPort: 8089
+              name: clair-intro
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /clair/
+              name: config
+      imagePullSecrets:
+        - name: redhat-pull-secret
+      restartPolicy: Always
+      volumes:
+        - name: config
+          secret:
+            secretName: clairv4-config-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clairv4 
+  labels:
+    quay-component: clair-combo
+spec:
+  ports:
+    - name: clair-http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+    - name: clair-introspection
+      port: 8089
+      protocol: TCP
+      targetPort: 8089
+  selector:
+    quay-component: clair-combo
+  type: ClusterIP
