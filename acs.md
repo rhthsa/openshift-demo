@@ -190,10 +190,30 @@
 
 ##### Remote Cluster
 
-WIP
+- Generate cluster init bundle
+- Create secret from previously downloaded *Kubernetes Secrets file* 
+  
+  ```bash
+  oc new-project stackrox-cluster
+  oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
+  ```
 
+- Create Secured Cluster Service with centralEndpoint set to Central's route. 
+  
+  Get Central's route and save to ROX_HOST environment variable
 
+  ```bash
+  ROX_HOST=$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
+  ```
 
+  Login to remote cluster and run following command.
+
+  ```bash
+  cat manifests/acs-secured-cluster.yaml | \
+  sed s/central.stackrox.svc/$ROX_HOST/ | \
+  sed s/cluster1/cluster2/ | \
+  oc create -n stackrox-cluster -f - 
+  ```
 
 #### Helm Chart and roxctl
 
