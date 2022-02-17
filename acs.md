@@ -6,6 +6,10 @@
       - [Access Central](#access-central)
     - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
+        - [Local Cluster](#local-cluster)
+        - [Remote Cluster](#remote-cluster)
+      - [Helm Chart and roxctl](#helm-chart-and-roxctl)
+      - [View Managed Cluster](#view-managed-cluster)
   - [Quick Test](#quick-test)
     - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
@@ -46,7 +50,7 @@
       curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
       ```
 
-- Create ACS Central with [acs-central.yaml](manifests/acs-central.yaml3)
+- Create ACS Central with [acs-central.yaml](manifests/acs-central.yaml)
   
   - If you want to use custom certificate storedfor central add following section to [acs-central.yaml](manifests/acs-central.yaml)
   
@@ -143,6 +147,8 @@
    oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
   ```
 
+##### Local Cluster
+
 - Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
   
   ```bash
@@ -156,7 +162,6 @@
   ```bash
   oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
   ```
-
 - Check status
   
   ```bash
@@ -182,6 +187,20 @@
   - Adminission control is high availability with default 3 pods
   - Collector is run on all nodes
 
+
+##### Remote Cluster
+
+WIP
+
+
+
+
+#### Helm Chart and roxctl
+
+WIP
+
+
+#### View Managed Cluster   
 
 - Check ACS Console
 
