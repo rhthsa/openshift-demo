@@ -1,0 +1,4 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest
+RUN yum --disableplugin=subscription-manager -y install httpd \
+    && curl -L http://copr.fedoraproject.org/coprs/openscapmaint/openscap-latest/repo/epel-8/openscapmaint-openscap-latest-epel-8.repo -o /etc/yum.repos.d/openscapmaint-openscap-latest-epel-8.repo \  
+    && yum -y install openscap openscap-utils scap-security-guide --skip-broken
