@@ -13,7 +13,7 @@
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
   * [Application Manageement](acm-application-management.md)
   * [Cost saving with hibernating OpenShift](acm-hibernate.md)
-* [Advanced Cluster Security for Kubernetes]
+* Advanced Cluster Security for Kubernetes
   * [ACS](acs.md)
 * Applications
   * [Application Build & Deployment with oc](build-with-oc.md)
