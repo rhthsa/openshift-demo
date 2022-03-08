@@ -7,6 +7,7 @@
   - [Canary Deployment](#canary-deployment)
   - [Restrict TLS to v1.2](#restrict-tls-to-v12)
     - [Test TLS/SSL](#test-tlsssl)
+  - [Access Log](#access-log)
 
 <!-- /TOC -->
 ## Application Deployment
@@ -774,4 +775,25 @@ TLSv1.3 (no server order, thus listed by strength)
  Done 2020-12-30 03:27:44 [ 357s] -->> 74.125.24.147:443 (www.google.com) <<--
 
 ------
+```
+
+## Access Log
+
+Router's access log can be enabled to syslog or container logging by add spec.logging.acess.destination.type to IngressController in openshift-ingress-operator namespace
+
+Following set default IngressController with access log in container.
+
+```bash
+  oc patch IngressController default -n openshift-ingress-operator -p '{"spec":{"logging":{"access":{"destination":{"type":"Container"}}}}}' --type=merge
+  watch oc get pods -n openshift-ingress
+```
+
+Check output that router pod contains 2 containers
+
+```bash
+NAME                              READY   STATUS        RESTARTS   AGE
+router-default-64bb598c79-78lks   1/1     Running       0          18m
+router-default-64bb598c79-w4mgl   1/1     Terminating   0          18m
+router-default-66d57c45c8-2lsvq   2/2     Running       0          15s
+router-default-66d57c45c8-hh4n5   2/2     Running       0          15s
 ```
