@@ -163,7 +163,7 @@ oc log -f $ROUTER_POD -n openshift-ingress -c logs
 Sample out acesslog
 
 ```log
-.226:51394 [09/Mar/2022:02:49:20.812] fe_sni~ be_edge_http:project1:frontend/pod:frontend-v2-868959894b-mlld2:frontend:http:10.128.2.47:8080 532 0 GET / HTTP/1.1
+.226:51394 [09/Mar/2022:02:49:20.812] fe_sni~ be_edge_http:project1:frontend/pod:frontend-v2-868959894b-mlld2:frontend:http:10.X.X.X:8080 532 0 GET / HTTP/1.1
 ```
 
 #### Kibana
