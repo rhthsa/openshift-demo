@@ -129,17 +129,19 @@ Sample results
 
 ## Access Log
 
-Router's access log can be enabled to syslog or container logging by add spec.logging.acess.destination.type to IngressController in openshift-ingress-operator namespace
+Router's access log can be enabled to *syslog* or sidecar container of router's pods. This can be done by add spec.logging.acess.destination.type to IngressController in *openshift-ingress-operator* namespace with syslog or Container respectively.
 
 Following set default IngressController with access log in container.
 
 ```bash
-  oc patch IngressController default -n openshift-ingress-operator -p '{"spec":{"logging":{"access":{"destination":{"type":"Container"}}}}}' --type=merge
-  oc patch IngressController default -n openshift-ingress-operator -p '{"spec":{"logging":{"access":{"httpLogFormat":"%ci:%cp [%t] %ft %b/%s %B %bq %HM %HU %HV"}}}}' --type=merge
+  oc patch IngressController default -n openshift-ingress-operator \
+   -p '{"spec":{"logging":{"access":{"destination":{"type":"Container"}}}}}' --type=merge
+  oc patch IngressController default -n openshift-ingress-operator \
+  -p '{"spec":{"logging":{"access":{"httpLogFormat":"%ci:%cp [%t] %ft %b/%s %B %bq %HM %HU %HV"}}}}' --type=merge
   oc get pods -n openshift-ingress
 ```
 
-Check output that router pod contains 2 containers
+Check output that existing router pods are terminated and new router pods contains 2 containers
 
 ```bash
 NAME                              READY   STATUS        RESTARTS   AGE
@@ -150,6 +152,8 @@ router-default-66d57c45c8-hh4n5   2/2     Running       0          15s
 ```
 ### Verify Access Log
 #### Sidecar 
+
+View log from container logs
 
 ```bash
 ROUTER_POD=$(oc get pods -n openshift-ingress -o 'custom-columns=Name:.metadata.name' --no-headers | head -n 1)
