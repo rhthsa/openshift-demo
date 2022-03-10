@@ -697,13 +697,15 @@ oc patch route frontend --type=&apos;json&apos; -p=&apos;[{&quot;op&quot;:&quot;
 <li><a href="manifests/test-ssl-2.log">Google Website</a></li>
 </ul>
 <h2 id="access-log">Access Log</h2>
-<p>Router&apos;s access log can be enabled to syslog or container logging by add spec.logging.acess.destination.type to IngressController in openshift-ingress-operator namespace</p>
+<p>Router&apos;s access log can be enabled to <em>syslog</em> or sidecar container of router&apos;s pods. This can be done by add spec.logging.acess.destination.type to IngressController in <em>openshift-ingress-operator</em> namespace with syslog or Container respectively.</p>
 <p>Following set default IngressController with access log in container.</p>
-<pre><code class="lang-bash">  oc patch IngressController default -n openshift-ingress-operator -p &apos;{&quot;spec&quot;:{&quot;logging&quot;:{&quot;access&quot;:{&quot;destination&quot;:{&quot;type&quot;:&quot;Container&quot;}}}}}&apos; --type=merge
-  oc patch IngressController default -n openshift-ingress-operator -p &apos;{&quot;spec&quot;:{&quot;logging&quot;:{&quot;access&quot;:{&quot;httpLogFormat&quot;:&quot;%ci:%cp [%t] %ft %b/%s %B %bq %HM %HU %HV&quot;}}}}&apos; --type=merge
+<pre><code class="lang-bash">  oc patch IngressController default -n openshift-ingress-operator \
+   -p &apos;{&quot;spec&quot;:{&quot;logging&quot;:{&quot;access&quot;:{&quot;destination&quot;:{&quot;type&quot;:&quot;Container&quot;}}}}}&apos; --type=merge
+  oc patch IngressController default -n openshift-ingress-operator \
+  -p &apos;{&quot;spec&quot;:{&quot;logging&quot;:{&quot;access&quot;:{&quot;httpLogFormat&quot;:&quot;%ci:%cp [%t] %ft %b/%s %B %bq %HM %HU %HV&quot;}}}}&apos; --type=merge
   oc get pods -n openshift-ingress
 </code></pre>
-<p>Check output that router pod contains 2 containers</p>
+<p>Check output that existing router pods are terminated and new router pods contains 2 containers</p>
 <pre><code class="lang-bash">NAME                              READY   STATUS        RESTARTS   AGE
 router-default-64bb598c79-78lks   1/1     Running       0          18m
 router-default-64bb598c79-w4mgl   1/1     Terminating   0          18m
@@ -712,6 +714,7 @@ router-default-66d57c45c8-hh4n5   2/2     Running       0          15s
 </code></pre>
 <h3 id="verify-access-log">Verify Access Log</h3>
 <h4 id="sidecar">Sidecar</h4>
+<p>View log from container logs</p>
 <pre><code class="lang-bash">ROUTER_POD=$(oc get pods -n openshift-ingress -o &apos;custom-columns=Name:.metadata.name&apos; --no-headers | head -n 1)
 oc log -f $ROUTER_POD -n openshift-ingress -c logs
 </code></pre>
@@ -766,7 +769,7 @@ oc log -f $ROUTER_POD -n openshift-ingress -c logs
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Route","level":"1.5.5","depth":2,"next":{"title":"Horizontal Pod Autoscaler","level":"1.5.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},"previous":{"title":"Image Streams","level":"1.5.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-route.md","mtime":"2022-03-09T07:22:53.229Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-09T07:23:30.928Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Route","level":"1.5.5","depth":2,"next":{"title":"Horizontal Pod Autoscaler","level":"1.5.6","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},"previous":{"title":"Image Streams","level":"1.5.4","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-route.md","mtime":"2022-03-10T02:13:22.969Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-10T02:14:15.417Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
