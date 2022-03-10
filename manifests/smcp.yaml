@@ -79,6 +79,9 @@ spec:
     prometheus:
       enabled: true
   runtime:
+    defaults:
+      container:
+        imagePullPolicy: Always
     components:
       prometheus:                   
         deployment:
