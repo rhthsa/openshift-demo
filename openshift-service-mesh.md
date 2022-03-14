@@ -43,10 +43,10 @@ Sample application
 ## Setup Control Plane and sidecar
 
 - Install following Operators from OperatorHub
-  <!-- - ElasticSearch -->
   - Red Hat OpenShift distributed tracing platform (Jaeger for OpenShift Service Mesh earlier than version 2.1)
   - Kiali
   - OpenShift Service Mesh
+  - ElasticSearch (Optional)
 
     ![](images/ossm-installed-operators.png)
 
@@ -54,6 +54,20 @@ Sample application
 
   ```bash
   oc apply -f manifests/ossm-sub.yaml
+  oc wait --for condition=established --timeout=180s \
+  crd/servicemeshcontrolplanes.maistra.io \
+  crd/kialis.kiali.io \
+  crd/jaegers.jaegertracing.io
+  oc get csv
+  ```
+
+  Output
+
+  ```bash
+  NAME                         DISPLAY                                          VERSION   REPLACES                     PHASE
+  jaeger-operator.v1.30.0      Red Hat OpenShift distributed tracing platform   1.30.0                                 Succeeded
+  kiali-operator.v1.36.7       Kiali Operator                                   1.36.7    kiali-operator.v1.36.6       Succeeded
+  servicemeshoperator.v2.1.1   Red Hat OpenShift Service Mesh                   2.1.1-0   servicemeshoperator.v2.1.0   Succeeded
   ```
  
 - Create control plane by create ServiceMeshControlPlane CRD
