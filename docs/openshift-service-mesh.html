@@ -637,16 +637,27 @@
 <h2 id="setup-control-plane-and-sidecar">Setup Control Plane and sidecar</h2>
 <ul>
 <li><p>Install following Operators from OperatorHub</p>
-<!-- - ElasticSearch -->
 <ul>
 <li>Red Hat OpenShift distributed tracing platform (Jaeger for OpenShift Service Mesh earlier than version 2.1)</li>
 <li>Kiali</li>
-<li><p>OpenShift Service Mesh</p>
+<li>OpenShift Service Mesh</li>
+<li><p>ElasticSearch (Optional)</p>
 <p><img src="images/ossm-installed-operators.png" alt=""></p>
 </li>
 </ul>
 <p>Install with CLI</p>
 <pre><code class="lang-bash">oc apply -f manifests/ossm-sub.yaml
+oc wait --for condition=established --timeout=180s \
+crd/servicemeshcontrolplanes.maistra.io \
+crd/kialis.kiali.io \
+crd/jaegers.jaegertracing.io
+oc get csv
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                         DISPLAY                                          VERSION   REPLACES                     PHASE
+jaeger-operator.v1.30.0      Red Hat OpenShift distributed tracing platform   1.30.0                                 Succeeded
+kiali-operator.v1.36.7       Kiali Operator                                   1.36.7    kiali-operator.v1.36.6       Succeeded
+servicemeshoperator.v2.1.1   Red Hat OpenShift Service Mesh                   2.1.1-0   servicemeshoperator.v2.1.0   Succeeded
 </code></pre>
 </li>
 <li><p>Create control plane by create ServiceMeshControlPlane CRD</p>
@@ -2319,7 +2330,7 @@ RESOURCE_EXHAUSTED:Quota is exhausted for: requestcountquota* Closing connection
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.5.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2022-03-10T02:13:22.969Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-10T02:14:15.417Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenShift Service Mesh","level":"1.5.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.8","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"openshift-service-mesh.md","mtime":"2022-03-14T01:46:21.502Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-14T01:47:12.163Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
