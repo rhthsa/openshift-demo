@@ -1,0 +1,8 @@
+apiVersion: apps.open-cluster-management.io/v1
+kind: Channel
+metadata:
+  name: demo-app-channel
+  namespace: demo
+spec:
+  type: GitHub
+  pathname: 'https://github.com/rhthsa/openshift-demo'
