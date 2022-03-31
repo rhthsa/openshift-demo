@@ -1,6 +1,6 @@
 #!/bin/sh
-NEXUS_VERSION=3.30.1
-#NEXUS_VERSION=3.38.0
+#NEXUS_VERSION=3.30.1
+NEXUS_VERSION=3.38.0
 CICD_PROJECT=ci-cd
 NEXUS_PVC_SIZE="300Gi"
 CICD_NEXUS_USER=jenkins
@@ -179,24 +179,25 @@ oc set volume deployment/nexus --add --overwrite --name=nexus-pv-1 \
 oc set probe deployment/nexus --liveness --failure-threshold 3 --initial-delay-seconds 60 -- echo ok -n ${CICD_PROJECT}
 oc set probe deployment/nexus --readiness --failure-threshold 3 --initial-delay-seconds 60 --get-url=http://:8081/ -n ${CICD_PROJECT}
 oc label deployment nexus app.kubernetes.io/part-of=Registry -n $CICD_PROJECT
+OLD_POD=$(oc get pods --no-headers | grep Running | awk '{print $1}')
 oc rollout resume deployment nexus -n $CICD_PROJECT
 echo "Wait for starting nexus pod... "
 oc wait --for=condition=Ready --timeout=300s pods -l app=nexus -n $CICD_PROJECT
 clear;echo "Create Nexus repositories..."
-NEXUS_POD=$(oc get pods --no-headers | grep -v deploy | awk '{print $1}')
+NEXUS_POD=$(oc get pods --no-headers | grep Running |grep -v $OLD_POD | awk '{print $1}')
 #oc cp $NEXUS_POD:/nexus-data/etc/nexus.properties ./nexus.properties
 touch nexus.properties
 echo application-port=8081 > nexus.properties
 echo application-port=8081 >> nexus.properties
 echo nexus-args=\${jetty.etc}/jetty.xml,\${jetty.etc}/jetty-http.xml,\${jetty.etc}/jetty-requestlog.xml >> nexus.properties
 echo nexus-context-path=/\${NEXUS_CONTEXT} >> nexus.properties
-echo nexus.scripts.allowCreation=true >> /nexus.properties
+echo nexus.scripts.allowCreation=true >> nexus.properties
 oc cp nexus.properties $NEXUS_POD:/nexus-data/etc/nexus.properties
 rm -f nexus.properties
 oc delete pod $NEXUS_POD
 echo "Wait for starting nexus pod... "
-oc wait --for=condition=Ready --timeout=300s pods -l app=nexus -n ${CICD_PROJECT}
-NEXUS_POD=$(oc get pods -l app=nexus --no-headers | grep -v deploy | awk '{print $1}')
+oc wait --for=condition=Ready --timeout=300s pods -l app=nexus -n $CICD_PROJECT
+NEXUS_POD=$(oc get pods -l app=nexus --no-headers | grep Running | awk '{print $1}')
 NEXUS_PASSWORD=$(oc exec $NEXUS_POD -- cat /nexus-data/admin.password)
 CICD_NEXUS_PASSWORD=${NEXUS_PASSWORD}-$(date +%s)
 NEXUS_URL=https://$(oc get route nexus --template='{{ .spec.host }}')
