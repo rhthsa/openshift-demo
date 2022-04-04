@@ -34,6 +34,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 - [Cost saving with hibernating OpenShift](acm-hibernate.md)
 ### Container Applications
 - Application Build & Deployment
+  - [Developer Console](build-with-dev-console.md)
   - [Command Line with oc](build-with-oc.md)
   - [Command Line with odo](build-with-odo.md)
   - [Helm](helm.md) 
