@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Application Build & Deployment with oc · OpenShift Demo</title>
+        <title>Developer Console · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="build-with-odo.html" />
+    <link rel="next" href="build-with-oc.html" />
     
-    
-    <link rel="prev" href="build-with-dev-console.html" />
     
 
     </head>
@@ -346,7 +344,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.5.1" data-path="build-with-dev-console.html">
+        <li class="chapter active" data-level="1.5.1" data-path="build-with-dev-console.html">
             
                 <a href="build-with-dev-console.html">
             
@@ -359,7 +357,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.5.2" data-path="build-with-oc.html">
+        <li class="chapter " data-level="1.5.2" data-path="build-with-oc.html">
             
                 <a href="build-with-oc.html">
             
@@ -576,7 +574,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Application Build & Deployment with oc</a>
+        <a href="." >Developer Console</a>
     </h1>
 </div>
 
@@ -591,204 +589,47 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="build-container-image-with-oc-cli">Build Container Image with OC CLI</h1>
-<pre><code>  ______     ______      ______  __       __  
- /  __  \   /      |    /      ||  |     |  | 
-|  |  |  | |  ,----&apos;   |  ,----&apos;|  |     |  | 
-|  |  |  | |  |        |  |     |  |     |  | 
-|  `--&apos;  | |  `----.   |  `----.|  `----.|  | 
- \______/   \______|    \______||_______||__|
-</code></pre><ul>
-<li><a href="#build-container-image-with-oc-cli">Build Container Image with OC CLI</a><ul>
-<li><a href="#configure-openshift-with-external-registry-optional">Configure OpenShift with external registry (optional)</a></li>
-<li><a href="#source-build">Source build</a><ul>
-<li><a href="#all-in-one">All-in-One</a></li>
-<li><a href="#build-and-deploy">Build and Deploy</a></li>
-</ul>
-</li>
-<li><a href="#binary-build-with-dockerfile">Binary build with Dockerfile</a></li>
-</ul>
-</li>
-</ul>
-<h2 id="configure-openshift-with-external-registry-optional">Configure OpenShift with external registry (optional)</h2>
+                                <h1 id="developer-console">Developer Console</h1>
 <ul>
-<li><p>Create docker secret to access external registry</p>
-<ul>
-<li>With user and password</li>
-</ul>
-<pre><code class="lang-bash">NEXUS_REGISTRY=external_registry.example.com
-oc create secret docker-registry nexus-registry --docker-server=$NEXUS_REGISTRY \
---docker-username=$CICD_NEXUS_USER \
---docker-password=$CICD_NEXUS_PASSWORD \
---docker-email=unused \
-</code></pre>
-<ul>
-<li>From dockercfg file</li>
-</ul>
-<pre><code class="lang-yaml">apiVersion: v1
-kind: Secret
-metadata:
-  name: nexus-registry
-type: kubernetes.io/dockercfg
-data:
-  .dockercfg: |
-        &quot;&lt;base64 encoded ~/.dockercfg file&gt;&quot;
-</code></pre>
-</li>
-<li><p>Link secret for builder</p>
-<pre><code class="lang-bash">oc secrets link default nexus-registry --for=pull
-</code></pre>
-</li>
-<li><p>Link secret for pull image</p>
-<pre><code class="lang-bash">oc secrets link builder nexus-registry
-</code></pre>
-</li>
-<li><p>For insecure registry </p>
-<ul>
-<li>Edit image.config.openshift.io/cluster</li>
-</ul>
-<pre><code class="lang-bash"> oc edit image.config.openshift.io/cluster
-</code></pre>
-<ul>
-<li>Add insecure registry to spec</li>
-</ul>
-<pre><code class="lang-yaml">spec:
-  registrySources:
-    insecureRegistries:
-    - nexus-registry.ci-cd.svc.cluster.local
-    - nexus-registry.example.com
-</code></pre>
-</li>
-</ul>
-<h2 id="source-build">Source build</h2>
-<h3 id="all-in-one">All-in-One</h3>
-<ul>
-<li><p>Use source-to-image from git this will create</p>
-<ul>
-<li>image stream</li>
-<li>build config</li>
-<li>deployment</li>
-<li>service</li>
-</ul>
-<pre><code class="lang-bash">oc new-app https://gitlab.com/ocp-demo/frontend-js \
---name=frontend
-</code></pre>
-<ul>
-<li>Check build log</li>
-</ul>
-<pre><code class="lang-bash">oc logs bc/frontend --follow
-</code></pre>
-</li>
-</ul>
-<h3 id="build-and-deploy">Build and Deploy</h3>
-<ul>
-<li><p>Create build config</p>
-<pre><code class="lang-bash">oc new-build --name=frontend-v1 -l app=frontend-v1 \
-https://gitlab.com/ocp-demo/frontend-js
-</code></pre>
-</li>
-<li><p>Create deployment and service</p>
-<pre><code class="lang-bash">oc new-app frontend-v1
-</code></pre>
-</li>
-</ul>
-<h2 id="binary-build-with-dockerfile">Binary build with Dockerfile</h2>
-<ul>
-<li><p>Clone sample <a href="https://gitlab.com/ocp-demo/backend_quarkus" target="_blank">Backend Quarkus</a></p>
-<pre><code class="lang-bash">git clone https://gitlab.com/ocp-demo/backend_quarkus
-</code></pre>
-</li>
-<li><p>Create application binary</p>
-<pre><code class="lang-bash">cd code
-mvn clean package -DskipTests=true
-</code></pre>
-</li>
-<li><p>Create Build Config</p>
-<ul>
-<li><p>Push to OpenShift&apos;s internal image registry</p>
-<pre><code class="lang-bash">APP_NAME=backend
-oc new-build --binary --name=$APP_NAME -l app=$APP_NAME
-</code></pre>
-</li>
-<li><p>Push to OpenShift&apos;s external image registry</p>
-<pre><code class="lang-bash">APP_NAME=backend
-EXTERNAL_REGISTRY=nexus-registry.example.com
-EXTERNAL_REGISTRY_SECRET=nexus-registry
-TAG=latest
-oc new-build --binary --to-docker=true \
---to=$EXTERNAL_REGISTRY/$APP_NAME:$TAG \
---push-secret=$EXTERNAL_REGISTRY_SECRET \
---name=$APP_NAME \
--l app=$APP_NAME
-</code></pre>
+<li><a href="#developer-console">Developer Console</a><ul>
+<li><a href="#upload-uber-jar">Upload Uber JAR</a><h2 id="upload-uber-jar">Upload Uber JAR</h2>
 </li>
 </ul>
 </li>
-<li><p>Change build strategy to DockerStrategy</p>
-<pre><code class="lang-bash">oc patch bc/$APP_NAME \
--p &quot;{\&quot;spec\&quot;:{\&quot;strategy\&quot;:{\&quot;dockerStrategy\&quot;:{\&quot;dockerfilePath\&quot;:\&quot;src/main/docker/Dockerfile.jvm\&quot;}}}}&quot;
-</code></pre>
+<li><p>Select upload JAR</p>
+<p><img src="images/build-dev-console-uber-jar-01.png" alt="Uber JAR"></p>
 </li>
-<li><p>Build container image</p>
-<pre><code class="lang-bash">oc start-build $APP_NAME --from-dir=. --follow
-</code></pre>
+<li><p>Upload your Uber JAR and select Builder Image</p>
+<p><img src="images/build-dev-console-uber-jar-02.png" alt="Upload JAR"></p>
 </li>
-<li><p>Create Application</p>
+<li><p>Name your application and select parameters e.g. Ingress (Route), request/limit</p>
+<p><img src="images/build-dev-console-uber-jar-03.png" alt="Parameters"></p>
+</li>
+<li><p>View build logs</p>
+<p><img src="images/build-dev-console-uber-jar-04.png" alt="view build log"></p>
+<p>Build log</p>
+<p><img src="images/build-dev-console-uber-jar-05.png" alt="build log"> </p>
+</li>
+<li><p>Check for build config by select menu Builds-&gt;backend-&gt;YAML</p>
 <ul>
-<li><p>from internal image registry</p>
-<pre><code class="lang-bash">oc new-app --image-stream=${APP_NAME} \
---labels=app.openshift.io/runtime=quarkus,app.openshift.io/runtime-version=11,app.kubernetes.io/part-of=Demo
-</code></pre>
-</li>
+<li>Base image is from <em>sourceStrategy</em></li>
+<li>Source type is <em>binary</em></li>
 </ul>
-</li>
-<li><p>Pause rollout deployment</p>
-<pre><code class="lang-bash">oc expose svc $APP_NAME
+<pre><code class="lang-yaml">strategy:
+  type: Source
+  sourceStrategy:
+    from:
+      kind: ImageStreamTag
+      namespace: openshift
+      name: &apos;java:openjdk-11-ubi8&apos;
+postCommit: {}
+source:
+  type: Binary
+  binary: {}
 </code></pre>
 </li>
-<li><p>Create liveness and readiness probe</p>
-<pre><code class="lang-bash">oc set probe deployment/$APP_NAME --readiness \
---get-url=http://:8080/q/health/ready \
---initial-delay-seconds=8 \
---failure-threshold=1 --period-seconds=10
-oc set probe deployment/$APP_NAME --liveness \
---get-url=http://:8080/q/health/live \
---initial-delay-seconds=5 -\
--failure-threshold=3 --period-seconds=10
-</code></pre>
-</li>
-<li><p>Set request and limit</p>
-<pre><code class="lang-bash">oc set resources deployment $APP_NAME  --requests=&quot;cpu=50m,memory=100Mi&quot;
-oc set resources deployment $APP_NAME  --limits=&quot;cpu=150m,memory=150Mi&quot;
-</code></pre>
-</li>
-<li><p>Create configmap</p>
-<pre><code class="lang-bash">oc create configmap $APP_NAME --from-file=config/application.properties
-oc set volume deployment/{APP_NAME --add --name=$APP_NAME-config \
---mount-path=/deployments/config/application.properties \
---sub-path=application.properties \
---configmap-name=$APP_NAME
-</code></pre>
-</li>
-<li><p>Set HPA</p>
-<pre><code class="lang-bash">oc autoscale deployment $APP_NAME --min 2 --max 4 --cpu-percent=60
-</code></pre>
-</li>
-<li><p>Resume rollout deployment</p>
-<pre><code class="lang-bash">oc rollout resume deployment $APP_NAME
-</code></pre>
-</li>
-<li><p>Create route</p>
-<ul>
-<li><p>Expose service</p>
-<pre><code class="lang-bash">oc expose svc $APP_NAME
-</code></pre>
-</li>
-<li><p>Create route with edge TLS</p>
-<pre><code class="lang-bash">oc create route edge $APP_NAME --service=$APP_NAME --port=8080
-</code></pre>
-</li>
-</ul>
+<li><p>Check your deployed application</p>
+<p><img src="images/build-dev-console-uber-jar-06.png" alt="Uber JAR app deployed"> </p>
 </li>
 </ul>
 
@@ -818,12 +659,8 @@ oc set volume deployment/{APP_NAME --add --name=$APP_NAME-config \
 
             
                 
-                <a href="build-with-dev-console.html" class="navigation navigation-prev " aria-label="Previous page: Developer Console">
-                    <i class="fa fa-angle-left"></i>
-                </a>
                 
-                
-                <a href="build-with-odo.html" class="navigation navigation-next " aria-label="Next page: Application Build & Deployment with odo">
+                <a href="build-with-oc.html" class="navigation navigation-next navigation-unique" aria-label="Next page: Application Build & Deployment with oc">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -834,7 +671,7 @@ oc set volume deployment/{APP_NAME --add --name=$APP_NAME-config \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"next":{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},"previous":{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"build-with-oc.md","mtime":"2022-04-04T04:32:05.665Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-04T04:32:45.757Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Developer Console","level":"1.5.1","depth":2,"next":{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},"previous":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"build-with-dev-console.md","mtime":"2022-04-04T04:32:05.665Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-04T04:32:45.757Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
