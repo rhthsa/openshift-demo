@@ -31,6 +31,9 @@ spec:
       - name: backend
         image: quay.io/voravitl/backend:v1
         imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /tmp
+          name: temp   
         resources:
           requests:
             cpu: "0.1"
@@ -57,9 +60,6 @@ spec:
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 60
-      volumeMounts:
-      - mountPath: /tmp
-        name: temp   
       terminationGracePeriodSeconds: 10
       volumes:
       - emptyDir: {}
