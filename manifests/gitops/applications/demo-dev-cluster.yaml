@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-dev-cluster
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: demo
+    # oc config rename-context $(oc config current-context) dev-cluster
+    # argocd cluster add dev-cluster
+    name: dev-cluster
+  project: default
+  source:
+    directory:
+      recurse: false
+    path: manifests/apps-kustomize/overlays/dev
+    repoURL: https://github.com/rhthsa/openshift-demo
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
