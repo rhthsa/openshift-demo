@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Application Build & Deployment with odo · OpenShift Demo</title>
+        <title>Assign pod to node · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="helm.html" />
+    <link rel="next" href="custom-roles.html" />
     
     
-    <link rel="prev" href="build-with-oc.html" />
+    <link rel="prev" href="infrastructure-taint-and-toleration.html" />
     
 
     </head>
@@ -211,7 +211,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.8" data-path="assign-pod-to-node.html">
+        <li class="chapter active" data-level="1.2.8" data-path="assign-pod-to-node.html">
             
                 <a href="assign-pod-to-node.html">
             
@@ -385,7 +385,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.5.3" data-path="build-with-odo.html">
+        <li class="chapter " data-level="1.5.3" data-path="build-with-odo.html">
             
                 <a href="build-with-odo.html">
             
@@ -589,7 +589,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Application Build & Deployment with odo</a>
+        <a href="." >Assign pod to node</a>
     </h1>
 </div>
 
@@ -604,138 +604,126 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="build-container-image-with-openshift-do">Build Container Image with OpenShift DO</h1>
-<pre><code>   ___                   ____  _     _  __ _     ____   ___  
-  / _ \ _ __   ___ _ __ / ___|| |__ (_)/ _| |_  |  _ \ / _ \ 
- | | | | &apos;_ \ / _ \ &apos;_ \\___ \| &apos;_ \| | |_| __| | | | | | | |
- | |_| | |_) |  __/ | | |___) | | | | |  _| |_  | |_| | |_| |
-  \___/| .__/ \___|_| |_|____/|_| |_|_|_|  \__| |____/ \___/ 
-       |_|
-</code></pre><ul>
-<li><a href="#build-container-image-with-openshift-do">Build Container Image with OpenShift DO</a><ul>
-<li><a href="#odo-catalog">ODO Catalog</a></li>
-<li><a href="#sample-java">Sample Java</a></li>
+                                <h1 id="assign-pod-to-node">Assign Pod to Node</h1>
+<ul>
+<li><a href="#assign-pod-to-node">Assign Pod to Node</a><ul>
+<li><a href="#node-selector">Node Selector</a></li>
+<li><a href="#taints-and-tolerations">Taints and Tolerations</a></li>
+<li><a href="#remove-node-label-and-toleration">Remove node label and toleration</a></li>
 </ul>
 </li>
 </ul>
-<h2 id="odo-catalog">ODO Catalog</h2>
+<h2 id="node-selector">Node Selector</h2>
+<p>You can configure pod to run on particular node by using node label along with nodeSelector </p>
 <ul>
-<li><p>list odo catalog</p>
-<pre><code class="lang-bash">odo catalog list components
-</code></pre>
-<p>Catalog</p>
-<pre><code class="lang-bash">Odo Devfile Components:
-NAME                          DESCRIPTION                                                         REGISTRY
-java-maven                    Upstream Maven and OpenJDK 11                                       DefaultDevfileRegistry
-java-openliberty              Open Liberty microservice in Java                                   DefaultDevfileRegistry
-java-quarkus                  Upstream Quarkus with Java+GraalVM                                  DefaultDevfileRegistry
-java-springboot               Spring Boot&#xAE; using Java                                             DefaultDevfileRegistry
-java-vertx                    Upstream Vert.x using Java                                          DefaultDevfileRegistry
-java-wildfly                  Upstream WildFly                                                    DefaultDevfileRegistry
-java-wildfly-bootable-jar     Java stack with WildFly in bootable Jar mode, OpenJDK 11 and...     DefaultDevfileRegistry
-nodejs                        Stack with NodeJS 12                                                DefaultDevfileRegistry
-python                        Python Stack with Python 3.7                                        DefaultDevfileRegistry
-python-django                 Python3.7 with Django                                               DefaultDevfileRegistry
-
-Odo S2I Components:
-NAME       PROJECT       TAGS                                                             SUPPORTED
-java       openshift     latest,openjdk-11-el7,openjdk-11-ubi8,openjdk-8-el7              YES
-nodejs     openshift     12-ubi8,14-ubi8,latest                                           YES
-dotnet     openshift     2.1-el7,2.1-ubi8,3.1-el7,3.1-ubi8                                NO
-golang     openshift     1.13.4-ubi7,1.14.7-ubi8,latest                                   NO
-httpd      openshift     2.4-el7,2.4-el8,latest                                           NO
-java       openshift     openjdk-8-ubi8                                                   NO
-nginx      openshift     1.14-el8,1.16-el7,1.16-el8,1.18-ubi7,1.18-ubi8,latest            NO
-nodejs     openshift     10-ubi7,10-ubi8,12-ubi7,14-ubi7                                  NO
-perl       openshift     5.26-el7,5.26-ubi8,5.30-el7,5.30-ubi8,latest                     NO
-php        openshift     7.2-ubi8,7.3-ubi7,7.3-ubi8,7.4-ubi8,latest                       NO
-python     openshift     2.7-ubi7,2.7-ubi8,3.6-ubi8,3.8-ubi7,3.8-ubi8,latest              NO
-ruby       openshift     2.5-ubi7,2.5-ubi8,2.6-ubi7,2.6-ubi8,2.7-ubi7,2.7-ubi8,latest     NO
-</code></pre>
-<h2 id="sample-java">Sample Java</h2>
-</li>
-<li><p>Create project</p>
-<pre><code class="lang-bash">odo project create odo-demo
+<li><p>Deploy <a href="manifests/backend-v1.yaml">backend application</a> and scale to 5 pods</p>
+<pre><code class="lang-bash">oc new-project demo
+oc apply -f manifests/backend-v1.yaml -n demo
+oc scale deployment backend-v1 --replicas=5 -n demo
 </code></pre>
 </li>
-<li><p>Create Application</p>
-<ul>
-<li><p>From binary</p>
-<pre><code class="lang-bash">git clone https://gitlab.com/ocp-demo/backend_quarkus &amp;&amp; cd backend_quarkus
-cd code
-mvn clean package -DskipTests=true -Dquarkus.package.uber-jar=true
-odo create java backend --s2i --binary target/*.jar
+<li><p>Check that 5 pods is running on which worker nodes</p>
+<pre><code class="lang-bash">watch oc get pods -o &apos;custom-columns=Name:.metadata.name,PHASE:.status.phase,NODE:.spec.nodeName&apos; -n demo
 </code></pre>
 <p>Sample output</p>
-<pre><code class="lang-bash">Validation
-&#x2713;  Validating component [75ms]
-
-Please use `odo push` command to create the component with source deployed
+<pre><code class="lang-bash">  Name                        PHASE     NODE
+  backend-v1-b564ff66-6spph   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+  backend-v1-b564ff66-dh77c   Running   ip-10-0-XXX-101.us-east-2.compute.internal
+  backend-v1-b564ff66-dtkjn   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+  backend-v1-b564ff66-n7kr4   Running   ip-10-0-XXX-121.us-east-2.compute.internal
+  backend-v1-b564ff66-thhqv   Running   ip-10-0-XXX-121.us-east-2.compute.internal
 </code></pre>
 </li>
-<li><p>From source code</p>
-<pre><code class="lang-bash">odo create nodejs frontend --s2i --git https://gitlab.com/ocp-demo/frontend-js
+<li><p>Let&apos;s say we want to run backend app is belong to project app-x and project app-x need to run on node 179 only then we&apos;ll label node 179 with label app-x</p>
+<pre><code class="lang-bash">oc label node ip-10-0-XXX-179.us-east-2.compute.internal app-x=&apos;&apos;
 </code></pre>
-<p>Check for odo configuration</p>
-<pre><code class="lang-yaml">kind: LocalConfig
-apiversion: odo.dev/v1alpha1
-ComponentSettings:
-Type: nodejs
-SourceLocation: https://gitlab.com/ocp-demo/frontend-js
-SourceType: git
-Ports:
-- 8080/TCP
-Application: app
-Project: demo
-Name: frontend
+</li>
+<li><p>Add nodeSelector to <a href="manifests/backend-v1-with-node-selector.yaml">backend-v1 deployment</a>
+Remark:</p>
+<ul>
+<li>You can use another shell/terminal to check status of backend-v1&apos;s pods with previously watch command</li>
+<li><p>sed is use for set replicas to 5.</p>
+<pre><code class="lang-bash">cat manifests/backend-v1-with-node-selector.yaml | sed s/replicas:\ 1/replicas:\ 5/g | oc apply -n demo -f -
+</code></pre>
+<p>Sample output from watch command</p>
+<pre><code class="lang-bash">Name                          PHASE     NODE
+backend-v1-786cd59759-bcmpx   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-dkgxp   Pending   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-lpnwq   Pending   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-vlqp2   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-x4nlb   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-b564ff66-dh77c     Running   ip-10-0-XXX-101.us-east-2.compute.internal
+backend-v1-b564ff66-thhqv     Running   ip-10-0-XXX-121.us-east-2.compute.internal
+</code></pre>
+<p>When finished all pods will be run on node 179</p>
+<pre><code class="lang-bash">Name                          PHASE     NODE
+backend-v1-786cd59759-bcmpx   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-dkgxp   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-lpnwq   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-vlqp2   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-786cd59759-x4nlb   Running   ip-10-0-XXX-179.us-east-2.compute.internal
 </code></pre>
 </li>
 </ul>
 </li>
-<li><p>Deploy</p>
-<pre><code class="lang-bash">odo push
-</code></pre>
-<p>Sample outout</p>
-<pre><code class="lang-bash"> Validation
- &#x2713;  Checking component [125ms]
-
- Configuration changes
- &#x2713;  Initializing component
- &#x2713;  Creating component [458ms]
-
- Applying URL changes
- &#x2713;  URLs are synced with the cluster, no changes are required.
-
- Pushing to component backend of type binary
- &#x2713;  Checking files for pushing [19ms]
- &#x2713;  Waiting for component to start [2m]
- &#x2713;  Syncing files to the component [2s]
- &#x2713;  Building component [2s]
+<li><p>Check <a href="manifests/backend-v1-with-node-selector.yaml">backend-v1 deployment</a> with nodeAffinity under template</p>
+<pre><code class="lang-yaml">  spec:
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: app-x
+              operator: Exists
 </code></pre>
 </li>
-<li><p>Expose service ( create route)</p>
-<pre><code class="lang-bash">odo url create --port 8080
+</ul>
+<h2 id="taints-and-tolerations">Taints and Tolerations</h2>
+<p>Taint is proporty of nodes that allow only pod with toleration can be scheduled to run on that particular node.</p>
+<ul>
+<li><p>Let&apos;s say we want to allow only project app-x to run on node 179 then we will taint node 179</p>
+<pre><code class="lang-bash">oc adm taint node ip-10-0-248-179.us-east-2.compute.internal app-x=&apos;&apos;:NoSchedule
 </code></pre>
-<p>Sample outout</p>
-<pre><code class="lang-bash">&#x2713;  URL backend-8080 created for component: backend
-
-To apply the URL configuration changes, please use `odo push`
+</li>
+<li><p>Taint is not effect pods those already scheduled then we will force backend-v1 to create all pods again</p>
+<pre><code class="lang-bash">oc delete pods --all -n demo
 </code></pre>
-<p>Remark: you need to run <em>odo push</em> to propagate change to OpenShift</p>
-<pre><code class="lang-bash">  &#x2713;  Checking component [150ms]
-
-  Configuration changes
-  &#x2713;  Retrieving component data [213ms]
-  &#x2713;  Applying configuration [184ms]
-
-  Applying URL changes
-  &#x2713;  URL backend-8080: http://backend-8080-app-backend-quarkus.apps.cluster-69f4.69f4.sandbox957.opentlc.com/ created
-
-  Pushing to component backend of type binary
-  &#x2713;  Checking file changes for pushing [10ms]
-  &#x2713;  Waiting for component to start [41ms]
-  &#x2713;  Syncing files to the component [2s]
-  &#x2713;  Building component [3s]
+<p>Pods cannot schedule because there is no toleration in deployment</p>
+<pre><code class="lang-bash">Name                          PHASE     NODE
+backend-v1-786cd59759-79jmh   Pending   &lt;none&gt;
+backend-v1-786cd59759-gnwg7   Pending   &lt;none&gt;
+backend-v1-786cd59759-lc4jr   Pending   &lt;none&gt;
+backend-v1-786cd59759-lgk8r   Pending   &lt;none&gt;
+backend-v1-786cd59759-vcd22   Pending   &lt;none&gt;
+</code></pre>
+<p>Check Events in OpenShift Console</p>
+<p><img src="images/pod-cannot-schedule-because-taint.png" alt=""></p>
+</li>
+<li><p>Add toleration to <a href="manifests/backend-v1-with-node-selector-and-toleration.yaml">backend-v1 deployment</a></p>
+<pre><code class="lang-bash">cat manifests/backend-v1-with-node-selector-and-toleration.yaml|sed s/replicas:\ 1/replicas:\ 5/g | oc apply -n demo -f -
+</code></pre>
+<p>When finished all pods will be run on node 179</p>
+<pre><code class="lang-bash">Name                          PHASE     NODE
+backend-v1-647db46bfc-868w6   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-647db46bfc-krzvs   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-647db46bfc-nssqz   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-647db46bfc-qhvws   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+backend-v1-647db46bfc-vnl5l   Running   ip-10-0-XXX-179.us-east-2.compute.internal
+</code></pre>
+</li>
+<li><p>Check <a href="manifests/backend-v1-with-node-selector-and-toleration.yaml">backend-v1 deployment</a> with nodeAffinity under template</p>
+<pre><code class="lang-yaml">    tolerations:
+    - effect: NoSchedule
+      key: app-x
+      operator: Exists
+</code></pre>
+</li>
+</ul>
+<h2 id="remove-node-label-and-toleration">Remove node label and toleration</h2>
+<ul>
+<li><p>Following commands show how to remove node label and toleration</p>
+<pre><code class="lang-bash">oc label node ip-10-0-XXX-179.us-east-2.compute.internal app-x-
+oc adm taint nodes ip-10-0-XXX-179.us-east-2.compute.internal app-x=&apos;&apos;:NoSchedule-
 </code></pre>
 </li>
 </ul>
@@ -766,12 +754,12 @@ To apply the URL configuration changes, please use `odo push`
 
             
                 
-                <a href="build-with-oc.html" class="navigation navigation-prev " aria-label="Previous page: Application Build & Deployment with oc">
+                <a href="infrastructure-taint-and-toleration.html" class="navigation navigation-prev " aria-label="Previous page: Pod Taint and Toleration">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="helm.html" class="navigation navigation-next " aria-label="Next page: Application Deployment with Helm">
+                <a href="custom-roles.html" class="navigation navigation-next " aria-label="Next page: Custom Roles and Service Account">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -782,7 +770,7 @@ To apply the URL configuration changes, please use `odo push`
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"next":{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},"previous":{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"build-with-odo.md","mtime":"2022-04-08T06:16:13.171Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-08T06:17:02.948Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Assign pod to node","level":"1.2.8","depth":2,"next":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"previous":{"title":"Pod Taint and Toleration","level":"1.2.7","depth":2,"path":"infrastructure-taint-and-toleration.md","ref":"infrastructure-taint-and-toleration.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"assign-pod-to-node.md","mtime":"2022-04-08T06:16:13.171Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-08T06:17:02.948Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
