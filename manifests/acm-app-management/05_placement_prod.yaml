@@ -1,0 +1,11 @@
+apiVersion: apps.open-cluster-management.io/v1
+kind: PlacementRule
+metadata:
+  name: environment-prod
+  labels:
+    app: demo-app
+  namespace: demo
+spec:
+  clusterSelector:
+    matchLabels:
+      environment: prod
