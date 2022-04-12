@@ -5,6 +5,9 @@
   - [Compliance Operator](#compliance-operator)
   - [CIS Profile](#cis-profile)
   - [Openscap Report](#openscap-report)
+    - [CIS](#cis)
+    - [PCI-DSS](#pci-dss)
+    - [Reports](#reports)
 
 ## Prerequisites
 - OpenShift 4.6 or 4.7
@@ -25,13 +28,18 @@
 
     ```bash
     NAME                 AGE
-    ocp4-cis             10m
-    ocp4-cis-node        10m
-    ocp4-e8              10m
-    ocp4-moderate        10m
-    ocp4-moderate-node   10m
-    rhcos4-e8            10m
-    rhcos4-moderate      10m
+    ocp4-cis             8m8s
+    ocp4-cis-node        8m8s
+    ocp4-e8              8m8s
+    ocp4-moderate        8m7s
+    ocp4-moderate-node   8m7s
+    ocp4-nerc-cip        8m7s
+    ocp4-nerc-cip-node   8m7s
+    ocp4-pci-dss         8m7s
+    ocp4-pci-dss-node    8m7s
+    rhcos4-e8            8m2s
+    rhcos4-moderate      8m2s
+    rhcos4-nerc-cip      8m1s
     ```
 
   - Check detail of profile
@@ -106,7 +114,7 @@
 
     ![](images/compliance-default-scansettingbinding.png)
 
-  - Add *opc4-cis* and *ocp4-cis-node* profiles to [ScanSettingBinding](manifests/cis-profile.yaml)
+  - Add *opc4-cis* and *ocp4-cis-node* profiles for CIS compliance to [ScanSettingBinding](manifests/cis-profile.yaml) or add  *ocp4-pci-dss* and  *ocp4-pci-dss-node* for PCI-DSS compliance
   
     ```yaml
     apiVersion: compliance.openshift.io/v1alpha1
@@ -131,7 +139,9 @@
 
     ```bash
     oc apply -f manifests/cis-profile.yaml
-    oc describe scansettingbinding/cis-profile -n openshift-compliance
+    oc apply -f manifests/pci-dss-profile.yaml
+    oc describe scansettingbinding/cis-profile -n openshift-compliance|grep -A14  "Status:" 
+    oc describe scansettingbinding/pci-dss-profile -n openshift-compliance|grep -A14  "Status:"
     ```
 
     Check for status
@@ -139,7 +149,7 @@
     ```bash
     Status:
       Conditions:
-        Last Transition Time:  2021-09-15T04:05:27Z
+        Last Transition Time:  2022-04-12T08:00:27Z
         Message:               The scan setting binding was successfully processed
         Reason:                Processed
         Status:                True
@@ -151,7 +161,7 @@
     Events:
       Type    Reason        Age   From                    Message
       ----    ------        ----  ----                    -------
-      Normal  SuiteCreated  2s    scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-profile created
+      Normal  SuiteCreated  10s   scansettingbindingctrl  ComplianceSuite openshift-compliance/cis-profile created
     ```
   
   - Check ComplianceScan tab
@@ -167,50 +177,44 @@
     Output
 
     ```bash
-    NAME                   PHASE         RESULT
-    ocp4-cis               AGGREGATING   NOT-AVAILABLE
-    ocp4-cis-node-master   RUNNING       NOT-AVAILABLE
-    ocp4-cis-node-worker   AGGREGATING   NOT-AVAILABLE
+    NAME                       PHASE       RESULT
+    ocp4-cis                   RUNNING     NOT-AVAILABLE
+    ocp4-cis-node-master       RUNNING     NOT-AVAILABLE
+    ocp4-cis-node-worker       RUNNING     NOT-AVAILABLE
+    ocp4-pci-dss               RUNNING     NOT-AVAILABLE
+    ocp4-pci-dss-node-master   LAUNCHING   NOT-AVAILABLE
+    ocp4-pci-dss-node-worker   LAUNCHING   NOT-AVAILABLE
     ```
 
     When compliance scan is completed
 
     ```bash
-    NAME                   PHASE   RESULT
-    ocp4-cis               DONE    NON-COMPLIANT
-    ocp4-cis-node-master   DONE    NON-COMPLIANT
-    ocp4-cis-node-worker   DONE    NON-COMPLIANT
+    NAME                       PHASE   RESULT
+    ocp4-cis                   DONE    NON-COMPLIANT
+    ocp4-cis-node-master       DONE    NON-COMPLIANT
+    ocp4-cis-node-worker       DONE    NON-COMPLIANT
+    ocp4-pci-dss               DONE    NON-COMPLIANT
+    ocp4-pci-dss-node-master   DONE    NON-COMPLIANT
+    ocp4-pci-dss-node-worker   DONE    NON-COMPLIANT
     ```
 
 - Check result
   - Count for FAIL 
   
     ```bash
-    oc get compliancecheckresult -n openshift-compliance | grep FAIL | wc -l
+    oc get compliancecheckresult -n openshift-compliance | grep FAIL
+    NUM_OF_CIS_FAILED_BEFORE_REMIDIATE=$(oc get compliancecheckresult -n openshift-compliance | grep FAIL|grep cis|wc -l)
+    NUM_OF_PCI_DSS_FAILED_BEFORE_REMIDIATE=$(oc get compliancecheckresult -n openshift-compliance | grep FAIL|grep pci-dss|wc -l)
     ```
 
     Output
 
     ```bash
-    29
-    ```
-
-  - Script for summary result [bin/check-compliance-result.sh](bin/check-compliance-result.sh) 
-    
-    ```bash
-    ================== RESULT ==================
-    TYPE          	NUMBER
-    PASS          	201
-    FAIL          	29
-    MANUAL        	26
-    INFO          	0
-    NOT_APPLICABLE	0
-    INCONSISTENT  	0
-
-    ================ SEVERITY =================
-    high          	9
-    low           	8
-    medium        	280
+    ocp4-pci-dss-node-worker-kubelet-eviction-thresholds-set-soft-imagefs-available    FAIL     medium
+    ocp4-pci-dss-node-worker-kubelet-eviction-thresholds-set-soft-imagefs-inodesfree   FAIL     medium
+    ocp4-pci-dss-node-worker-kubelet-eviction-thresholds-set-soft-memory-available     FAIL     medium
+    ocp4-pci-dss-node-worker-kubelet-eviction-thresholds-set-soft-nodefs-available     FAIL     medium
+    ocp4-pci-dss-node-worker-kubelet-eviction-thresholds-set-soft-nodefs-inodesfree    FAIL     medium
     ```
 
   - Check for result description for *ocp4-cis-api-server-encryption-provider-config*
@@ -248,9 +252,17 @@
     Output
 
     ```bash
-    NAME                                             STATE
-    ocp4-cis-api-server-encryption-provider-cipher   NotApplied
-    ocp4-cis-api-server-encryption-provider-config   NotApplied
+    NAME                                                                                 STATE
+    ocp4-cis-api-server-encryption-provider-cipher                                       NotApplied
+    ocp4-cis-api-server-encryption-provider-config                                       NotApplied
+    ocp4-cis-node-master-kubelet-configure-event-creation                                NotApplied
+    ocp4-cis-node-master-kubelet-configure-tls-cipher-suites                             NotApplied
+    ocp4-cis-node-master-kubelet-enable-iptables-util-chains                             NotApplied
+    ocp4-cis-node-master-kubelet-enable-protect-kernel-defaults                          NotApplied
+    ocp4-cis-node-master-kubelet-enable-protect-kernel-sysctl                            NotApplied
+    ocp4-cis-node-master-kubelet-eviction-thresholds-set-hard-imagefs-available          NotApplied
+    ocp4-cis-node-master-kubelet-eviction-thresholds-set-hard-imagefs-available-1        NotApplied
+    ...
     ```
 
   - Fix failed *ocp4-cis-api-server-encryption-provider-config* and *ocp4-cis-api-server-encryption-provider-cipher* policy with *ComplianceRemidiation*
@@ -272,7 +284,6 @@
 
     ```bash
     NAME                                             STATE
-    ocp4-cis-api-server-encryption-provider-cipher   Applied
     ocp4-cis-api-server-encryption-provider-config   Applied
     ```
   
@@ -290,9 +301,13 @@
     Result
 
     ```bash
-    ocp4-cis               LAUNCHING   NOT-AVAILABLE
-    ocp4-cis-node-master   PENDING     NOT-AVAILABLE
-    ocp4-cis-node-worker   PENDING     NOT-AVAILABLE
+    NAME                       PHASE         RESULT
+    ocp4-cis                   DONE          NON-COMPLIANT
+    ocp4-cis-node-master       DONE          NON-COMPLIANT
+    ocp4-cis-node-worker       DONE          NON-COMPLIANT
+    ocp4-pci-dss               DONE          NON-COMPLIANT
+    ocp4-pci-dss-node-master   AGGREGATING   NOT-AVAILABLE
+    ocp4-pci-dss-node-worker   AGGREGATING   NOT-AVAILABLE
     ```
 
   - Recheck policy *ocp4-cis-api-server-encryption-provider-config*
@@ -313,91 +328,132 @@
   
   ```bash
   oc patch -n openshift-compliance ScanSettingBinding cis-profile -p '{"settingsRef":{"name":"default-auto-apply"}}' --type='merge'
+  oc patch -n openshift-compliance ScanSettingBinding pci-dss-profile -p '{"settingsRef":{"name":"default-auto-apply"}}' --type='merge'
   ```
 
   Output
 
   ```bash
   scansettingbinding.compliance.openshift.io/cis-profile patched
+  scansettingbinding.compliance.openshift.io/pci-dss-profile patched
   ```
 
-- [Recheck result](bin/check-compliance-result.sh)
+
+  Compare number of failed compliance before and after remidiate
   
   ```bash
-  ================== RESULT ==================
-  TYPE          	NUMBER
-  PASS          	203
-  FAIL          	27
-  MANUAL        	26
-  INFO          	0
-  NOT_APPLICABLE	0
-  INCONSISTENT  	0
-
-  ================ SEVERITY =================
-  high          	9
-  low           	8
-  medium        	280
+  NUM_OF_CIS_FAILED_AFTER_REMIDIATE=$(oc get compliancecheckresult -n openshift-compliance | grep FAIL|grep cis|wc -l)
+  NUM_OF_PCI_DSS_FAILED_AFTER_REMIDIATE=$(oc get compliancecheckresult -n openshift-compliance | grep FAIL|grep pci-dss|wc -l)
+  echo "Number of failed CIS compliance reduce from $NUM_OF_CIS_FAILED_BEFORE_REMIDIATE to $NUM_OF_CIS_FAILED_AFTER_REMIDIATE"
   ```
 
  ## Openscap Report
 
- 
- - Generate HTML reports for latest scan results by using oscap tools. Container image with oscap tools already build with this [Dockerfile](manifests/Dockerfile.oscap)
+ Generate HTML reports for latest scan results by using oscap tools. Container image with oscap tools already build with this [Dockerfile](manifests/Dockerfile.oscap)
+
+ ### CIS
    
-  - Create pods to mount to reports PVC
-   
-    ```bash
-    oc create -f manifests/cis-report.yaml -n openshift-compliance
-    watch oc get pods -l app=report-generator -n openshift-compliance
-    ```
+    - Create [pods](manifests/cis-report.yaml) to mount to CIS reports PVC
+     
+      ```bash
+      oc create -f manifests/cis-report.yaml -n openshift-compliance
+      watch oc get pods -l app=report-generator -n openshift-compliance
+      ```
 
-    Output
+      Output
 
-    ```bash
-    NAME                READY   STATUS    RESTARTS   AGE
-    cis-master-report   1/1     Running   0          54s
-    cis-report          1/1     Running   0          55s
-    cis-worker-report   1/1     Running   0          55s
-    ```
+      ```bash
+      NAME                READY   STATUS    RESTARTS   AGE
+      cis-master-report   1/1     Running   0          54s
+      cis-report          1/1     Running   0          55s
+      cis-worker-report   1/1     Running   0          55s
+      ```
 
-    ![](images/compliance-cis-report-generator-pods.png)
+      ![](images/compliance-cis-report-generator-pods.png)
 
-  - Generate reports with *oscap*
-  
-    ```bash
-    REPORTS_DIR=compliance-operator-reports
-    mkdir -p $REPORTS_DIR
-    reports=(cis-report cis-worker-report cis-master-report)
-    for report in ${reports[@]}
-    do
-      DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v "lost+found"|head -n 1)
-
-      for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
+    - Generate CIS reports with *oscap*
+    
+      ```bash
+      REPORTS_DIR=compliance-operator-reports
+      mkdir -p $REPORTS_DIR
+      reports=(cis-report cis-worker-report cis-master-report)
+      for report in ${reports[@]}
       do
-        echo "Generate report for $report from $file"
-        oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file > $REPORTS_DIR/$report-$file.html
-      done
-    done 
-    oc delete pods -l app=report-generator -n openshift-compliance
-    ```
+        DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v "lost+found"|head -n 1)
+
+        for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
+        do
+          echo "Generate report for $report from $file"
+          oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file > $REPORTS_DIR/$report-$file.html
+        done
+      done 
+      oc delete pods -l app=report-generator -n openshift-compliance
+      ```
+     
+      Sample output
+
+      ```bash
+        Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
+        Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
+        Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
+      ```
+### PCI-DSS
    
-    Sample output
+    - Create [pods](manifests/cis-report.yaml) to mount to PCI-DSS reports PVC
+     
+      ```bash
+      oc create -f manifests/pci-dss-report.yaml -n openshift-compliance
+      watch oc get pods -l app=report-generator -n openshift-compliance
+      ```
 
-    ```bash
-      Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
-      Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
-      Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
-      Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
-      Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
-      Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
-    ```
- 
- - Sample reports [cis](compliance-operator-reports/cis-report-ocp4-cis-api-checks.pdf) a
-  
-   ![](images/openscap-cis-report.png)
+      Output
 
-   HTML version here 
-   - [CIS](compliance-operator-reports/cis-report-ocp4-cis-api-checks.html)
-   - [CIS Master Node](compliance-operator-reports//cis-master-report.html)
-   - [CIS Worker Node](compliance-operator-reports/cis-worker-report.html)
+      ```bash
+      NAME                    READY   STATUS    RESTARTS   AGE
+      pci-dss-master-report   1/1     Running   0          11s
+      pci-dss-report          1/1     Running   0          12s
+      pci-dss-worker-report   1/1     Running   0          12
+      ```
+
+
+    - Generate PCI-DSS reports with *oscap*
+    
+      ```bash
+      REPORTS_DIR=compliance-operator-reports
+      mkdir -p $REPORTS_DIR
+      reports=(pci-dss-report pci-dss-worker-report pci-dss-master-report)
+      for report in ${reports[@]}
+      do
+        DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v "lost+found"|head -n 1)
+
+        for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
+        do
+          echo "Generate report for $report from $file"
+          oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file > $REPORTS_DIR/$report-$file.html
+        done
+      done 
+      oc delete pods -l app=report-generator -n openshift-compliance
+      ```
+     
+      Sample output
+
+      ```bash
+        Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
+        Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
+        Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
+        Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
+      ```
+
+### Reports
+
+Sample reports 
+- [cis](compliance-operator-reports/cis-report-ocp4-cis-api-checks.pdf) 
+- [PCI-DSS](compliance-operator-reports/pci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
+- HTML version [here](compliance-operator-reports/) 
+
 
