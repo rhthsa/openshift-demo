@@ -10,7 +10,7 @@
     - [Reports](#reports)
 
 ## Prerequisites
-- OpenShift 4.6 or 4.7
+- OpenShift 4.6+
 - Cluster-admin user access
 
 
@@ -451,9 +451,10 @@
 
 ### Reports
 
-Sample reports 
-- [cis](compliance-operator-reports/cis-report-ocp4-cis-api-checks.pdf) 
-- [PCI-DSS](compliance-operator-reports/pci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
-- HTML version [here](compliance-operator-reports/) 
+Sample reports for openshift clusters with auto-remidiation  
+- [cis](compliance-operator-reports/default/cis-report-ocp4-cis-api-checks.pdf) 
+- [PCI-DSS](compliance-operator-reports/default/cis-master-report-openscap-pod-e853f18cfd3bef9feca9db566e0c245f58057482.xml.bzip2.htmlpci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
+- HTML version [here](compliance-operator-reports/default) 
+
 
 

@@ -9,7 +9,7 @@ profiles:
 settingsRef:
   apiGroup: compliance.openshift.io/v1alpha1
   name: default
-  #name: default-auto-apply
+  #name: default-auto-apply # For auto apply remidiation
   kind: ScanSetting
 kind: ScanSettingBinding
 metadata:

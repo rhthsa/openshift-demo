@@ -7,6 +7,8 @@
   - [Canary Deployment](#canary-deployment)
   - [Restrict TLS to v1.2](#restrict-tls-to-v12)
     - [Test TLS/SSL](#test-tlsssl)
+  - [mTLS](#mtls)
+  - [Route Sharding](#route-sharding)
   - [Access Log](#access-log)
     - [Verify Access Log](#verify-access-log)
       - [Sidecar](#sidecar)
@@ -126,6 +128,10 @@ Sample results
   - [Default TLS profile](manifests/test-ssl-default.txt)
   - [Google Website](manifests/test-ssl-2.log)
 
+## mTLS
+WIP
+
+## Route Sharding
 
 ## Access Log
 
