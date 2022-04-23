@@ -457,7 +457,30 @@ Sample reports of OpenShift clusters with auto-remidiation
 - [PCI-DSS](compliance-operator-reports/fix-with-auto-remidiation/cis-master-report-openscap-pod-e853f18cfd3bef9feca9db566e0c245f58057482.xml.bzip2.htmlpci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
 - HTML version [here](compliance-operator-reports/default) 
 
-Sample [reports](compliance-operator-reports/fix-kubelet/) of OpenShift clusters with [kubelet config](manifests/cis-secure-kubelet.yaml) for machine config master and worker.
+Sample [reports](compliance-operator-reports/fix-kubelet/) of OpenShift clusters with secure [kubelet config](manifests/cis-secure-kubelet.yaml) for machine config master and worker.
+
+- kubelet config
+  
+  ```yaml
+      kubeletConfig:
+        eventRecordQPS: 5
+        tlsCipherSuites:
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+  ```
+
+- Secure /etc/sysctl.d/90-kubelet.conf for 
+  
+  ```properties
+  vm.overcommit_memory=1
+  vm.panic_on_oom=0
+  kernel.panic=10
+  kernel.panic_on_oops=1
+  kernel.keys.root_maxkeys=1000000
+  kernel.keys.root_maxbytes=25000000
+  ```
 
 
 
