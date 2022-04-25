@@ -453,9 +453,9 @@
 
 Sample reports of OpenShift clusters with auto-remidiation  
 
-- [CIS](compliance-operator-reports/fix-with-auto-remidiation/cis-report-ocp4-cis-api-checks.pdf) 
-- [PCI-DSS](compliance-operator-reports/fix-with-auto-remidiation/cis-master-report-openscap-pod-e853f18cfd3bef9feca9db566e0c245f58057482.xml.bzip2.htmlpci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
-- HTML version [here](compliance-operator-reports/default) 
+- [CIS](compliance-operator-reports/cis/../fix-with-auto-remidiation/cis-report-ocp4-cis-api-checks.pdf) 
+- [PCI-DSS](compliance-operator-reports/pci-dss/pci-dss-report-ocp4-pci-dss-api-checks-pod.pdf)
+- HTML version [here](compliance-operator-reports/) 
 
 Sample [reports](compliance-operator-reports/fix-kubelet/) of OpenShift clusters with secure [kubelet config](manifests/cis-secure-kubelet.yaml) for machine config master and worker.
 
