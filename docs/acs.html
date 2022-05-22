@@ -629,7 +629,7 @@
 <li><a href="#kube-linter">kube-linter</a></li>
 </ul>
 </li>
-<li><a href="#scan-container-images-with-roxctl">Scan container images with roxctl</a></li>
+<li><a href="#scan-with-roxctl">Scan with roxctl</a></li>
 </ul>
 </li>
 </ul>
@@ -1077,7 +1077,7 @@ manifests/backend-bad-example.yaml: (object: &lt;no namespace&gt;/backend-v2 app
 </code></pre>
 </li>
 </ul>
-<h3 id="scan-container-images-with-roxctl">Scan container images with roxctl</h3>
+<h3 id="scan-with-roxctl">Scan with roxctl</h3>
 <ul>
 <li><p>Create token for DevOps tools</p>
 <ul>
@@ -1089,11 +1089,36 @@ manifests/backend-bad-example.yaml: (object: &lt;no namespace&gt;/backend-v2 app
 </li>
 <li><p>Set API token to environment variable </p>
 <pre><code class="lang-bash">export ROX_API_TOKEN=&lt;token&gt;
+ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;):443
 </code></pre>
 </li>
+<li><p>Scan deployment</p>
+<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; deployment check --file=manifests/backend-v1.yaml
+</code></pre>
+</li>
+<li><p>Check images in image registry</p>
+<ul>
+<li><p>Image backend:CVE-2020-36518</p>
+<pre><code class="lang-bash">  roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:CVE-2020-36518 --output=table
+</code></pre>
+<p>Output</p>
+<p><img src="images/acs-roxctl-check-image-CVE-2020-36518.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>Image backend:v1</p>
+<pre><code class="lang-bash">  roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:v1 --output=table
+</code></pre>
+<p>Output</p>
+<p><img src="images/acs-roxctl-check-image-backend.png" alt=""></p>
+</li>
+</ul>
+<ul>
 <li><p>Scan image</p>
-<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image quay.io/voravitl/log4shell:latest --output=table
-roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image quay.io/voravitl/log4shell:latest --output=json| jq &apos;.result.summary.CRITICAL&apos;
+<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:v1 --output=table
+roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:v1 --output=json| jq &apos;.result.summary.CRITICAL&apos;
 </code></pre>
 </li>
 </ul>
@@ -1134,7 +1159,7 @@ roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-22T10:13:41.421Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-22T10:14:27.347Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-22T10:42:24.186Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-22T10:43:08.145Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
