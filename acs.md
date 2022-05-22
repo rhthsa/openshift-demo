@@ -364,15 +364,15 @@
 
   Example of output
 
-```bash
-expose port 5000 for container registry
-service/nexus-registry exposed
-route.route.openshift.io/nexus-registry created
-NEXUS URL = nexus-ci-cd.apps.cluster-**tlc.com
-NEXUS User admin: *****
-NEXUS User jenkins: **********
-Nexus password is stored at nexus_password.txt
-```
+  ```bash
+  expose port 5000 for container registry
+  service/nexus-registry exposed
+  route.route.openshift.io/nexus-registry created
+  NEXUS URL = nexus-ci-cd.apps.cluster-**tlc.com
+  NEXUS User admin: *****
+  NEXUS User jenkins: **********
+  Nexus password is stored at nexus_password.txt
+  ```
 
 - Login to nexus with user admin and initial password and set new admin password.
 - Browse repository
@@ -523,14 +523,25 @@ Nexus password is stored at nexus_password.txt
   manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
   ```
 
-- Try kube-linter with better deployment
+- Try kube-linter with [backend-v1.yaml](manifests/backend-v1.yaml)
   
   ```bash
   kube-linter lint manifests/backend-v1.yaml
   ```
 
-### Scan with roxctl
+  Output
 
+  ```bash
+  manifests/backend.yaml: (object: <no namespace>/backend-v1 apps/v1, Kind=Deployment) container "backend" does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)
+  ```
+  
+  Container "backend" still does not have a read-only root file system because Vert.X still need to write /tmp then try [backend deployment with emptyDir](manifests/backend-v1-emptyDir.yaml)
+
+  ```bash
+  kube-linter lint manifests/backend-v1-emptyDir.yaml
+  ```
+
+### Scan with roxctl
 
 - Create token for DevOps tools
     
@@ -558,6 +569,18 @@ Nexus password is stored at nexus_password.txt
   ```bash
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=json| jq '.result.summary.CRITICAL'
+  ```
+
+  Scan all images 
+
+  ```bash
+  export ROX_API_TOKEN=<token>
+  ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
+  allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
+  for image in $allImages
+  do
+      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/$image --output=table
+  done
   ```
  
 - Check images in image registry
