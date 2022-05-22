@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: demo
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: frontend
+          env:
+            - name: BACKEND_URL
+              value: http://backend:8080
