@@ -553,6 +553,13 @@ Nexus password is stored at nexus_password.txt
 
   ![](images/acs-roxctl-scan-deployment.png)
 
+- Scan image
+  
+  ```bash
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=json| jq '.result.summary.CRITICAL'
+  ```
+ 
 - Check images in image registry
   
   - Image backend:CVE-2020-36518
@@ -576,13 +583,4 @@ Nexus password is stored at nexus_password.txt
 
     ![](images/acs-roxctl-check-image-backend.png)
 
-- Scan image
-  
-  ```bash
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=json| jq '.result.summary.CRITICAL'
-  ```
 
-<!-- ## Integration with Container Registry (WIP)
-- Setup Nexus
-- Configure ACS to integrate with Nexus -->
