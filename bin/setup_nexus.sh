@@ -1,14 +1,20 @@
-#!/bin/sh
-#NEXUS_VERSION=3.30.1
+START_BUILD=$(date +%s)
+SONARQUBE_VERSION=7.9.2
 NEXUS_VERSION=3.38.0
 CICD_PROJECT=ci-cd
+DEV_PROJECT=dev
+PROD_PROJECT=prod
+STAGE_PROJECT=stage
+UAT_PROJECT=uat
 NEXUS_PVC_SIZE="300Gi"
+JENKINS_PVC_SIZE="10Gi"
+SONAR_PVC_SIZE="10Gi"
 CICD_NEXUS_USER=jenkins
 CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64 -)
 function add_nexus3_npmproxy_repo() {
   local _REPO_ID=$1
   local _REPO_URL=$2
-  local _NEXUS_USER
+  local _NEXUS_USER=$3
   local _NEXUS_PWD=$4
   local _NEXUS_URL=$5
 
@@ -162,45 +168,37 @@ function add_nexus3_user() {
 EOM
   curl -k  -v  -H "accept: application/json" -H "Content-Type: application/json" -d "$_USER_JSON" -u "$_NEXUS_USER:$_NEXUS_PWD" "${_NEXUS_URL}/service/rest/beta/security/users"
 }
+echo "Add Nexus service to insecure registries list"
+oc patch image.config.openshift.io/cluster -p \
+'{"spec":{"registrySources":{"insecureRegistries":["nexus-registry.ci-cd.svc.cluster.local"]}}}' --type='merge'
+oc project ${CICD_PROJECT}
 clear;echo "Setup Nexus..."
-oc project $CICD_PROJECT
-if [ $? -ne 0 ];
-then
-  oc new-project $CICD_PROJECT
-fi
-oc new-app sonatype/nexus3:$NEXUS_VERSION --name=nexus --labels=app=nexus -n $CICD_PROJECT
+oc new-app sonatype/nexus3:${NEXUS_VERSION} --name=nexus -n ${CICD_PROJECT}
 oc create route edge nexus --service=nexus --port=8081
-oc rollout pause deployment nexus -n $CICD_PROJECT
-oc set resources deployment nexus --limits=memory=2Gi,cpu=2 --requests=memory=1Gi,cpu=500m -n $CICD_PROJECT
-oc set volume deployment/nexus --remove --confirm -n $CICD_PROJECT
+oc rollout pause deployment nexus -n ${CICD_PROJECT}
+oc set resources deployment nexus --limits=memory=2Gi,cpu=2 --requests=memory=1Gi,cpu=500m -n ${CICD_PROJECT}
+oc set volume deployment/nexus --remove --confirm -n ${CICD_PROJECT}
 oc set volume deployment/nexus --add --overwrite --name=nexus-pv-1 \
 --mount-path=/nexus-data/ --type persistentVolumeClaim \
---claim-name=nexus-pvc --claim-size=$NEXUS_PVC_SIZE -n $CICD_PROJECT
+--claim-name=nexus-pvc --claim-size=${NEXUS_PVC_SIZE} -n ${CICD_PROJECT}
 oc set probe deployment/nexus --liveness --failure-threshold 3 --initial-delay-seconds 60 -- echo ok -n ${CICD_PROJECT}
 oc set probe deployment/nexus --readiness --failure-threshold 3 --initial-delay-seconds 60 --get-url=http://:8081/ -n ${CICD_PROJECT}
-oc label deployment nexus app.kubernetes.io/part-of=Registry -n $CICD_PROJECT
-OLD_POD=$(oc get pods --no-headers | grep Running | awk '{print $1}')
-oc rollout resume deployment nexus -n $CICD_PROJECT
-echo "Wait for starting nexus pod... "
-oc wait --for=condition=Ready --timeout=300s pods -l app=nexus -n $CICD_PROJECT
+oc label deployment nexus app.kubernetes.io/part-of=Registry -n ${CICD_PROJECT}
+oc rollout resume deployment nexus -n ${CICD_PROJECT}
+sleep 60
+oc wait --for=condition=Ready --timeout=300s pods -l deployment=nexus -n $CICD_PROJECT
 clear;echo "Create Nexus repositories..."
-NEXUS_POD=$(oc get pods --no-headers | grep Running |grep -v $OLD_POD | awk '{print $1}')
-#oc cp $NEXUS_POD:/nexus-data/etc/nexus.properties ./nexus.properties
-touch nexus.properties
-echo application-port=8081 > nexus.properties
-echo application-port=8081 >> nexus.properties
-echo nexus-args=\${jetty.etc}/jetty.xml,\${jetty.etc}/jetty-http.xml,\${jetty.etc}/jetty-requestlog.xml >> nexus.properties
-echo nexus-context-path=/\${NEXUS_CONTEXT} >> nexus.properties
-echo nexus.scripts.allowCreation=true >> nexus.properties
+NEXUS_POD=$(oc get pods -n $CICD_PROJECT | grep nexus |grep -v deploy |grep -v Termination| grep Running | awk '{print $1}')
+oc cp $NEXUS_POD:/nexus-data/etc/nexus.properties nexus.properties
+echo nexus.scripts.allowCreation=true >>  nexus.properties
 oc cp nexus.properties $NEXUS_POD:/nexus-data/etc/nexus.properties
-rm -f nexus.properties
+#rm -f nexus.properties
 oc delete pod $NEXUS_POD
-echo "Wait for starting nexus pod... "
-oc wait --for=condition=Ready --timeout=300s pods -l app=nexus -n $CICD_PROJECT
-NEXUS_POD=$(oc get pods -l app=nexus --no-headers | grep Running | awk '{print $1}')
-NEXUS_PASSWORD=$(oc exec $NEXUS_POD -- cat /nexus-data/admin.password)
+oc wait --for=condition=Ready --timeout=300s pods -l deployment=nexus -n $CICD_PROJECT
+NEXUS_POD=$(oc get pods -n $CICD_PROJECT| grep nexus | grep -v deploy |grep Running| awk '{print $1}')
+NEXUS_PASSWORD=$(oc exec -n $CICD_PROJECT $NEXUS_POD -- cat /nexus-data/admin.password)
 CICD_NEXUS_PASSWORD=${NEXUS_PASSWORD}-$(date +%s)
-NEXUS_URL=https://$(oc get route nexus --template='{{ .spec.host }}')
+NEXUS_URL=https://$(oc get route nexus --template='{{ .spec.host }}' -n $CICD_PROJECT)
 add_nexus3_proxy_repo redhat-ga https://maven.repository.redhat.com/ga/ admin $NEXUS_PASSWORD $NEXUS_URL
 add_nexus3_group_proxy_repo redhat-ga,maven-central,maven-releases,maven-snapshots maven-all-public admin $NEXUS_PASSWORD $NEXUS_URL
 add_nexus3_docker_repo docker 5000 admin $NEXUS_PASSWORD $NEXUS_URL
@@ -211,10 +209,17 @@ echo "expose port 5000 for container registry"
 oc expose deployment nexus --port=5000 --name=nexus-registry
 oc create route edge nexus-registry --service=nexus-registry --port=5000
 NEXUS_PASSWORD=$(oc exec $NEXUS_POD -- cat /nexus-data/admin.password)
-CICD_NEXUS_PASSWORD_SECRET=$(echo $CICD_NEXUS_PASSWORD|base64 -)
-echo "NEXUS URL = $(oc get route nexus -n $CICD_PROJECT -o jsonpath='{.spec.host}')"
-echo "admin: $NEXUS_PASSWORD" > nexus_password.txt
-echo "$CICD_NEXUS_USER: $CICD_NEXUS_PASSWORD_SECRET" >> nexus_password.txt
-echo "NEXUS User admin: $NEXUS_PASSWORD"
-echo "NEXUS User jenkins: $CICD_NEXUS_PASSWORD"
-echo "Nexus password is stored at nexus_password.txt"
+CICD_NEXUS_PASSWORD_SECRET=$(echo ${CICD_NEXUS_PASSWORD}|base64 -)
+END_BUILD=$(date +%s)
+BUILD_TIME=$(expr ${END_BUILD} - ${START_BUILD})
+echo ${NEXUS_PASSWORD} > nexus_password.txt
+echo ${CICD_NEXUS_PASSWORD} >> nexus_password.txt
+clear
+echo "NEXUS URL = $(oc get route nexus -n ${CICD_PROJECT} -o jsonpath='{.spec.host}') "
+echo "NEXUS Password = ${NEXUS_PASSWORD}"
+echo "Nexus password is stored at bin/nexus_password.txt"
+echo "Jenkins will use user/password store in secret nexus-credential to access nexus"
+echo "Login to Nexus with admin and jenkins"
+echo "Record this password and change it via web console"
+echo "Start build pipeline and deploy to dev project by run start_build_pipeline.sh"
+echo "Elasped time to build is $(expr ${BUILD_TIME} / 60 ) minutes"

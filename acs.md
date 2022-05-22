@@ -6,16 +6,17 @@
       - [Access Central](#access-central)
     - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
-        - [Local Cluster](#local-cluster)
-        - [Remote Cluster](#remote-cluster)
-      - [Helm Chart and roxctl](#helm-chart-and-roxctl)
+      - [CLI roxctl and Helm](#cli-roxctl-and-helm)
       - [View Managed Cluster](#view-managed-cluster)
-  - [Quick Test](#quick-test)
+    - [Integration with Nexus](#integration-with-nexus)
+      - [Setup Nexus](#setup-nexus)
+      - [Config ACS](#config-acs)
+  - [Demo](#demo)
     - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
-      - [Scan container images with roxctl](#scan-container-images-with-roxctl)
+    - [Scan container images with roxctl](#scan-container-images-with-roxctl)
 
 ## Installation
 
@@ -61,11 +62,11 @@
           name: acs-central
     ```
 
-    - *Optional:* Copy default TLS from default router to secret name *acs-central*
+    <!-- - *Optional:* Copy default TLS from default router to secret name *acs-central*
     
       ```bash
       oc get secret $(oc get secret -n openshift-ingress -o=custom-columns="NAME:.metadata.name" --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed 's/namespace: .*/namespace: stackrox/' | sed 's/name: .*/name: acs-central/' | oc apply -n stackrox  -f -
-      ```
+      ``` -->
 
 - Create Central
 
@@ -80,7 +81,7 @@
 - Check status
   
   ```bash
-  oc describe central/stackrox-central-services
+  oc describe central/stackrox-central-services -n stackrox
   watch oc get pods -n stackrox
   ```
 
@@ -126,6 +127,8 @@
 
 ### Secured Cluster Services (Managed Cluster)
 
+#### Operator
+
 - Login to ACS console
 - Generate cluster init bundle
   - Platform Configuration -> Integrations -> Cluster Init Bundle -> Generate Bundle
@@ -135,119 +138,101 @@
   - Input cluster name
   - download *Kubernetes Secrets file* for installation with *Operator* or *Helm values file* for installation with *roxctl*
 
-#### Operator
 - Create namespace for *Secured Cluster Services*
   
   ```bash
   oc new-project stackrox-cluster
   ```
+
 - Create secret from previously downloaded *Kubernetes Secrets file*
   
   ```bash
    oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
   ```
 
-##### Local Cluster
+- Install Secure Cluster Services on local cluster
 
-- Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
-  
-  ```bash
-  oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
-  ```
+    - Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
+      
+      ```bash
+      oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
+      ```
 
-  Remark: [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml) is prepared for install Secured Cluster Service within the same cluster with Central.
+      Remark: [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml) is prepared for install Secured Cluster Service within the same cluster with Central.
 
-  If you want Admission Control run on Infra Nodes with [acs-secured-cluster-infra.yaml](manifests/acs-secured-cluster-infra.yaml)
+      If you want Admission Control run on Infra Nodes with [acs-secured-cluster-infra.yaml](manifests/acs-secured-cluster-infra.yaml)
 
-  ```bash
-  oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
-  ```
-- Check status
-  
-  ```bash
-  oc describe securedcluster/cluster1  -n stackrox-cluster
-  watch oc get pods -n stackrox-cluster
-  ```
+      ```bash
+      oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
+      ```
 
-  Output
+    - Check status
+      
+      ```bash
+      oc describe securedcluster/cluster1  -n stackrox-cluster
+      watch oc get pods -n stackrox-cluster
+      ```
 
-  ```bash
-  NAME                                READY   STATUS    RESTARTS   AGE
-  admission-control-cb5997c68-4ddp8   1/1     Running   0          28s
-  admission-control-cb5997c68-7vtgh   1/1     Running   0          28s
-  admission-control-cb5997c68-qhbqc   1/1     Running   0          28s
-  collector-59kzw                     2/2     Running   0          28s
-  collector-bx2w2                     2/2     Running   0          28s
-  collector-kgp57                     2/2     Running   0          28s
-  collector-tmscm                     2/2     Running   0          28s
-  collector-x9h8n                     2/2     Running   0          28s
-  ```
+      Output
 
-  Remark
-  - Adminission control is high availability with default 3 pods
-  - Collector is run on all nodes
+      ```bash
+      NAME                                READY   STATUS    RESTARTS   AGE
+      admission-control-cb5997c68-4ddp8   1/1     Running   0          28s
+      admission-control-cb5997c68-7vtgh   1/1     Running   0          28s
+      admission-control-cb5997c68-qhbqc   1/1     Running   0          28s
+      collector-59kzw                     2/2     Running   0          28s
+      collector-bx2w2                     2/2     Running   0          28s
+      collector-kgp57                     2/2     Running   0          28s
+      collector-tmscm                     2/2     Running   0          28s
+      collector-x9h8n                     2/2     Running   0          28s
+      ```
 
-
-##### Remote Cluster
-
-- Generate cluster init bundle
-- Create secret from previously downloaded *Kubernetes Secrets file* 
-  
-  ```bash
-  oc new-project stackrox-cluster
-  oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
-  ```
-
-- Create Secured Cluster Service with centralEndpoint set to Central's route. 
-  
-  Get Central's route and save to ROX_HOST environment variable
-
-  ```bash
-  ROX_HOST=$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
-  ```
-
-  Login to remote cluster and run following command.
-
-  ```bash
-  cat manifests/acs-secured-cluster.yaml | \
-  sed s/central.stackrox.svc/$ROX_HOST/ | \
-  sed s/cluster1/cluster2/ | \
-  oc create -n stackrox-cluster -f - 
-  ```
-
-#### Helm Chart and roxctl
-
-WIP
+      Remark
+      - Adminission control is high availability with default 3 pods
+      - Collector is run on all nodes
 
 
-#### View Managed Cluster   
+- Install Secure Cluster Services on remote cluster
 
-- Check ACS Console
+    - Generate cluster init bundle
+    - Create secret from previously downloaded *Kubernetes Secrets file* 
+      
+      ```bash
+      oc new-project stackrox-cluster
+      oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
+      ```
 
-  - Dashboard
+    - Create Secured Cluster Service with centralEndpoint set to Central's route. 
+      
+      Get Central's route and save to ROX_HOST environment variable
 
-    ![](images/acs-console-dashboard-managed-cluster.png)
+      ```bash
+      ROX_HOST=$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
+      ```
 
-  - Platform Configuration -> Clusters
+      Login to remote cluster and run following command.
 
-    ![](images/acs-console-managed-clusters.png)
+      ```bash
+      cat manifests/acs-secured-cluster.yaml | \
+      sed s/central.stackrox.svc/$ROX_HOST/ | \
+      sed s/cluster1/cluster2/ | \
+      oc create -n stackrox-cluster -f - 
+      ```
 
-    
-    Overall status
+#### CLI roxctl and Helm
 
-
-    ![](images/acs-manged-cluster-dynamic-configuration-01.png)
-    
-
-    Dynamic configuration
-
-    ![](images/acs-manged-cluster-dynamic-configuration-02.png)
-
-
-<!-- #### StackRox CLI
 - Create *authentication token*
+  
   - Login to Central
-  - Platform Configuration -> Integrations -> Authentication Tokens Select StackRox API Token then generate token and copy token to clipboard
+    
+    ```bash
+    echo "ACS Console: https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')"
+    ```
+
+  - Platform Configuration -> Integrations -> Authentication Tokens. Select StackRox API Token then generate token and copy token to clipboard
+  
+      ![](images/acs-integration-api-token.png)
+
     - Token Name: admin
     - Role: Admin
 
@@ -258,7 +243,11 @@ WIP
     export ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
     ```
 
-
+- Add Helm repository
+  
+  ```bash
+  helm repo add rhacs https://mirror.openshift.com/pub/rhacs/charts/
+  ```
 
 - Install Secure Cluster Services on local cluster
 
@@ -268,6 +257,22 @@ WIP
       CLUSTER_NAME=cluster1
       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
       --output $CLUSTER_NAME-init-bundle.yaml
+      ```
+
+      Example of output
+
+      ```
+      INFO:	Successfully generated new init bundle.
+
+        Name:       cluster1
+        Created at: 2022-05-22T07:43:47.645062387Z
+        Expires at: 2023-05-22T07:44:00Z
+        Created By: admin
+        ID:         84c50c04-de36-450d-a5d6-7a23f1dd563c
+
+      INFO:	The newly generated init bundle has been written to file "cluster1-init-bundle.yaml".
+      INFO:	The init bundle needs to be stored securely, since it contains secrets.
+      INFO:	It is not possible to retrieve previously generated init bundles.
       ```
 
     - Create collectors
@@ -315,11 +320,102 @@ WIP
     collector-rfkq2   2/2     Running   0          87s
     collector-x4gtb   2/2     Running   0          87s
     ```
-- Check managed clusters on ACS console. Platform Configuration -> Clusters
-  
-  ![](images/acs-console-managed-clusters.png) -->
 
-## Quick Test
+#### View Managed Cluster   
+
+- Check ACS Console
+
+  - Dashboard
+
+    ![](images/acs-console-dashboard-managed-cluster.png)
+
+  - Platform Configuration -> Clusters
+
+    ![](images/acs-console-managed-clusters.png)
+
+    
+    Overall status
+
+
+    ![](images/acs-manged-cluster-dynamic-configuration-01.png)
+    
+
+    Dynamic configuration
+
+    ![](images/acs-manged-cluster-dynamic-configuration-02.png)
+
+    Helm-managed cluster
+
+    ![](images/acs-console-managed-clusters-helm.png)
+
+### Integration with Nexus
+#### Setup Nexus
+- Create namespace
+  
+  ```bash
+  oc new-project ci-cd
+  ```
+- Create nexus
+  
+  ```bash
+  cd bin
+  ./setup_nexus.sh
+  ```
+
+  Example of output
+
+```bash
+expose port 5000 for container registry
+service/nexus-registry exposed
+route.route.openshift.io/nexus-registry created
+NEXUS URL = nexus-ci-cd.apps.cluster-**tlc.com
+NEXUS User admin: *****
+NEXUS User jenkins: **********
+Nexus password is stored at nexus_password.txt
+```
+
+- Login to nexus with user admin and initial password and set new admin password.
+- Browse repository
+  
+
+- Copy sample container images to nexus
+
+  ```bash
+  NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')
+  allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
+  for image in $allImages
+  do
+    podman run docker://quay.io/skopeo/stable:latest \
+    copy --src-tls-verify=true \
+    --dest-tls-verify=false \
+    --src-no-creds \
+    --dest-username admin \
+    --dest-password $NEXUS_PASSWORD \
+    docker://quay.io/voravitl/$image \
+    docker://$NEXUS/$image
+  done
+  ```
+
+  Check Nexus docker repository
+
+  ![](images/nexus-docker-repository.png)
+
+
+#### Config ACS 
+- Login to ACS Central
+- Platform Configuration -> Integrations -> Sonatype Nexus -> New Integration
+  
+  Check for Nexus Container Registry URL
+  
+  ```bash
+  echo "Endpoint: $(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')"
+  ```
+
+  ![](images/acs-config-nexus.png)
+
+  - Click Test then Save
+
+## Demo
 
 ### Container Image with Vulnerabilities
 
@@ -327,7 +423,8 @@ WIP
 
     ```bash
     oc new-project test
-    oc run log4shell --labels=app=log4shell --image=quay.io/voravitl/log4shell:latest -n test 
+    oc run log4shell --labels=app=log4shell --image=$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')/log4shell:latest -n test
+    oc run backend --labels=app=CVE-2020-36518 --image=$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 -n test
     watch oc get pods -n test
     ```
 
@@ -362,21 +459,44 @@ WIP
 
   ![](images/acs-image-cve-44228-recommendation.png)
 
+- Naviate to Violations, You will find Fixable at least important that is alert for deployment with fixable vulnerbilities on backend deployment
+  
+  ![](images/CVE-2020-36518.png)
+
+  Affected deployment
+
+  ![](images/CVE-2020-36518-backend.png)
+
+  Drilled down to integrated nexus
+
+  ![](images/acs-nexus-detailed.png)
+
 ### Detecting suspect behaviors
+- Platform configuration -> Policies
+- Search for Policy Kubernetes Actions: Exec into Pod
+- Click Action -> Edit Policy
+- Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.
+  
+  ![](images/acs-enforce-on-runtime.png)
 
-- Deploy sample application
-
-    ```bash
-    oc run backend --labels=app=backend --image=quay.io/voravitl/backend:v1 -n test 
-    ```
+- Save Policy
 - Run curl inside backend's pod
   
     ```bash
-    oc exec backend -- curl http://localhost:8080/q/health
+    oc new-project project1
+    oc apply -f manifests/backend-v1.yaml -n project1
+    oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | awk '{print $1}') -- curl -s http://backend:8080
     ```
+
+    Output
+
+    ```bash
+    command terminated with exit code 6
+    ```
+    
 - Check Console
   
-  - Navigate toDashboard -> Violation
+  - Navigate to Dashboard -> Violation
 
     ![](images/acs-exec-in-pod.png)
 
@@ -386,6 +506,7 @@ WIP
 
 ### Shift Left Security
 #### kube-linter
+
 - Try kube-linter with deployment YAML
   
   ```bash
@@ -402,7 +523,13 @@ WIP
   manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
   ```
 
-#### Scan container images with roxctl
+- Try kube-linter with better deployment
+  
+  ```bash
+  kube-linter lint manifests/backend-v1.yaml
+  ```
+
+### Scan container images with roxctl
 
 
 - Create token for DevOps tools
