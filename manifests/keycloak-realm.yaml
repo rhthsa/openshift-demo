@@ -1,0 +1,24 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: demo
+  labels:
+    app: sso
+  namespace: sso
+spec:
+  instanceSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - sso
+    matchLabels:
+      app: sso
+  realm:
+    enabled: true
+    adminEventsDetailsEnabled: false
+    eventsEnabled: false
+    displayName: Demo Realm
+    realm: demo
+    adminEventsEnabled: true
+    id: basic
