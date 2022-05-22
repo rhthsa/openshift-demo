@@ -551,6 +551,8 @@ Nexus password is stored at nexus_password.txt
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-v1.yaml
   ```
 
+  ![](images/acs-roxctl-scan-deployment.png)
+
 - Check images in image registry
   
   - Image backend:CVE-2020-36518
