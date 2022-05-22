@@ -16,7 +16,7 @@
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
-    - [Scan container images with roxctl](#scan-container-images-with-roxctl)
+    - [Scan with roxctl](#scan-with-roxctl)
 
 ## Installation
 
@@ -493,7 +493,7 @@ Nexus password is stored at nexus_password.txt
     ```bash
     command terminated with exit code 6
     ```
-    
+
 - Check Console
   
   - Navigate to Dashboard -> Violation
@@ -529,7 +529,7 @@ Nexus password is stored at nexus_password.txt
   kube-linter lint manifests/backend-v1.yaml
   ```
 
-### Scan container images with roxctl
+### Scan with roxctl
 
 
 - Create token for DevOps tools
@@ -543,13 +543,42 @@ Nexus password is stored at nexus_password.txt
 
   ```bash
   export ROX_API_TOKEN=<token>
+  ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   ```
+- Scan deployment
+
+  ```bash
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-v1.yaml
+  ```
+
+- Check images in image registry
+  
+  - Image backend:CVE-2020-36518
+  
+    ```bash
+      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=table
+    ```
+
+    Output
+
+    ![](images/acs-roxctl-check-image-CVE-2020-36518.png)
+
+  
+  - Image backend:v1
+  
+    ```bash
+      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
+    ```
+
+    Output
+
+    ![](images/acs-roxctl-check-image-backend.png)
 
 - Scan image
   
   ```bash
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image quay.io/voravitl/log4shell:latest --output=table
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image quay.io/voravitl/log4shell:latest --output=json| jq '.result.summary.CRITICAL'
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=json| jq '.result.summary.CRITICAL'
   ```
 
 <!-- ## Integration with Container Registry (WIP)
