@@ -1,9 +1,0 @@
-#namePrefix: prod-
-commonLabels:
-  environment: dev
-commonAnnotations:
-  description: Quarkus JVM mode
-bases:
-- ../../base
-patchesStrategicMerge:
-- todo.yaml

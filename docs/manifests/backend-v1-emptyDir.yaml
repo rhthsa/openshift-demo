@@ -27,6 +27,7 @@ spec:
       annotations:
         sidecar.istio.io/inject: "true"
     spec:
+      automountServiceAccountToken: false
       containers:
       - name: backend
         image: quay.io/voravitl/backend-native:v1
