@@ -610,25 +610,26 @@
 </ul>
 </li>
 <li><a href="#secured-cluster-services-managed-cluster">Secured Cluster Services (Managed Cluster)</a><ul>
-<li><a href="#operator">Operator</a><ul>
-<li><a href="#local-cluster">Local Cluster</a></li>
-<li><a href="#remote-cluster">Remote Cluster</a></li>
-</ul>
-</li>
-<li><a href="#helm-chart-and-roxctl">Helm Chart and roxctl</a></li>
+<li><a href="#operator">Operator</a></li>
+<li><a href="#cli-roxctl-and-helm">CLI roxctl and Helm</a></li>
 <li><a href="#view-managed-cluster">View Managed Cluster</a></li>
 </ul>
 </li>
+<li><a href="#integration-with-nexus">Integration with Nexus</a><ul>
+<li><a href="#setup-nexus">Setup Nexus</a></li>
+<li><a href="#config-acs">Config ACS</a></li>
 </ul>
 </li>
-<li><a href="#quick-test">Quick Test</a><ul>
+</ul>
+</li>
+<li><a href="#demo">Demo</a><ul>
 <li><a href="#container-image-with-vulnerabilities">Container Image with Vulnerabilities</a></li>
 <li><a href="#detecting-suspect-behaviors">Detecting suspect behaviors</a></li>
 <li><a href="#shift-left-security">Shift Left Security</a><ul>
 <li><a href="#kube-linter">kube-linter</a></li>
-<li><a href="#scan-container-images-with-roxctl">Scan container images with roxctl</a></li>
 </ul>
 </li>
+<li><a href="#scan-container-images-with-roxctl">Scan container images with roxctl</a></li>
 </ul>
 </li>
 </ul>
@@ -673,12 +674,11 @@
     defaultTLSSecret:
       name: acs-central
 </code></pre>
-<ul>
-<li><p><em>Optional:</em> Copy default TLS from default router to secret name <em>acs-central</em></p>
-<pre><code class="lang-bash">oc get secret $(oc get secret -n openshift-ingress -o=custom-columns=&quot;NAME:.metadata.name&quot; --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed &apos;s/namespace: .*/namespace: stackrox/&apos; | sed &apos;s/name: .*/name: acs-central/&apos; | oc apply -n stackrox  -f -
-</code></pre>
-</li>
-</ul>
+<!-- - *Optional:* Copy default TLS from default router to secret name *acs-central*
+
+  ```bash
+  oc get secret $(oc get secret -n openshift-ingress -o=custom-columns="NAME:.metadata.name" --no-headers | grep ingress-certs) -n openshift-ingress -o yaml | sed 's/namespace: .*/namespace: stackrox/' | sed 's/name: .*/name: acs-central/' | oc apply -n stackrox  -f -
+  ``` -->
 </li>
 </ul>
 </li>
@@ -692,7 +692,7 @@
 </ul>
 </li>
 <li><p>Check status</p>
-<pre><code class="lang-bash">oc describe central/stackrox-central-services
+<pre><code class="lang-bash">oc describe central/stackrox-central-services -n stackrox
 watch oc get pods -n stackrox
 </code></pre>
 <p>Output</p>
@@ -733,6 +733,7 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 </li>
 </ul>
 <h3 id="secured-cluster-services-managed-cluster">Secured Cluster Services (Managed Cluster)</h3>
+<h4 id="operator">Operator</h4>
 <ul>
 <li>Login to ACS console</li>
 <li><p>Generate cluster init bundle</p>
@@ -745,9 +746,6 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 <li>download <em>Kubernetes Secrets file</em> for installation with <em>Operator</em> or <em>Helm values file</em> for installation with <em>roxctl</em></li>
 </ul>
 </li>
-</ul>
-<h4 id="operator">Operator</h4>
-<ul>
 <li><p>Create namespace for <em>Secured Cluster Services</em></p>
 <pre><code class="lang-bash">oc new-project stackrox-cluster
 </code></pre>
@@ -756,8 +754,7 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 <pre><code class="lang-bash"> oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
 </code></pre>
 </li>
-</ul>
-<h5 id="local-cluster">Local Cluster</h5>
+<li><p>Install Secure Cluster Services on local cluster</p>
 <ul>
 <li><p>Create Secured Cluster Service with <a href="manifests/acs-secured-cluster.yaml">acs-secured-cluster.yaml</a></p>
 <pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
@@ -789,7 +786,10 @@ collector-x9h8n                     2/2     Running   0          28s
 </ul>
 </li>
 </ul>
-<h5 id="remote-cluster">Remote Cluster</h5>
+</li>
+</ul>
+<ul>
+<li><p>Install Secure Cluster Services on remote cluster</p>
 <ul>
 <li>Generate cluster init bundle</li>
 <li><p>Create secret from previously downloaded <em>Kubernetes Secrets file</em> </p>
@@ -809,8 +809,96 @@ oc create -n stackrox-cluster -f -
 </code></pre>
 </li>
 </ul>
-<h4 id="helm-chart-and-roxctl">Helm Chart and roxctl</h4>
-<p>WIP</p>
+</li>
+</ul>
+<h4 id="cli-roxctl-and-helm">CLI roxctl and Helm</h4>
+<ul>
+<li><p>Create <em>authentication token</em></p>
+<ul>
+<li><p>Login to Central</p>
+<pre><code class="lang-bash">echo &quot;ACS Console: https://$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;)&quot;
+</code></pre>
+</li>
+<li><p>Platform Configuration -&gt; Integrations -&gt; Authentication Tokens. Select StackRox API Token then generate token and copy token to clipboard</p>
+<p>  <img src="images/acs-integration-api-token.png" alt=""></p>
+<ul>
+<li>Token Name: admin</li>
+<li>Role: Admin</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Set environment variable</p>
+<pre><code class="lang-bash">  export ROX_API_TOKEN=&lt;api-token&gt;
+  export ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;):443
+</code></pre>
+</li>
+<li><p>Add Helm repository</p>
+<pre><code class="lang-bash">helm repo add rhacs https://mirror.openshift.com/pub/rhacs/charts/
+</code></pre>
+</li>
+<li><p>Install Secure Cluster Services on local cluster</p>
+<ul>
+<li><p>Generate cluster init bundle</p>
+<pre><code class="lang-bash">CLUSTER_NAME=cluster1
+roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; central init-bundles generate $CLUSTER_NAME \
+--output $CLUSTER_NAME-init-bundle.yaml
+</code></pre>
+<p>Example of output</p>
+<pre><code>INFO:    Successfully generated new init bundle.
+
+  Name:       cluster1
+  Created at: 2022-05-22T07:43:47.645062387Z
+  Expires at: 2023-05-22T07:44:00Z
+  Created By: admin
+  ID:         84c50c04-de36-450d-a5d6-7a23f1dd563c
+
+INFO:    The newly generated init bundle has been written to file &quot;cluster1-init-bundle.yaml&quot;.
+INFO:    The init bundle needs to be stored securely, since it contains secrets.
+INFO:    It is not possible to retrieve previously generated init bundles.
+</code></pre></li>
+<li><p>Create collectors</p>
+<pre><code class="lang-bash">helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
+-f ${CLUSTER_NAME}-init-bundle.yaml \
+--set clusterName=${CLUSTER_NAME} \
+--set imagePullSecrets.allowNone=true
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Install Secure Cluster Services on Remote cluster</p>
+<ul>
+<li><p>Generate cluster init bundle</p>
+<pre><code class="lang-bash">CLUSTER_NAME=cluster2
+roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; central init-bundles generate $CLUSTER_NAME \
+--output $CLUSTER_NAME-init-bundle.yaml
+</code></pre>
+</li>
+<li><p>Create collectors</p>
+<pre><code class="lang-bash">helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
+-f ${CLUSTER_NAME}-init-bundle.yaml \
+--set centralEndpoint=${ROX_CENTRAL_ADDRESS} \
+--set clusterName=${CLUSTER_NAME} \
+--set imagePullSecrets.allowNone=true
+</code></pre>
+</li>
+</ul>
+<ul>
+<li><p>Check collector pods</p>
+<pre><code class="lang-bash">oc get pods -n stackrox -l app=collector,app.kubernetes.io/name=stackrox
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME              READY   STATUS    RESTARTS   AGE
+collector-5hmzt   2/2     Running   0          87s
+collector-dmpps   2/2     Running   0          87s
+collector-ffpdg   2/2     Running   0          87s
+collector-rfkq2   2/2     Running   0          87s
+collector-x4gtb   2/2     Running   0          87s
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
 <h4 id="view-managed-cluster">View Managed Cluster</h4>
 <ul>
 <li><p>Check ACS Console</p>
@@ -833,86 +921,76 @@ oc create -n stackrox-cluster -f -
 Dynamic configuration
 
 ![](images/acs-manged-cluster-dynamic-configuration-02.png)
-</code></pre><!-- #### StackRox CLI
-- Create *authentication token*
-  - Login to Central
-  - Platform Configuration -> Integrations -> Authentication Tokens Select StackRox API Token then generate token and copy token to clipboard
-    - Token Name: admin
-    - Role: Admin
 
-- Set environment variable
+Helm-managed cluster
 
-    ```bash
-    export ROX_API_TOKEN=<api-token>
-    export ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
-    ```
-
-
-
-- Install Secure Cluster Services on local cluster
-
-    - Generate cluster init bundle
-
-      ```bash
-      CLUSTER_NAME=cluster1
-      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
-      --output $CLUSTER_NAME-init-bundle.yaml
-      ```
-
-    - Create collectors
-
-      ```bash
-      helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
-      -f ${CLUSTER_NAME}-init-bundle.yaml \
-      --set clusterName=${CLUSTER_NAME} \
-      --set imagePullSecrets.allowNone=true
-      ```
-
--  Install Secure Cluster Services on Remote cluster
-
-     - Generate cluster init bundle
-
-       ```bash
-       CLUSTER_NAME=cluster2
-       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" central init-bundles generate $CLUSTER_NAME \
-       --output $CLUSTER_NAME-init-bundle.yaml
-       ```
-
-     - Create collectors
-
-       ```bash
-       helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
-       -f ${CLUSTER_NAME}-init-bundle.yaml \
-       --set centralEndpoint=${ROX_CENTRAL_ADDRESS} \
-       --set clusterName=${CLUSTER_NAME} \
-       --set imagePullSecrets.allowNone=true
-       ```
-
- - Check collector pods
-
-    ```bash
-    oc get pods -n stackrox -l app=collector,app.kubernetes.io/name=stackrox
-    ```
-
-    Output
-
-    ```bash
-    NAME              READY   STATUS    RESTARTS   AGE
-    collector-5hmzt   2/2     Running   0          87s
-    collector-dmpps   2/2     Running   0          87s
-    collector-ffpdg   2/2     Running   0          87s
-    collector-rfkq2   2/2     Running   0          87s
-    collector-x4gtb   2/2     Running   0          87s
-    ```
-- Check managed clusters on ACS console. Platform Configuration -> Clusters
-
-  ![](images/acs-console-managed-clusters.png) -->
-<h2 id="quick-test">Quick Test</h2>
+![](images/acs-console-managed-clusters-helm.png)
+</code></pre><h3 id="integration-with-nexus">Integration with Nexus</h3>
+<h4 id="setup-nexus">Setup Nexus</h4>
+<ul>
+<li><p>Create namespace</p>
+<pre><code class="lang-bash">oc new-project ci-cd
+</code></pre>
+</li>
+<li><p>Create nexus</p>
+<pre><code class="lang-bash">cd bin
+./setup_nexus.sh
+</code></pre>
+<p>Example of output</p>
+</li>
+</ul>
+<pre><code class="lang-bash">expose port 5000 for container registry
+service/nexus-registry exposed
+route.route.openshift.io/nexus-registry created
+NEXUS URL = nexus-ci-cd.apps.cluster-**tlc.com
+NEXUS User admin: *****
+NEXUS User jenkins: **********
+Nexus password is stored at nexus_password.txt
+</code></pre>
+<ul>
+<li>Login to nexus with user admin and initial password and set new admin password.</li>
+<li>Browse repository</li>
+</ul>
+<ul>
+<li><p>Copy sample container images to nexus</p>
+<pre><code class="lang-bash">NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)
+allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
+for image in $allImages
+do
+  podman run docker://quay.io/skopeo/stable:latest \
+  copy --src-tls-verify=true \
+  --dest-tls-verify=false \
+  --src-no-creds \
+  --dest-username admin \
+  --dest-password $NEXUS_PASSWORD \
+  docker://quay.io/voravitl/$image \
+  docker://$NEXUS/$image
+done
+</code></pre>
+<p>Check Nexus docker repository</p>
+<p><img src="images/nexus-docker-repository.png" alt=""></p>
+</li>
+</ul>
+<h4 id="config-acs">Config ACS</h4>
+<ul>
+<li>Login to ACS Central</li>
+<li><p>Platform Configuration -&gt; Integrations -&gt; Sonatype Nexus -&gt; New Integration</p>
+<p>Check for Nexus Container Registry URL</p>
+<pre><code class="lang-bash">echo &quot;Endpoint: $(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)&quot;
+</code></pre>
+<p><img src="images/acs-config-nexus.png" alt=""></p>
+<ul>
+<li>Click Test then Save</li>
+</ul>
+</li>
+</ul>
+<h2 id="demo">Demo</h2>
 <h3 id="container-image-with-vulnerabilities">Container Image with Vulnerabilities</h3>
 <ul>
 <li><p>Deploy sample application</p>
 <pre><code class="lang-bash">  oc new-project test
-  oc run log4shell --labels=app=log4shell --image=quay.io/voravitl/log4shell:latest -n test 
+  oc run log4shell --labels=app=log4shell --image=$(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)/log4shell:latest -n test
+  oc run backend --labels=app=CVE-2020-36518 --image=$(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)/backend:CVE-2020-36518 -n test
   watch oc get pods -n test
 </code></pre>
 </li>
@@ -942,19 +1020,37 @@ CVSS score: https://nvd.nist.gov/vuln-metrics/cvss
 <p>  <img src="images/acs-image-cve-44228.png" alt=""></p>
 <p>  Details information</p>
 <p>  <img src="images/acs-image-cve-44228-recommendation.png" alt=""></p>
+<ul>
+<li><p>Naviate to Violations, You will find Fixable at least important that is alert for deployment with fixable vulnerbilities on backend deployment</p>
+<p><img src="images/CVE-2020-36518.png" alt=""></p>
+<p>Affected deployment</p>
+<p><img src="images/CVE-2020-36518-backend.png" alt=""></p>
+<p>Drilled down to integrated nexus</p>
+<p><img src="images/acs-nexus-detailed.png" alt=""></p>
+</li>
+</ul>
 <h3 id="detecting-suspect-behaviors">Detecting suspect behaviors</h3>
 <ul>
-<li><p>Deploy sample application</p>
-<pre><code class="lang-bash">  oc run backend --labels=app=backend --image=quay.io/voravitl/backend:v1 -n test
-</code></pre>
+<li>Platform configuration -&gt; Policies</li>
+<li>Search for Policy Kubernetes Actions: Exec into Pod</li>
+<li>Click Action -&gt; Edit Policy</li>
+<li><p>Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.</p>
+<p><img src="images/acs-enforce-on-runtime.png" alt=""></p>
+</li>
+<li><p>Save Policy</p>
 </li>
 <li><p>Run curl inside backend&apos;s pod</p>
-<pre><code class="lang-bash">  oc exec backend -- curl http://localhost:8080/q/health
+<pre><code class="lang-bash">  oc new-project project1
+  oc apply -f manifests/backend-v1.yaml -n project1
+  oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | awk &apos;{print $1}&apos;) -- curl -s http://backend:8080
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  command terminated with exit code 6
 </code></pre>
 </li>
 <li><p>Check Console</p>
 <ul>
-<li><p>Navigate toDashboard -&gt; Violation</p>
+<li><p>Navigate to Dashboard -&gt; Violation</p>
 <p><img src="images/acs-exec-in-pod.png" alt=""></p>
 </li>
 <li><p>Details information</p>
@@ -976,8 +1072,12 @@ CVSS score: https://nvd.nist.gov/vuln-metrics/cvss
 
 manifests/backend-bad-example.yaml: (object: &lt;no namespace&gt;/backend-v2 apps/v1, Kind=Deployment) container &quot;backend&quot; has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
 </code></pre></li>
+<li><p>Try kube-linter with better deployment</p>
+<pre><code class="lang-bash">kube-linter lint manifests/backend-v1.yaml
+</code></pre>
+</li>
 </ul>
-<h4 id="scan-container-images-with-roxctl">Scan container images with roxctl</h4>
+<h3 id="scan-container-images-with-roxctl">Scan container images with roxctl</h3>
 <ul>
 <li><p>Create token for DevOps tools</p>
 <ul>
@@ -1034,7 +1134,7 @@ roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-04-25T06:17:33.150Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-25T06:18:12.344Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-22T10:13:41.421Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-22T10:14:27.347Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
