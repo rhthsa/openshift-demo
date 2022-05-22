@@ -17,6 +17,7 @@
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
     - [Scan with roxctl](#scan-with-roxctl)
+    - [Jenkins](#jenkins)
 
 ## Installation
 
@@ -605,5 +606,50 @@
     Output
 
     ![](images/acs-roxctl-check-image-backend.png)
+  
+### Jenkins
+- Setup Jenkins and SonarQube
+  
+  ```bash
+  cd bin
+  ./setup_jenkins.sh
+  ./setup_sonar.sh
+  ```
+
+- Install Stackrox plugin
+  
+  ![](images/jenkins-stackrox-plugin.png)
+
+- Create buildConfig with Jenkins
+  
+  ```bash
+  git clone https://gitlab.com/ocp-demo/backend_quarkus.git
+  cd backend_quarkus
+  git checkout cve
+  ./create_pipelines.sh
+  ```
+
+- Login to Jenkins
+- Create secret name stackrox-token in namespace ci-cd with Stackrox API token 
+  
+  ```bash
+  echo "...Token.." > token
+  oc create secret generic stackrox-token -n ci-cd --from-file=token
+  rm -f token
+  ```
+- Edit Build Pipelines parameters
+  - Update NEXUS_REGISTRY with following Nexus registry route
+    
+    ```bash
+    oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
+    ```
+  
+  - Set STACKROX to true
+  - Set MAX_CRITICAL_CVES to 0
+  - Save
+- Start Build Pipeline
+- WIP
+
+
 
 
