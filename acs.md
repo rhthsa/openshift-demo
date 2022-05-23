@@ -18,7 +18,7 @@
       - [kube-linter](#kube-linter)
       - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
       - [Jenkins](#jenkins)
-        - [Use roxctl](#use-roxctl)
+        - [roxctl](#roxctl)
         - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
 
 ## Installation
@@ -628,30 +628,23 @@
   ./setup_sonar.sh
   ```
 
-##### Use roxctl
-- Clone Jenkins repository
-  
-  ```bash
-  git clone https://gitlab.com/ocp-demo/backend_quarkus.git
-  cd backend_quarkus
-  git checkout cve
-  ```
+##### roxctl
 
 - Create buildConfig with Jenkins. 
-  - Change following build configuration in backend-build-pipeline.yaml under manifests directory to Nexus Registry address
-    - Set STACKROX to true
-    - Set MAX_CRITICAL_CVES to 0
-    - Set NEXUS_REGISTRY with nexus registry address
-      
-      ```bash
-      oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
-      ```
-
+    - Change following build configuration in [backend-build-pipeline.yaml](manifests/backend-build-pipeline.yaml) 
+      - Set NEXUS_REGISTRY to Nexus Registry address
+          
+          ```bash
+          oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
+          ```
+      - Set STACKROX to true
+      - Set MAX_CRITICAL_CVES to 0
   - Create pipelines
   
     ```bash
     ./create_pipelines.sh
     ```
+
 - Create secret name stackrox-token in namespace ci-cd with Stackrox API token 
   
   ```bash
@@ -674,17 +667,20 @@
 
   ![](images/acs-scan-with-roxctl-success.png)
 
+  Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build/Jenkinsfile) for backend-build-pipeline
+
 ##### Stackrox Jenkins Plugin
 
 - Install Stackrox plugin and restart Jenkins
   
   ![](images/jenkins-stackrox-plugin.png)
 
-- Edit NEXUS_REGISTRY and create pipeline backend-build-stackrox-pipeline.yaml
+- Edit NEXUS_REGISTRY and create pipeline [backend-build-stackrox-pipeline.yaml](manifests/backend-build-stackrox-pipeline.yaml)
 
   ```bash
   oc apply -f manifests/backend-build-stackrox-pipeline.yaml -n ci-cd
   ```
+
 - Start backend-build-stackrox-pipeline. Pipeline will failed because image contains CVEs and violate ACS policies
   
   ![](images/acs-scan-with-stackrox-jenkins-plugin.png)
@@ -693,3 +689,4 @@
   
   ![](images/acs-stackrox-reports-in-jenkins.png)
 
+  Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
