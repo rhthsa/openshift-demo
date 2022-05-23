@@ -16,8 +16,10 @@
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
-    - [Scan with roxctl](#scan-with-roxctl)
-    - [Jenkins](#jenkins)
+      - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
+      - [Jenkins](#jenkins)
+        - [Use roxctl](#use-roxctl)
+        - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
 
 ## Installation
 
@@ -406,7 +408,7 @@
 - Login to ACS Central
 - Platform Configuration -> Integrations -> Sonatype Nexus -> New Integration
   
-  Check for Nexus Container Registry URL
+  Check for Nexus Container Registry address
   
   ```bash
   echo "Endpoint: $(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')"
@@ -414,7 +416,7 @@
 
   ![](images/acs-config-nexus.png)
 
-  - Click Test then Save
+  - Input User, Password and Nexus Registry address then click Test and Save
 
 ## Demo
 
@@ -542,7 +544,7 @@
   kube-linter lint manifests/backend-v1-emptyDir.yaml
   ```
 
-### Scan with roxctl
+#### Scan and check image with roxctl
 
 - Create token for DevOps tools
     
@@ -572,7 +574,7 @@
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=json| jq '.result.summary.CRITICAL'
   ```
 
-  Scan all images 
+  Scan all images in Nexus registry
 
   ```bash
   export ROX_API_TOKEN=<token>
@@ -586,7 +588,7 @@
  
 - Check images in image registry
   
-  - Image backend:CVE-2020-36518
+  - Stackrox can check for vulnerbilities in libraries used by Java applicaion. Check for image backend:CVE-2020-36518
   
     ```bash
       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=table
@@ -607,7 +609,17 @@
 
     ![](images/acs-roxctl-check-image-backend.png)
   
-### Jenkins
+- Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
+  
+    ```bash
+      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/frontend-js:CVE-2020-28471 --output=table
+    ```
+
+    Output
+
+    ![](images/acs-roxctl-check-image-CVE-2020-36518.png)
+
+#### Jenkins
 - Setup Jenkins and SonarQube
   
   ```bash
@@ -616,20 +628,30 @@
   ./setup_sonar.sh
   ```
 
-- Install Stackrox plugin
-  
-  ![](images/jenkins-stackrox-plugin.png)
-
-- Create buildConfig with Jenkins
+##### Use roxctl
+- Clone Jenkins repository
   
   ```bash
   git clone https://gitlab.com/ocp-demo/backend_quarkus.git
   cd backend_quarkus
   git checkout cve
-  ./create_pipelines.sh
   ```
 
-- Login to Jenkins
+- Create buildConfig with Jenkins. 
+  - Change following build configuration in backend-build-pipeline.yaml under manifests directory to Nexus Registry address
+    - Set STACKROX to true
+    - Set MAX_CRITICAL_CVES to 0
+    - Set NEXUS_REGISTRY with nexus registry address
+      
+      ```bash
+      oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
+      ```
+
+  - Create pipelines
+  
+    ```bash
+    ./create_pipelines.sh
+    ```
 - Create secret name stackrox-token in namespace ci-cd with Stackrox API token 
   
   ```bash
@@ -637,19 +659,26 @@
   oc create secret generic stackrox-token -n ci-cd --from-file=token
   rm -f token
   ```
-- Edit Build Pipelines parameters
-  - Update NEXUS_REGISTRY with following Nexus registry route
-    
-    ```bash
-    oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
-    ```
-  
-  - Set STACKROX to true
-  - Set MAX_CRITICAL_CVES to 0
-  - Save
-- Start Build Pipeline
-- WIP
 
+- Login to Jenkins
+  
+  ```bash
+  echo "Jenkins URL: https://$(oc get route jenkins -n ci-cd -o jsonpath='{.spec.host}')"
+  ```
+
+- Start backend-build-pipeline. Pipeline will be failed because there is 1 CRITICAL CVEs
+  
+  ![](images/acs-scan-with-roxctl-failed.png)
+  
+- Change MAX_CRITICAL_CVE environment variable to 10 and re-run pipeline again
+
+  ![](images/acs-scan-with-roxctl-success.png)
+
+##### Stackrox Jenkins Plugin
+
+- Install Stackrox plugin
+  
+  ![](images/jenkins-stackrox-plugin.png)
 
 
 
