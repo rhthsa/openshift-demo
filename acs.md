@@ -609,7 +609,7 @@
 
     ![](images/acs-roxctl-check-image-backend.png)
   
-- Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
+<!-- - Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
   
     ```bash
       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/frontend-js:CVE-2020-28471 --output=table
@@ -617,7 +617,7 @@
 
     Output
 
-    ![](images/acs-roxctl-check-image-CVE-2020-36518.png)
+    ![](images/acs-roxctl-check-image-CVE-2020-36518.png) -->
 
 #### Jenkins
 - Setup Jenkins and SonarQube
