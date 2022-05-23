@@ -14,7 +14,7 @@ spec:
   source:
     contextDir: Jenkinsfile/build
     git:
-      ref: master
+      ref: cve
       uri: https://gitlab.com/ocp-demo/backend_quarkus.git
     # sourceSecret:
     #   name: gogs-secret
@@ -34,13 +34,21 @@ spec:
         - name: NEXUS_REGISTRY_SVC
           value: nexus-registry.ci-cd.svc.cluster.local:5000
         - name: NEXUS_REGISTRY
-          value: nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com
+          value: nexus-registry-ci-cd.apps.cluster-j7rr8.j7rr8.sandbox362.opentlc.com
         - name: SONARQUBE_SVC
           value: http://sonarqube:9000
         - name: NEXUS_SECRET
           value: nexus-credential
+        - name: STACKROX_SECRET
+          value: stackrox-token
+        - name: ROX_CENTRAL_ADDRESS
+          value: central.stackrox:443
         - name: USE_INTERNAL_REGISTRY
           value: "false"
+        - name: STACKROX
+          value: "false"
+        - name: MAX_CRITICAL_CVES
+          value: "5"
     type: JenkinsPipeline
   successfulBuildsHistoryLimit: 5
   triggers: []
