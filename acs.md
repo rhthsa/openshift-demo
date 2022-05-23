@@ -676,9 +676,20 @@
 
 ##### Stackrox Jenkins Plugin
 
-- Install Stackrox plugin
+- Install Stackrox plugin and restart Jenkins
   
   ![](images/jenkins-stackrox-plugin.png)
 
+- Edit NEXUS_REGISTRY and create pipeline backend-build-stackrox-pipeline.yaml
 
+  ```bash
+  oc apply -f manifests/backend-build-stackrox-pipeline.yaml -n ci-cd
+  ```
+- Start backend-build-stackrox-pipeline. Pipeline will failed because image contains CVEs and violate ACS policies
+  
+  ![](images/acs-scan-with-stackrox-jenkins-plugin.png)
+
+- Detailed report in Jenkins
+  
+  ![](images/acs-stackrox-reports-in-jenkins.png)
 
