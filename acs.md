@@ -629,6 +629,8 @@
   ./setup_sonar.sh
   ```
 
+  Remark: This demo need [Nexus](#setup-nexus)
+  
 ##### roxctl
 
 - Create buildConfig with Jenkins. 
