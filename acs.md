@@ -20,6 +20,7 @@
       - [Jenkins](#jenkins)
         - [roxctl](#roxctl)
         - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
+        - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
 
 ## Installation
 
@@ -690,3 +691,26 @@
   ![](images/acs-stackrox-reports-in-jenkins.png)
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
+
+  ##### Enforce Policy on Build Stage
+  - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
+  
+    ![](images/acs-search-policy-curl.png)
+
+  - Select policy Curl in image and edit policy
+
+    ![](images/acs-edit-policy-curl-in-image.png)
+
+  - Select policy behavior
+    - select inform and enforce
+    - enable on build
+  
+    ![](images/acs-set-policy-curl-in-image-build-time.png)
+
+  - Enable policy curl in image
+    
+    ![](images/acs-enable-policy-curl-in-image.png)
+  
+  - Re-run Jenkins pipeline backend-build-stackrox-pipeline and check for report
+    
+    ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
