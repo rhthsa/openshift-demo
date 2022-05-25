@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: thanos-store-gateway
+  labels:
+    app: thanos-store-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos-store-gateway
+  serviceName: thanos-store-gateway
+  template:
+    metadata:
+      labels:
+        app: thanos-store-gateway
+        thanos-store-api: "true"
+    spec:
+      serviceAccountName: thanos-store-gateway
+      containers:
+      - name: thanos
+        image: quay.io/thanos/thanos:v0.8.1
+        args:
+        - store
+        - --data-dir=/data
+        - --log.level=debug
+        - --index-cache-size=500MB
+        - --chunk-pool-size=500MB
+        - --objstore.config-file=/etc/prometheus/store-s3-secret.yaml
+        ports:
+        - name: http
+          containerPort: 10902
+        - name: grpc
+          containerPort: 10901
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: "200m"
+            memory: 256Mi
+        volumeMounts:
+        - name: s3-store-credentials
+          mountPath: /etc/prometheus/
+          readOnly: true
+      volumes:
+      - name: s3-store-credentials
+        secret:
+          secretName: store-s3-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: thanos-store-gateway
+  name: thanos-store-gateway
+spec:
+  ports:
+  - port: 10901
+    protocol: TCP
+    targetPort: grpc
+    name: grpc
+  selector:
+    app: thanos-store-gateway
+  type: ClusterIP
