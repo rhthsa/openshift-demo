@@ -13,14 +13,16 @@
       - [Config ACS](#config-acs)
   - [Demo](#demo)
     - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
-    - [Detecting suspect behaviors](#detecting-suspect-behaviors)
     - [Shift Left Security](#shift-left-security)
       - [kube-linter](#kube-linter)
       - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
       - [Jenkins](#jenkins)
-        - [roxctl](#roxctl)
+      - [CLI: roxctl](#cli-roxctl)
         - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
         - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
+    - [Detecting suspect behaviors](#detecting-suspect-behaviors)
+      - [Exec into Pod](#exec-into-pod)
+      - [NMAP](#nmap)
 
 ## Installation
 
@@ -98,6 +100,16 @@
   scanner-db-7784db6d56-7kqvq   1/1     Running   0          3m17s
   ```
 
+  Resources consumed by ACS central
+  
+  - CPU
+  
+    ![](images/acs-central-cpu-resources.png)
+
+  - Memory
+  
+    ![](images/acs-central-memory-resources.png)
+
 #### [Optional] Create Central at Infra Nodes
   - Infra Nodes preparation
 
@@ -151,7 +163,7 @@
 - Create secret from previously downloaded *Kubernetes Secrets file*
   
   ```bash
-   oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
+  oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
   ```
 
 - Install Secure Cluster Services on local cluster
@@ -195,6 +207,15 @@
       - Adminission control is high availability with default 3 pods
       - Collector is run on all nodes
 
+  Resources consumed by admission control and collector
+  
+  - CPU
+  
+    ![](images/acs-secured-cluster-cpu.png)
+
+  - Memory
+  
+    ![](images/acs-secured-cluster-memory.png )
 
 - Install Secure Cluster Services on remote cluster
 
@@ -282,7 +303,7 @@
     - Create collectors
       
       ```bash
-      helm install -n stackrox --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
+      helm install -n stackrox-cluster --create-namespace stackrox-secured-cluster-services rhacs/secured-cluster-services \
       -f ${CLUSTER_NAME}-init-bundle.yaml \
       --set clusterName=${CLUSTER_NAME} \
       --set imagePullSecrets.allowNone=true
@@ -475,39 +496,6 @@
 
   ![](images/acs-nexus-detailed.png)
 
-### Detecting suspect behaviors
-- Platform configuration -> Policies
-- Search for Policy Kubernetes Actions: Exec into Pod
-- Click Action -> Edit Policy
-- Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.
-  
-  ![](images/acs-enforce-on-runtime.png)
-
-- Save Policy
-- Run curl inside backend's pod
-  
-    ```bash
-    oc new-project project1
-    oc apply -f manifests/backend-v1.yaml -n project1
-    oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | awk '{print $1}') -- curl -s http://backend:8080
-    ```
-
-    Output
-
-    ```bash
-    command terminated with exit code 6
-    ```
-
-- Check Console
-  
-  - Navigate to Dashboard -> Violation
-
-    ![](images/acs-exec-in-pod.png)
-
-  - Details information
-
-    ![](images/acs-exec-in-pod-detailed.png)
-
 ### Shift Left Security
 #### kube-linter
 
@@ -541,8 +529,18 @@
   
   Container "backend" still does not have a read-only root file system because Vert.X still need to write /tmp then try [backend deployment with emptyDir](manifests/backend-v1-emptyDir.yaml)
 
+  Try agin with [backend-v1-emptyDir.yaml](manifests/backend-v1-emptyDir.yaml) which set *readOnlyRootFilesystem* to *true*
+
   ```bash
   kube-linter lint manifests/backend-v1-emptyDir.yaml
+  ```
+
+  Output
+
+  ```bash
+  KubeLinter 0.3.0
+
+  No lint errors found!
   ```
 
 #### Scan and check image with roxctl
@@ -560,15 +558,7 @@
   export ROX_API_TOKEN=<token>
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   ```
-- Scan deployment
-
-  ```bash
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-v1.yaml
-  ```
-
-  ![](images/acs-roxctl-scan-deployment.png)
-
-- Scan image
+- Scan image to check for vulnerbilities
   
   ```bash
   roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
@@ -599,7 +589,9 @@
 
     ![](images/acs-roxctl-check-image-CVE-2020-36518.png)
 
-  
+    
+    Remark: Column *BREAKS BUILD* indicate that this violation will be stop build process or not
+
   - Image backend:v1
   
     ```bash
@@ -609,7 +601,20 @@
     Output
 
     ![](images/acs-roxctl-check-image-backend.png)
+
+- Scan deployment yaml file
+
+  ```bash
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-v1.yaml
+  ```
+
+  ![](images/acs-roxctl-scan-deployment.png)
+
+- Custom check can be added for example we want to vaidate that all deployment need specific label e.g. env
   
+  **WIP**
+
+
 <!-- - Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
   
     ```bash
@@ -625,13 +630,14 @@
   
   ```bash
   cd bin
+  ./create_projects.sh
   ./setup_jenkins.sh
   ./setup_sonar.sh
   ```
 
   Remark: This demo need [Nexus](#setup-nexus)
   
-##### roxctl
+#### CLI: roxctl
 
 - Create buildConfig with Jenkins. 
     - Change following build configuration in [backend-build-pipeline.yaml](manifests/backend-build-pipeline.yaml) 
@@ -694,25 +700,67 @@
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
 
-  ##### Enforce Policy on Build Stage
-  - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
+##### Enforce Policy on Build Stage
+- Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
   
-    ![](images/acs-search-policy-curl.png)
+  ![](images/acs-search-policy-curl.png)
 
-  - Select policy Curl in image and edit policy
+- Select policy Curl in image and edit policy
 
-    ![](images/acs-edit-policy-curl-in-image.png)
+  ![](images/acs-edit-policy-curl-in-image.png)
 
-  - Select policy behavior
+- Select policy behavior
     - select inform and enforce
     - enable on build
   
     ![](images/acs-set-policy-curl-in-image-build-time.png)
 
-  - Enable policy curl in image
+- Enable policy curl in image
     
-    ![](images/acs-enable-policy-curl-in-image.png)
+  ![](images/acs-enable-policy-curl-in-image.png)
   
-  - Re-run Jenkins pipeline backend-build-stackrox-pipeline and check for report
+- Re-run Jenkins pipeline backend-build-stackrox-pipeline and check for report
     
-    ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
+  ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
+
+### Detecting suspect behaviors
+#### Exec into Pod
+- Platform configuration -> Policies
+- Search for Policy Kubernetes Actions: Exec into Pod
+- Click Action -> Edit Policy
+- Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.
+  
+  ![](images/acs-enforce-on-runtime.png)
+
+- Save Policy
+- Run curl inside backend's pod
+  
+    ```bash
+    oc new-project project1
+    oc apply -f manifests/backend-v1.yaml -n project1
+    oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | head -n 1 | awk '{print $1}') -- curl -s http://backend:8080
+    ```
+
+    Output
+
+    ```bash
+    command terminated with exit code 6
+    ```
+
+- Check Console
+  
+  - Navigate to Dashboard -> Violation
+
+    ![](images/acs-exec-in-pod.png)
+
+  - Details information
+
+    ![](images/acs-exec-in-pod-detailed.png)
+
+#### NMAP
+- Platform configuration -> Policies
+- Search for nmap Execution
+- Verify that status is enabled
+- Deploy container [tools](quay.io/voravitl/tools)
+- Shell into tools pod and execute *nmap*
+- 
