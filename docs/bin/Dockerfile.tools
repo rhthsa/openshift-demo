@@ -2,4 +2,3 @@ FROM registry.access.redhat.com/ubi8:8.6-754
 RUN yum -y --setopt=tsflags=nodocs install skopeo podman buildah curl nmap \
     && yum update --setopt=install_weak_deps=0 --nodocs \
     && yum clean all
-USER 1001

@@ -615,6 +615,7 @@
 <li><a href="#view-managed-cluster">View Managed Cluster</a></li>
 </ul>
 </li>
+<li><a href="#single-sign-on-with-openshift">Single Sign-On with OpenShift</a></li>
 <li><a href="#integration-with-nexus">Integration with Nexus</a><ul>
 <li><a href="#setup-nexus">Setup Nexus</a></li>
 <li><a href="#config-acs">Config ACS</a></li>
@@ -637,7 +638,6 @@
 </li>
 <li><a href="#detecting-suspect-behaviors">Detecting suspect behaviors</a><ul>
 <li><a href="#exec-into-pod">Exec into Pod</a></li>
-<li><a href="#nmap">NMAP</a></li>
 </ul>
 </li>
 </ul>
@@ -951,7 +951,25 @@ Dynamic configuration
 Helm-managed cluster
 
 ![](images/acs-console-managed-clusters-helm.png)
-</code></pre><h3 id="integration-with-nexus">Integration with Nexus</h3>
+</code></pre><h3 id="single-sign-on-with-openshift">Single Sign-On with OpenShift</h3>
+<ul>
+<li><p>Navigate to Platform Configuration -&gt; Access Control then click Add Auth Provider and select OpenShift Auth</p>
+<p>  <img src="images/acs-add-auth-provider.png" alt=""></p>
+</li>
+<li><p>Input configuration then click save</p>
+<ul>
+<li>Name: OpenShift</li>
+<li>Minium access role: Analyst</li>
+<li><p>Rules: mapped spcific user to Admin role</p>
+<p><img src="images/acs-openshift-oauth-provider.png" alt=""></p>
+</li>
+<li><p>Login with OpenShift</p>
+<p><img src="images/acs-login-with-openshift.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="integration-with-nexus">Integration with Nexus</h3>
 <h4 id="setup-nexus">Setup Nexus</h4>
 <ul>
 <li><p>Create namespace</p>
@@ -982,6 +1000,7 @@ Nexus password is stored at nexus_password.txt
 allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
 for image in $allImages
 do
+  echo &quot;############## Copy $image ##############&quot;
   podman run docker://quay.io/skopeo/stable:latest \
   copy --src-tls-verify=true \
   --dest-tls-verify=false \
@@ -990,6 +1009,7 @@ do
   --dest-password $NEXUS_PASSWORD \
   docker://quay.io/voravitl/$image \
   docker://$NEXUS/$image
+  echo &quot;##########################################&quot;
 done
 </code></pre>
 <p>Check Nexus docker repository</p>
@@ -1104,19 +1124,23 @@ ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.
 roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:CVE-2020-36518 --output=json| jq &apos;.result.summary.CRITICAL&apos;
 </code></pre>
 <p>Scan all images in Nexus registry</p>
-<pre><code class="lang-bash">export ROX_API_TOKEN=&lt;token&gt;
-ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;):443
+<pre><code class="lang-bash">ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;):443
 allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
 for image in $allImages
 do
     roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/$image --output=table
 done
 </code></pre>
+<p>Resources comsumed by ACS Central</p>
+<p><img src="images/acs-central-cpu-resources-scan.png" alt=""></p>
 </li>
 <li><p>Check images in image registry</p>
 <ul>
 <li><p>Stackrox can check for vulnerbilities in libraries used by Java applicaion. Check for image backend:CVE-2020-36518</p>
-<pre><code class="lang-bash">  roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:CVE-2020-36518 --output=table
+<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify \
+-e &quot;$ROX_CENTRAL_ADDRESS&quot; image check \
+--image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:CVE-2020-36518 \
+--output=table
 </code></pre>
 <p>Output</p>
 <p><img src="images/acs-roxctl-check-image-CVE-2020-36518.png" alt=""></p>
@@ -1127,22 +1151,39 @@ done
 <pre><code>Remark: Column *BREAKS BUILD* indicate that this violation will be stop build process or not
 </code></pre><ul>
 <li><p>Image backend:v1</p>
-<pre><code class="lang-bash">  roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:v1 --output=table
+<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify \
+-e &quot;$ROX_CENTRAL_ADDRESS&quot; image check \
+--image $(oc get -n ci-cd route nexus-registry -o jsonpath=&apos;{.spec.host}&apos;)/backend:v1 \
+--output=table
 </code></pre>
 <p>Output</p>
 <p><img src="images/acs-roxctl-check-image-backend.png" alt=""></p>
 </li>
 </ul>
 <ul>
-<li><p>Scan deployment yaml file</p>
-<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; deployment check --file=manifests/backend-v1.yaml
+<li><p>Deployment check</p>
+<pre><code class="lang-bash">roxctl --insecure-skip-tls-verify -e &quot;$ROX_CENTRAL_ADDRESS&quot; deployment check --file=manifests/backend-bad-example.yaml
 </code></pre>
 <p><img src="images/acs-roxctl-scan-deployment.png" alt=""></p>
-</li>
-<li><p>Custom check can be added for example we want to vaidate that all deployment need specific label e.g. env</p>
-<p><strong>WIP</strong></p>
+<p>Remark: BREAKS DEPLOY column indicate that deployment will be blocked by ACS or not</p>
 </li>
 </ul>
+<!-- - Custom check can be added for example we want to vaidate that only scanned imaged 
+
+  - Search for Policy *Required Image Label* by select menu Platform Configuration -> Policies. Enter Policy, press tab then input label. 
+    ![](images/acs-search-policy-label.png)
+
+  - Clone policy
+    - Input name and set severity
+
+      ![](images/acs-label-policy-01.png)
+
+    - Set policy behavior for build time and runtime
+
+      ![](images/acs-label-policy-02.png)
+
+    - Add criterias to check label app and version
+    -  -->
 <!-- - Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
 
     ```bash
@@ -1156,7 +1197,7 @@ done
 <ul>
 <li><p>Setup Jenkins and SonarQube</p>
 <pre><code class="lang-bash">cd bin
-./create_projects.sh
+./setup_cicd_projects.sh
 ./setup_jenkins.sh
 ./setup_sonar.sh
 </code></pre>
@@ -1173,11 +1214,13 @@ done
 <pre><code class="lang-bash">  oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;
 </code></pre>
 </li>
-<li>Set STACKROX to true</li>
+<li><p>Set STACKROX to true</p>
+</li>
 <li>Set MAX_CRITICAL_CVES to 0</li>
 <li>Create pipelines</li>
 </ul>
-<pre><code class="lang-bash">./create_pipelines.sh
+<pre><code class="lang-bash">oc create -f manifests/backend-build-pipeline.yaml -n ci-cd
+oc create -f manifests/backend-build-stackrox-pipeline.yaml -n ci-cd
 </code></pre>
 </li>
 </ul>
@@ -1271,15 +1314,13 @@ rm -f token
 </ul>
 </li>
 </ul>
-<h4 id="nmap">NMAP</h4>
-<ul>
-<li>Platform configuration -&gt; Policies</li>
-<li>Search for nmap Execution</li>
-<li>Verify that status is enabled</li>
-<li>Deploy container <a href="quay.io/voravitl/tools">tools</a></li>
-<li>Shell into tools pod and execute <em>nmap</em></li>
-<li></li>
-</ul>
+<!-- #### NMAP
+- Platform configuration -> Policies
+- Search for nmap Execution
+- Verify that status is enabled
+- Deploy container [tools](quay.io/voravitl/tools)
+- Shell into tools pod and execute *nmap*
+-  -->
 
                                 
                                 </section>
@@ -1315,7 +1356,7 @@ rm -f token
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-25T06:13:38.359Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-25T06:14:16.180Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-25T10:25:33.797Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-25T10:26:12.715Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
