@@ -8,6 +8,7 @@
       - [Operator](#operator)
       - [CLI roxctl and Helm](#cli-roxctl-and-helm)
       - [View Managed Cluster](#view-managed-cluster)
+    - [Single Sign-On with OpenShift](#single-sign-on-with-openshift)
     - [Integration with Nexus](#integration-with-nexus)
       - [Setup Nexus](#setup-nexus)
       - [Config ACS](#config-acs)
@@ -22,7 +23,6 @@
         - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
       - [Exec into Pod](#exec-into-pod)
-      - [NMAP](#nmap)
 
 ## Installation
 
@@ -373,6 +373,22 @@
 
     ![](images/acs-console-managed-clusters-helm.png)
 
+### Single Sign-On with OpenShift
+- Navigate to Platform Configuration -> Access Control then click Add Auth Provider and select OpenShift Auth
+
+    ![](images/acs-add-auth-provider.png)
+
+- Input configuration then click save
+  - Name: OpenShift
+  - Minium access role: Analyst
+  - Rules: mapped spcific user to Admin role
+
+    ![](images/acs-openshift-oauth-provider.png)
+  
+  - Login with OpenShift
+
+    ![](images/acs-login-with-openshift.png)
+
 ### Integration with Nexus
 #### Setup Nexus
 - Create namespace
@@ -410,6 +426,7 @@
   allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
   for image in $allImages
   do
+    echo "############## Copy $image ##############"
     podman run docker://quay.io/skopeo/stable:latest \
     copy --src-tls-verify=true \
     --dest-tls-verify=false \
@@ -418,6 +435,7 @@
     --dest-password $NEXUS_PASSWORD \
     docker://quay.io/voravitl/$image \
     docker://$NEXUS/$image
+    echo "##########################################"
   done
   ```
 
@@ -568,7 +586,6 @@
   Scan all images in Nexus registry
 
   ```bash
-  export ROX_API_TOKEN=<token>
   ROX_CENTRAL_ADDRESS=$(oc get route central -n stackrox -o jsonpath='{.spec.host}'):443
   allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
   for image in $allImages
@@ -576,13 +593,20 @@
       roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image scan --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/$image --output=table
   done
   ```
+
+  Resources comsumed by ACS Central
+
+  ![](images/acs-central-cpu-resources-scan.png)
  
 - Check images in image registry
   
   - Stackrox can check for vulnerbilities in libraries used by Java applicaion. Check for image backend:CVE-2020-36518
   
     ```bash
-      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 --output=table
+    roxctl --insecure-skip-tls-verify \
+    -e "$ROX_CENTRAL_ADDRESS" image check \
+    --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:CVE-2020-36518 \
+    --output=table
     ```
 
     Output
@@ -595,25 +619,42 @@
   - Image backend:v1
   
     ```bash
-      roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" image check --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 --output=table
+    roxctl --insecure-skip-tls-verify \
+    -e "$ROX_CENTRAL_ADDRESS" image check \
+    --image $(oc get -n ci-cd route nexus-registry -o jsonpath='{.spec.host}')/backend:v1 \
+    --output=table
     ```
 
     Output
 
     ![](images/acs-roxctl-check-image-backend.png)
 
-- Scan deployment yaml file
+- Deployment check
 
   ```bash
-  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-v1.yaml
+  roxctl --insecure-skip-tls-verify -e "$ROX_CENTRAL_ADDRESS" deployment check --file=manifests/backend-bad-example.yaml
   ```
 
   ![](images/acs-roxctl-scan-deployment.png)
 
-- Custom check can be added for example we want to vaidate that all deployment need specific label e.g. env
-  
-  **WIP**
+  Remark: BREAKS DEPLOY column indicate that deployment will be blocked by ACS or not
 
+<!-- - Custom check can be added for example we want to vaidate that only scanned imaged 
+  
+  - Search for Policy *Required Image Label* by select menu Platform Configuration -> Policies. Enter Policy, press tab then input label. 
+    ![](images/acs-search-policy-label.png)
+
+  - Clone policy
+    - Input name and set severity
+      
+      ![](images/acs-label-policy-01.png)
+    
+    - Set policy behavior for build time and runtime
+
+      ![](images/acs-label-policy-02.png)
+
+    - Add criterias to check label app and version
+    -  -->
 
 <!-- - Stackrox can check for vulnerbilities in npm used by nodejs applicaion. Check for image frontend-js:CVE-2020-28471
   
@@ -630,7 +671,7 @@
   
   ```bash
   cd bin
-  ./create_projects.sh
+  ./setup_cicd_projects.sh
   ./setup_jenkins.sh
   ./setup_sonar.sh
   ```
@@ -646,12 +687,14 @@
           ```bash
           oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
           ```
+
       - Set STACKROX to true
       - Set MAX_CRITICAL_CVES to 0
   - Create pipelines
   
     ```bash
-    ./create_pipelines.sh
+    oc create -f manifests/backend-build-pipeline.yaml -n ci-cd
+    oc create -f manifests/backend-build-stackrox-pipeline.yaml -n ci-cd
     ```
 
 - Create secret name stackrox-token in namespace ci-cd with Stackrox API token 
@@ -757,10 +800,10 @@
 
     ![](images/acs-exec-in-pod-detailed.png)
 
-#### NMAP
+<!-- #### NMAP
 - Platform configuration -> Policies
 - Search for nmap Execution
 - Verify that status is enabled
 - Deploy container [tools](quay.io/voravitl/tools)
 - Shell into tools pod and execute *nmap*
-- 
+-  -->
