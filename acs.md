@@ -23,6 +23,7 @@
         - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
       - [Exec into Pod](#exec-into-pod)
+      - [NMAP](#nmap)
 
 ## Installation
 
@@ -800,10 +801,54 @@
 
     ![](images/acs-exec-in-pod-detailed.png)
 
-<!-- #### NMAP
+#### NMAP
 - Platform configuration -> Policies
 - Search for nmap Execution
 - Verify that status is enabled
-- Deploy container [tools](quay.io/voravitl/tools)
-- Shell into tools pod and execute *nmap*
--  -->
+- Deploy container [tools](manifests/network-tools.yaml)
+  
+  ```bash
+  oc apply -f manifests/network-tools.yaml -n project1
+  ```
+
+- Execute namp
+  
+  ```bash
+  oc exec $(oc get pods -l app=network-tools --no-headers -n project1 | head -n 1 | awk '{print $1}') -n project1 -- nmap -v -Pn  backend.prod-app.svc
+  ```
+
+  Output
+
+  ```bash
+  Starting Nmap 7.70 ( https://nmap.org ) at 2022-05-26 02:05 UTC
+  Initiating Parallel DNS resolution of 1 host. at 02:05
+  Completed Parallel DNS resolution of 1 host. at 02:05, 0.00s elapsed
+  Initiating Connect Scan at 02:05
+  Scanning backend.prod-app.svc (172.30.14.34) [1000 ports]
+  Discovered open port 8080/tcp on 172.30.14.34
+  Completed Connect Scan at 02:05, 4.31s elapsed (1000 total ports)
+  Nmap scan report for backend.prod-app.svc (172.30.14.34)
+  Host is up (0.0019s latency).
+  rDNS record for 172.30.14.34: backend.prod-app.svc.cluster.local
+  Not shown: 999 filtered ports
+  PORT     STATE SERVICE
+  8080/tcp open  http-proxy
+
+  Read data files from: /usr/bin/../share/nmap
+  Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
+  ```
+  
+- Check ACS Central. Navigate to Violations
+  - nmap execution is detected
+  
+    ![](images/acs-nmap-violations-0.png)
+
+  - details information
+    
+    Violation
+
+    ![](images/acs-nmap-violations-1.png)
+
+    Deployment
+
+    ![](images/acs-nmap-violations-2.png)
