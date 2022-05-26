@@ -12,18 +12,20 @@
     - [Integration with Nexus](#integration-with-nexus)
       - [Setup Nexus](#setup-nexus)
       - [Config ACS](#config-acs)
-  - [Demo](#demo)
-    - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
-    - [Shift Left Security](#shift-left-security)
-      - [kube-linter](#kube-linter)
-      - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
-      - [Jenkins](#jenkins)
-        - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
-        - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
-      - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
-    - [Detecting suspect behaviors](#detecting-suspect-behaviors)
-      - [Exec into Pod](#exec-into-pod)
-      - [NMAP](#nmap)
+  - [Container Image with Vulnerabilities](#container-image-with-vulnerabilities)
+  - [Shift Left Security](#shift-left-security)
+    - [kube-linter](#kube-linter)
+    - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
+    - [Jenkins](#jenkins)
+      - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
+      - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
+    - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
+  - [Detecting suspect behaviors](#detecting-suspect-behaviors)
+    - [Exec into Pod](#exec-into-pod)
+    - [NMAP](#nmap)
+  - [Compliance](#compliance)
+    - [Overall reports](#overall-reports)
+    - [Compliance Operator](#compliance-operator)
 
 ## Installation
 
@@ -459,9 +461,7 @@
 
   - Input User, Password and Nexus Registry address then click Test and Save
 
-## Demo
-
-### Container Image with Vulnerabilities
+## Container Image with Vulnerabilities
 
 - Deploy sample application
 
@@ -515,8 +515,8 @@
 
   ![](images/acs-nexus-detailed.png)
 
-### Shift Left Security
-#### kube-linter
+## Shift Left Security
+### kube-linter
 
 - Try kube-linter with deployment YAML
   
@@ -562,7 +562,7 @@
   No lint errors found!
   ```
 
-#### Scan and check image with roxctl
+### Scan and check image with roxctl
 
 - Create token for DevOps tools
     
@@ -667,7 +667,7 @@
 
     ![](images/acs-roxctl-check-image-CVE-2020-36518.png) -->
 
-#### Jenkins
+### Jenkins
 - Setup Jenkins and SonarQube
   
   ```bash
@@ -679,7 +679,7 @@
 
   Remark: This demo need [Nexus](#setup-nexus)
   
-##### Use roxctl in Pipeline
+#### Use roxctl in Pipeline
 
 - Create buildConfig with Jenkins. 
     - Change following build configuration in [backend-build-pipeline.yaml](manifests/backend-build-pipeline.yaml) 
@@ -722,7 +722,7 @@
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build/Jenkinsfile) for backend-build-pipeline
 
-##### Stackrox Jenkins Plugin
+#### Stackrox Jenkins Plugin
 
 - Install Stackrox plugin and restart Jenkins
   
@@ -744,7 +744,7 @@
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
 
-#### Enforce Policy on Build Stage
+### Enforce Policy on Build Stage
 - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
   
   ![](images/acs-search-policy-curl.png)
@@ -767,8 +767,8 @@
     
   ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
 
-### Detecting suspect behaviors
-#### Exec into Pod
+## Detecting suspect behaviors
+### Exec into Pod
 - Platform configuration -> Policies
 - Search for Policy Kubernetes Actions: Exec into Pod
 - Click Action -> Edit Policy
@@ -801,7 +801,7 @@
 
     ![](images/acs-exec-in-pod-detailed.png)
 
-#### NMAP
+### NMAP
 - Platform configuration -> Policies
 - Search for nmap Execution
 - Verify that status is enabled
@@ -852,3 +852,19 @@
     Deployment
 
     ![](images/acs-nmap-violations-2.png)
+
+## Compliance
+
+### Overall reports
+
+![](images/acs-compliance-overall.png)
+
+### Compliance Operator
+- ACS integrated with OpenShift Compliance Operator. Following show result for OpenShift Compliance Operator with CIS profile and already remidiated by Operator
+
+  ![](images/acs-compliance-operator-cis-overall.png)
+
+  Non-compliance item
+
+  ![](images/acs-compliance-operator-cis-non-compliance-item.png)
+  
