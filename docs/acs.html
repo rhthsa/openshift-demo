@@ -638,6 +638,7 @@
 </li>
 <li><a href="#detecting-suspect-behaviors">Detecting suspect behaviors</a><ul>
 <li><a href="#exec-into-pod">Exec into Pod</a></li>
+<li><a href="#nmap">NMAP</a></li>
 </ul>
 </li>
 </ul>
@@ -1314,13 +1315,51 @@ rm -f token
 </ul>
 </li>
 </ul>
-<!-- #### NMAP
-- Platform configuration -> Policies
-- Search for nmap Execution
-- Verify that status is enabled
-- Deploy container [tools](quay.io/voravitl/tools)
-- Shell into tools pod and execute *nmap*
--  -->
+<h4 id="nmap">NMAP</h4>
+<ul>
+<li>Platform configuration -&gt; Policies</li>
+<li>Search for nmap Execution</li>
+<li>Verify that status is enabled</li>
+<li><p>Deploy container <a href="manifests/network-tools.yaml">tools</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/network-tools.yaml -n project1
+</code></pre>
+</li>
+<li><p>Execute namp</p>
+<pre><code class="lang-bash">oc exec $(oc get pods -l app=network-tools --no-headers -n project1 | head -n 1 | awk &apos;{print $1}&apos;) -n project1 -- nmap -v -Pn  backend.prod-app.svc
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">Starting Nmap 7.70 ( https://nmap.org ) at 2022-05-26 02:05 UTC
+Initiating Parallel DNS resolution of 1 host. at 02:05
+Completed Parallel DNS resolution of 1 host. at 02:05, 0.00s elapsed
+Initiating Connect Scan at 02:05
+Scanning backend.prod-app.svc (172.30.14.34) [1000 ports]
+Discovered open port 8080/tcp on 172.30.14.34
+Completed Connect Scan at 02:05, 4.31s elapsed (1000 total ports)
+Nmap scan report for backend.prod-app.svc (172.30.14.34)
+Host is up (0.0019s latency).
+rDNS record for 172.30.14.34: backend.prod-app.svc.cluster.local
+Not shown: 999 filtered ports
+PORT     STATE SERVICE
+8080/tcp open  http-proxy
+
+Read data files from: /usr/bin/../share/nmap
+Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
+</code></pre>
+</li>
+<li><p>Check ACS Central. Navigate to Violations</p>
+<ul>
+<li><p>nmap execution is detected</p>
+<p><img src="images/acs-nmap-violations-0.png" alt=""></p>
+</li>
+<li><p>details information</p>
+<p>Violation</p>
+<p><img src="images/acs-nmap-violations-1.png" alt=""></p>
+<p>Deployment</p>
+<p><img src="images/acs-nmap-violations-2.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -1356,7 +1395,7 @@ rm -f token
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-25T10:25:33.797Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-25T10:26:12.715Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-05-26T02:09:53.682Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-05-26T02:10:32.505Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
