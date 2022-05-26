@@ -18,9 +18,9 @@
       - [kube-linter](#kube-linter)
       - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
       - [Jenkins](#jenkins)
-      - [CLI: roxctl](#cli-roxctl)
+        - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
         - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
-        - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
+      - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
     - [Detecting suspect behaviors](#detecting-suspect-behaviors)
       - [Exec into Pod](#exec-into-pod)
       - [NMAP](#nmap)
@@ -679,7 +679,7 @@
 
   Remark: This demo need [Nexus](#setup-nexus)
   
-#### CLI: roxctl
+##### Use roxctl in Pipeline
 
 - Create buildConfig with Jenkins. 
     - Change following build configuration in [backend-build-pipeline.yaml](manifests/backend-build-pipeline.yaml) 
@@ -744,7 +744,7 @@
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
 
-##### Enforce Policy on Build Stage
+#### Enforce Policy on Build Stage
 - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
   
   ![](images/acs-search-policy-curl.png)
@@ -837,7 +837,7 @@
   Read data files from: /usr/bin/../share/nmap
   Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
   ```
-  
+
 - Check ACS Central. Navigate to Violations
   - nmap execution is detected
   
