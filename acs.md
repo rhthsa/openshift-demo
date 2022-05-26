@@ -864,7 +864,5 @@
 
   ![](images/acs-compliance-operator-cis-overall.png)
 
-  Non-compliance item
-
-  ![](images/acs-compliance-operator-cis-non-compliance-item.png)
+ 
   
