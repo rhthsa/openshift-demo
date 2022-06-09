@@ -24,6 +24,9 @@ chown -R 1001:0 /opt/nexus-cli && \
 #chmod -R 755 /opt/apache-jmeter-5.4.1 && \ 
 #chown -R 1001:0 /opt/apache-jmeter-5.4.1 && \ 
 DISABLES="--disablerepo=rhel-server-extras --disablerepo=rhel-server --disablerepo=rhel-fast-datapath --disablerepo=rhel-server-optional --disablerepo=rhel-server-ose --disablerepo=rhel-server-rhscl" && \ 
-yum $DISABLES -y --setopt=tsflags=nodocs install skopeo podman buildah && yum clean all
+yum $DISABLES -y --setopt=tsflags=nodocs install skopeo podman buildah && \
+yum clean all
+# alternatives --set java 
+#  java-11-openjdk 
 ENV PATH=/opt/apache-maven-3.6.3/bin:/opt/nexus-cli:/opt/apache-jmeter-5.4.1/bin:/opt/rox:$PATH
 USER 1001

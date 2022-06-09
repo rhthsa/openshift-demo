@@ -3,7 +3,7 @@ kind: BuildConfig
 metadata:
   labels:
     build: backend-build-pipeline
-  name: backend-build-pipeline
+  name: backend-build-stackrox-with-plugin-pipeline
 spec:
   failedBuildsHistoryLimit: 5
   nodeSelector: {}
@@ -12,7 +12,7 @@ spec:
   resources: {}
   runPolicy: Serial
   source:
-    contextDir: Jenkinsfile/build
+    contextDir: Jenkinsfile/build-stackrox-with-plugin
     git:
       ref: cve
       uri: https://gitlab.com/ocp-demo/backend_quarkus.git
@@ -34,7 +34,7 @@ spec:
         - name: NEXUS_REGISTRY_SVC
           value: nexus-registry.ci-cd.svc.cluster.local:5000
         - name: NEXUS_REGISTRY
-          value: nexus-registry-ci-cd.apps.cluster-j7rr8.j7rr8.sandbox362.opentlc.com
+          value: nexus-registry-ci-cd.apps.cluster-j772l.j772l.sandbox1243.opentlc.com
         - name: SONARQUBE_SVC
           value: http://sonarqube:9000
         - name: NEXUS_SECRET
@@ -42,11 +42,13 @@ spec:
         - name: STACKROX_SECRET
           value: stackrox-token
         - name: ROX_CENTRAL_ADDRESS
-          value: central.stackrox:443
-        - name: STACKROX_PLUGIN
+          value: https://central.stackrox:443
+        - name: USE_INTERNAL_REGISTRY
           value: "false"
+        - name: STACKROX
+          value: "true"
         - name: MAX_CRITICAL_CVES
-          value: "5"
+          value: "0"
     type: JenkinsPipeline
   successfulBuildsHistoryLimit: 5
   triggers: []
