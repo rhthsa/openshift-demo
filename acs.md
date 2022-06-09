@@ -59,6 +59,12 @@
       ```bash
       curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
       ```
+    
+    - Or use roxctl from container
+
+    ```bash
+    podman run docker://quay.io/stackrox-io/roxctl <parameter here>
+    ```
 
 - Create ACS Central with [acs-central.yaml](manifests/acs-central.yaml)
   
