@@ -43,9 +43,7 @@ spec:
           value: stackrox-token
         - name: ROX_CENTRAL_ADDRESS
           value: central.stackrox:443
-        - name: USE_INTERNAL_REGISTRY
-          value: "false"
-        - name: STACKROX
+        - name: STACKROX_PLUGIN
           value: "false"
         - name: MAX_CRITICAL_CVES
           value: "5"
