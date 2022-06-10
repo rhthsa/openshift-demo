@@ -724,7 +724,32 @@
   ![](images/acs-scan-with-roxctl-failed-02.png)
   
 
-  Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
+  Remark: 
+
+  - Check backend-build-stackrox-pipeline [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for roxctl command in Pipeline.
+    
+    ```groovy
+      stage('Scan Image') {
+          steps {    
+            container("tools") {
+              echo "Scan image: ${NEXUS_REGISTRY}/${imageName}:${devTag}}"
+              echo "Central: ${env.ROX_CENTRAL_ADDRESS}"
+              sh "export ROX_API_TOKEN=${ROX_API_TOKEN};roxctl --insecure-skip-tls-verify -e ${ROX_CENTRAL_ADDRESS} image check --image=${NEXUS_REGISTRY}/${imageName}:${devTag} --output=table"
+           }
+         }
+      } 
+    ```
+    
+  - backend app intentionally use jackson-bind that contains CVEs. You can check this in [pom.xml](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/code/pom.xml)
+  - Change ref from cve to master for backend. Branch master already update jackson-bind to updated version.
+
+    ```yaml
+    source:
+      contextDir: Jenkinsfile/build-stackrox
+      git:
+        ref: master
+        uri: https://gitlab.com/ocp-demo/backend_quarkus.git
+    ```
 
 #### Stackrox Jenkins Plugin
 
@@ -748,17 +773,28 @@
   
   ![](images/acs-stackrox-reports-in-jenkins.png)
 
-  Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
+  Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox-with-plugin/Jenkinsfile) for backend-build-stackrox-with-plugin-pipeline
 
-  Remark: Change ref to master for backend without critical CVEs
-
-  ```yaml
-  source:
-    contextDir: Jenkinsfile/build-stackrox-with-plugin
-    git:
-      ref: cve
-      uri: https://gitlab.com/ocp-demo/backend_quarkus.git
+  ```groovy
+    stage('Scan Image') {
+      steps {    
+          script {
+              echo "Scan image: ${NEXUS_REGISTRY}/${imageName}:${devTag}}"
+              stackrox (
+                    apiToken: "${ROX_API_TOKEN}",
+                    caCertPEM: '',
+                    enableTLSVerification: false,
+                    failOnCriticalPluginError: true,
+                    failOnPolicyEvalFailure: true,
+                    portalAddress: "${env.ROX_CENTRAL_ADDRESS}",
+                    imageNames: "${NEXUS_REGISTRY}/${imageName}:${devTag}"
+              )
+          }
+        }
+    } 
   ```
+
+
 
 ### Enforce Policy on Build Stage
 - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
