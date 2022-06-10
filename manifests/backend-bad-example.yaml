@@ -5,6 +5,7 @@ metadata:
   annotations:
     app.openshift.io/vcs-ref: master
     app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/backend_quarkus'
+    admission.stackrox.io/break-glass: "ticket-1234"
   labels:
     app.kubernetes.io/component: backend
     app.kubernetes.io/instance: backend
@@ -22,6 +23,8 @@ spec:
       creationTimestamp: null
       labels:
         app: backend
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - name: backend

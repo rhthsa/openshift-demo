@@ -821,9 +821,54 @@
   ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
 
 ## Enforce policy on Deployment Stage
+- Create project demo
 - Open ACS Central. Navigate to Platform Configuration->Policies 
+- At the search filter. Search for policy *No resources requests or limits specified* 
+  
+  ![](images/acs-policy-no-resources-request-or-limit-specified.png)
 
-- WIP
+- Click *Action->Clone Policy* and set name to *Request and Limit are required*
+- Edit *Policy behavior*  and set response method to *Inform and Enforce*
+  
+  ![](images/acs-set-policy-inform-and-enforce.png)
+
+- Navigate to  *Policy Scope* and *Add inclusion scope* input following values
+  - Cluster: Cluster1
+  - Namespace: demo
+- Navigate to *Policy Scope* and check for *Preview violations*
+- Deploy following app
+  
+  ```bash
+  oc create -f manifests/backend-bad-example.yaml -n demo
+  ```
+
+  Output
+
+  ```bash
+  Error from server (Failed currently enforced policies from StackRox): error when creating "manifests/backend-bad-example.yaml": admission webhook "policyeval.stackrox.io" denied the request:
+  The attempted operation violated 1 enforced policy, described below:
+
+  Policy: Request and Limit are required
+  - Description:
+      ↳ Alert on deployments that have containers without resource requests and limits
+  - Rationale:
+      ↳ If a container does not have resource requests or limits specified then the host
+        may become over-provisioned.
+  - Remediation:
+      ↳ Specify the requests and limits of CPU and Memory for your deployment.
+  - Violations:
+      - CPU limit set to 0 cores for container 'backend'
+      - CPU request set to 0 cores for container 'backend'
+      - Memory limit set to 0 MB for container 'backend'
+      - Memory request set to 0 MB for container 'backend'
+
+
+  In case of emergency, add the annotation {"admission.stackrox.io/break-glass": "ticket-1234"} to your deployment with an updated ticket number
+  ```
+- ACS Console, navigate to Violations
+  
+  ![](images/acs-policy-violation-no-request-limit.png)
+
   
 ## Enforce policy on Runtime Stage
 ### Exec into Pod
