@@ -45,8 +45,8 @@ spec:
           value: central.stackrox:443
         - name: STACKROX_PLUGIN
           value: "false"
-        - name: MAX_CRITICAL_CVES
-          value: "5"
+        - name: USE_INTERNAL_REGISTRY
+          value: "false"
     type: JenkinsPipeline
   successfulBuildsHistoryLimit: 5
   triggers: []

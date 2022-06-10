@@ -687,14 +687,13 @@
   
 #### Use roxctl in Pipeline
 
-- Create buildConfig with Jenkins. 
-    - Change following build configuration in [backend-build-stackrox-pipeline.yaml](manifests/backend-build-stackrox-pipeline.yaml) 
-    - 
-      - Set NEXUS_REGISTRY in [backend-build-stackrox-pipeline.yaml](manifests/backend-build-stackrox-pipeline.yaml) to Nexus Registry address
-          
-          ```bash
-          oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}'
-          ```
+- Create buildConfig [backend-build-stackrox-pipeline](manifests/backend-build-stackrox-pipeline.yaml)  with Jenkins. 
+    
+  ```yaml
+  cat manifests/backend-build-stackrox-pipeline.yaml| \
+  sed 's/value: NEXUS_REGISTRY/value: '$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')'/' | \
+  oc create -n ci-cd -f -
+  ```
 
   - Create [build config pipelines](manifests/backend-build-stackrox-pipeline.yaml)
   
@@ -716,13 +715,14 @@
   echo "Jenkins URL: https://$(oc get route jenkins -n ci-cd -o jsonpath='{.spec.host}')"
   ```
 
-- Start backend-build-stackrox-pipeline. Pipeline will be failed because there is 1 CRITICAL CVEs
+- Start backend-build-stackrox-pipeline. Pipeline will failed because image contains CVEs and violate policy *Fixable Severity at least Important*
   
-  ![](images/acs-scan-with-roxctl-failed.png)
-  
-<!-- - Change MAX_CRITICAL_CVE environment variable to 10 and re-run pipeline again
+  ![](images/acs-scan-with-roxctl-failed-01.png)
 
-  ![](images/acs-scan-with-roxctl-success.png) -->
+  Detail
+
+  ![](images/acs-scan-with-roxctl-failed-02.png)
+  
 
   Remark: [Jenkinsfile](https://gitlab.com/ocp-demo/backend_quarkus/-/blob/cve/Jenkinsfile/build-stackrox/Jenkinsfile) for backend-build-stackrox-pipeline
 
@@ -732,13 +732,15 @@
   
   ![](images/jenkins-stackrox-plugin.png)
 
-- Edit NEXUS_REGISTRY and create pipeline [backend-build-stackrox-with-plugin-pipeline](manifests/backend-build-stackrox-with-plugin-pipeline.yaml)
+- Create buildConfig [backend-build-stackrox-with-plugin-pipeline](manifests/backend-build-stackrox-with-plugin-pipeline.yaml) with Jenkins. 
 
-  ```bash
-  oc apply -f manifests/backend-build-stackrox-with-plugin-pipeline.yaml -n ci-cd
+  ```yaml
+  cat manifests/backend-build-stackrox-with-plugin-pipeline.yaml| \
+  sed 's/value: NEXUS_REGISTRY/value: '$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')'/' | \
+  oc create -n ci-cd -f -
   ```
 
-- Start backend-build-stackrox-with-plugin-pipeline. Pipeline will failed because image contains CVEs and violate ACS policies
+- Start backend-build-stackrox-with-plugin-pipeline. Pipeline will failed because image contains CVEs and violate policy *Fixable Severity at least Important*
   
   ![](images/acs-scan-with-stackrox-jenkins-plugin.png)
 
