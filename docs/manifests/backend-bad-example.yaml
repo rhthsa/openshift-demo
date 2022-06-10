@@ -5,14 +5,13 @@ metadata:
   annotations:
     app.openshift.io/vcs-ref: master
     app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/backend_quarkus'
-    admission.stackrox.io/break-glass: "ticket-1234"
   labels:
     app.kubernetes.io/component: backend
     app.kubernetes.io/instance: backend
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '8'
+    app.openshift.io/runtime-version: '11'
 spec:
   replicas: 1
   selector:
