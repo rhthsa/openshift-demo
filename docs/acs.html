@@ -1327,31 +1327,77 @@ oc create -n ci-cd -f -
 </ul>
 <h2 id="enforce-policy-on-deployment-stage">Enforce policy on Deployment Stage</h2>
 <ul>
-<li><p>Open ACS Central. Navigate to Platform Configuration-&gt;Policies </p>
+<li>Create project demo</li>
+<li>Open ACS Central. Navigate to Platform Configuration-&gt;Policies </li>
+<li><p>At the search filter. Search for policy <em>No resources requests or limits specified</em> </p>
+<p><img src="images/acs-policy-no-resources-request-or-limit-specified.png" alt=""></p>
 </li>
-<li><p>WIP</p>
+<li><p>Click <em>Action-&gt;Clone Policy</em> and set name to <em>Request and Limit are required</em></p>
+</li>
+<li><p>Edit <em>Policy behavior</em>  and set response method to <em>Inform and Enforce</em></p>
+<p><img src="images/acs-set-policy-inform-and-enforce.png" alt=""></p>
+</li>
+<li><p>Navigate to  <em>Policy Scope</em> and <em>Add inclusion scope</em> input following values</p>
+<ul>
+<li>Cluster: Cluster1</li>
+<li>Namespace: demo</li>
+</ul>
+</li>
+<li>Navigate to <em>Policy Scope</em> and check for <em>Preview violations</em></li>
+<li><p>Deploy following app</p>
+<pre><code class="lang-bash">oc create -f manifests/backend-bad-example.yaml -n demo
+</code></pre>
+<p>Output</p>
+<p>```bash
+Error from server (Failed currently enforced policies from StackRox): error when creating &quot;manifests/backend-bad-example.yaml&quot;: admission webhook &quot;policyeval.stackrox.io&quot; denied the request:
+The attempted operation violated 1 enforced policy, described below:</p>
+<p>Policy: Request and Limit are required</p>
+<ul>
+<li>Description:
+  &#x21B3; Alert on deployments that have containers without resource requests and limits</li>
+<li>Rationale:
+  &#x21B3; If a container does not have resource requests or limits specified then the host<pre><code>may become over-provisioned.
+</code></pre></li>
+<li>Remediation:
+  &#x21B3; Specify the requests and limits of CPU and Memory for your deployment.</li>
+<li>Violations:<ul>
+<li>CPU limit set to 0 cores for container &apos;backend&apos;</li>
+<li>CPU request set to 0 cores for container &apos;backend&apos;</li>
+<li>Memory limit set to 0 MB for container &apos;backend&apos;</li>
+<li>Memory request set to 0 MB for container &apos;backend&apos;</li>
+</ul>
 </li>
 </ul>
-<h2 id="enforce-policy-on-runtime-stage">Enforce policy on Runtime Stage</h2>
-<h3 id="exec-into-pod">Exec into Pod</h3>
-<ul>
-<li>Platform configuration -&gt; Policies</li>
-<li>Search for Policy Kubernetes Actions: Exec into Pod</li>
-<li>Click Action -&gt; Edit Policy</li>
-<li><p>Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.</p>
-<p><img src="images/acs-enforce-on-runtime.png" alt=""></p>
 </li>
-<li><p>Save Policy</p>
-</li>
-<li><p>Run curl inside backend&apos;s pod</p>
-<pre><code class="lang-bash">  oc new-project project1
-  oc apply -f manifests/backend-v1.yaml -n project1
-  oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | head -n 1 | awk &apos;{print $1}&apos;) -- curl -s http://backend:8080
-</code></pre>
-<p>  Output</p>
-<pre><code class="lang-bash">  command terminated with exit code 6
-</code></pre>
-</li>
+</ul>
+<p>  In case of emergency, add the annotation {&quot;admission.stackrox.io/break-glass&quot;: &quot;ticket-1234&quot;} to your deployment with an updated ticket number</p>
+<pre><code>- ACS Console, navigate to Violations
+
+  ![](images/acs-policy-violation-no-request-limit.png)
+
+
+## Enforce policy on Runtime Stage
+### Exec into Pod
+- Platform configuration -&gt; Policies
+- Search for Policy Kubernetes Actions: Exec into Pod
+- Click Action -&gt; Edit Policy
+- Click Next to Policy Behavior and enable Enforce on runtime. This will make ACS kill the offend pod that try to run exec.
+
+  ![](images/acs-enforce-on-runtime.png)
+
+- Save Policy
+- Run curl inside backend&apos;s pod
+
+    ```bash
+    oc new-project project1
+    oc apply -f manifests/backend-v1.yaml -n project1
+    oc exec -n project1 $(oc get pods -n project1 -l app=backend --no-headers | head -n 1 | awk &apos;{print $1}&apos;) -- curl -s http://backend:8080
+</code></pre><pre><code>Output
+
+```bash
+command terminated with exit code 6
+```
+</code></pre><ul>
 <li><p>Check Console</p>
 <ul>
 <li><p>Navigate to Dashboard -&gt; Violation</p>
@@ -1452,7 +1498,7 @@ Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-06-10T08:12:07.084Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-06-10T08:12:45.625Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"OpenShift Service Mesh","level":"1.5.10","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.11","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.12","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.13","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.14","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},{"title":"OpenShift GitOps","level":"1.5.15","depth":2,"path":"gitops.md","ref":"gitops.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2022-06-10T15:56:17.774Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-06-10T15:56:54.842Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
