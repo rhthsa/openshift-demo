@@ -16,11 +16,12 @@
   - [Shift Left Security](#shift-left-security)
     - [kube-linter](#kube-linter)
     - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
-    - [Jenkins](#jenkins)
-      - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
-      - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
-    - [Enforce Policy on Build Stage](#enforce-policy-on-build-stage)
-  - [Detecting suspect behaviors](#detecting-suspect-behaviors)
+  - [Enforce policy on Buid Stage](#enforce-policy-on-buid-stage)
+    - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
+    - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
+    - [Enable Policy](#enable-policy)
+  - [Enforce policy on Deployment Stage](#enforce-policy-on-deployment-stage)
+  - [Enforce policy on Runtime Stage](#enforce-policy-on-runtime-stage)
     - [Exec into Pod](#exec-into-pod)
     - [NMAP](#nmap)
   - [Compliance](#compliance)
@@ -673,7 +674,7 @@
 
     ![](images/acs-roxctl-check-image-CVE-2020-36518.png) -->
 
-### Jenkins
+## Enforce policy on Buid Stage
 - Setup Jenkins and SonarQube
   
   ```bash
@@ -685,7 +686,7 @@
 
   Remark: This demo need [Nexus](#setup-nexus)
   
-#### Use roxctl in Pipeline
+### Use roxctl in Pipeline
 
 - Create buildConfig [backend-build-stackrox-pipeline](manifests/backend-build-stackrox-pipeline.yaml)  with Jenkins. 
     
@@ -751,7 +752,7 @@
         uri: https://gitlab.com/ocp-demo/backend_quarkus.git
     ```
 
-#### Stackrox Jenkins Plugin
+### Stackrox Jenkins Plugin
 
 - Install Stackrox plugin and restart Jenkins
   
@@ -796,7 +797,7 @@
 
 
 
-### Enforce Policy on Build Stage
+### Enable Policy
 - Login to ACS Console, Select Menu Platform -> Configuration, type policy in search bar then input curl
   
   ![](images/acs-search-policy-curl.png)
@@ -819,7 +820,12 @@
     
   ![](images/acs-stackrox-plugin-reports-with-curl-in-image.png)
 
-## Detecting suspect behaviors
+## Enforce policy on Deployment Stage
+- Open ACS Central. Navigate to Platform Configuration->Policies 
+
+- WIP
+  
+## Enforce policy on Runtime Stage
 ### Exec into Pod
 - Platform configuration -> Policies
 - Search for Policy Kubernetes Actions: Exec into Pod
