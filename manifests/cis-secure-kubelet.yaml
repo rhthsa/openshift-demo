@@ -35,7 +35,7 @@ kind: MachineConfig
 metadata:
   labels:
     machineconfiguration.openshift.io/role: master
-  name: 75-master-kubelet-sysctls
+  name: 75-master-kubelet-sysctls-master
 spec:
   config:
     ignition:
@@ -53,7 +53,7 @@ kind: MachineConfig
 metadata:
   labels:
     machineconfiguration.openshift.io/role: worker
-  name: 75-master-kubelet-sysctls
+  name: 75-master-kubelet-sysctls-worker
 spec:
   config:
     ignition:
