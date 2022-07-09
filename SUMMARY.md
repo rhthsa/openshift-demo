@@ -26,9 +26,11 @@
   * [Horizontal Pod Autoscaler](hpa.md)
   * [Health Check](health.md)
   * [Kustomize](kustomize.md)
-  * [OpenShift Service Mesh](openshift-service-mesh.md)
   * [User Workload Monitoring](application-metrics.md)
   * [CI/CD with Jenkins](ci-cd-with-jenkins.md)
   * [CI/CD with Azure DevOps](ci-cd.md)
   * [EAP on OpenShift](eap-on-ocp.md)
   * [OpenShift GitOps](gitops.md)
+* Additional Features
+  * [OpenShift Service Mesh](openshift-service-mesh.md)
+  * [KEDA](KEDA.md)

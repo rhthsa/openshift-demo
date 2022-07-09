@@ -52,22 +52,6 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Liveness Probe
     - Startup Probe
   - [Kustomize](kustomize.md)
-  - [OpenShift Service Mesh](openshift-service-mesh.md)
-    - Install and configure control plane
-    - Sidecar injection
-    - Blue/Green Deployment
-    - Canary Deployment
-    - A/B Testing Deployment
-    - Routing by URI with regular expression
-    - Traffic Analysis
-    - Traffic Mirroring
-    - Tracing
-    - Circuit Breaker
-    - Secure with mTLS
-    - JWT Token (with RHSSO)
-    - Service Level Objective (SLO)
-    - Control Plane with High Availability
-    - Rate Limit (OSSM 2.0.x or ISTIO 1.6)
   - [User Workload Monitoring](application-metrics.md)
     - Setup User Workload Monitoring
     - Monitor Custom Metrics
@@ -95,4 +79,21 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 - Advanced Cluster Security for Kubernetes
   - [ACS](acs.md)
 - Additional Solutions
-  - [Managed Multi-Cluster Application Metrics with Prometheus & Thanos](thanos-receive.md)
+  <!-- - [Managed Multi-Cluster Application Metrics with Prometheus & Thanos](thanos-receive.md) -->
+  - [OpenShift Service Mesh](openshift-service-mesh.md)
+      - Install and configure control plane
+      - Sidecar injection
+      - Blue/Green Deployment
+      - Canary Deployment
+      - A/B Testing Deployment
+      - Routing by URI with regular expression
+      - Traffic Analysis
+      - Traffic Mirroring
+      - Tracing
+      - Circuit Breaker
+      - Secure with mTLS
+      - JWT Token (with RHSSO)
+      - Service Level Objective (SLO)
+      - Control Plane with High Availability
+      - Rate Limit (OSSM 2.0.x or ISTIO 1.6)
+  - [Kubernetes Event Driven Autoscaler - KEDA](KEDA.md)
