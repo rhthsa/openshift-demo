@@ -19,6 +19,20 @@
   
   ```bash
   oc apply -f  manifests/cluster-monitoring-config.yaml
+  oc -n openshift-user-workload-monitoring wait --for condition=ready \
+   --timeout=180s pod -l app.kubernetes.io/name=prometheus
+  oc -n openshift-user-workload-monitoring wait --for condition=ready \
+   --timeout=180s pod -l app.kubernetes.io/name=thanos-ruler
+  ```
+
+  Output
+
+  ```bash
+  configmap/cluster-monitoring-config created
+  pod/prometheus-user-workload-0 condition met
+  pod/prometheus-user-workload-1 condition met
+  pod/thanos-ruler-user-workload-0 condition met
+  pod/thanos-ruler-user-workload-1 condition met
   ```
 
 - Verify monitoring stack
