@@ -526,19 +526,6 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.14" data-path="gitops.html">
-            
-                <a href="gitops.html">
-            
-                    
-                    OpenShift GitOps
-            
-                </a>
-            
-
-            
-        </li>
-    
 
             </ul>
             
@@ -558,7 +545,20 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="1.6.1" data-path="openshift-service-mesh.html">
+        <li class="chapter " data-level="1.6.1" data-path="gitops.html">
+            
+                <a href="gitops.html">
+            
+                    
+                    OpenShift GitOps
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.2" data-path="openshift-service-mesh.html">
             
                 <a href="openshift-service-mesh.html">
             
@@ -571,7 +571,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.6.2" data-path="KEDA.html">
+        <li class="chapter active" data-level="1.6.3" data-path="KEDA.html">
             
                 <a href="KEDA.html">
             
@@ -652,10 +652,10 @@
 <li><p>install KEDA Operator</p>
 <p><img src="images/keda-operator.png" alt=""></p>
 </li>
-<li><p>create keda controller in namesapce keda</p>
+<li><p>create KEDA controller in namesapce keda</p>
 <pre><code class="lang-bash">oc create -f manifests/keda-controller.yaml
 </code></pre>
-<p>Verify status</p>
+<p>Verify controller pod is rum and running.</p>
 <pre><code class="lang-bash">oc -n keda get pods
 </code></pre>
 <p>output</p>
@@ -669,7 +669,7 @@ keda-operator-75bf78b6fb-kjzzd           1/1     Running   0          1m
 <h2 id="scale-by-application-metrics">Scale by Application Metrics</h2>
 <h3 id="prepare-application">Prepare Application</h3>
 <ul>
-<li>Enable <a href="application-metrics.html#prerequisites">user workload monitoring</a></li>
+<li>Enable <a href="application-metrics.html#prerequisites">user workload monitoring</a> if your cluster still not enable this feature.</li>
 <li><p>Deploy frontend-v1 and backend-v1 application to namespace project1</p>
 <pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
 oc apply -f manifests/backend.yaml -n project1
@@ -679,25 +679,30 @@ oc delete deployment frontend-v2 -n project1
 oc delete deployment backend-v2 -n project1
 </code></pre>
 </li>
-<li><p>Create <a href="manifests/backend-monitor.yaml">service monitor</a> for backend app</p>
+<li><p>Create <a href="manifests/backend-monitor.yaml">service monitor</a> to monitor backend service</p>
 <pre><code class="lang-bash">oc apply -f manifests/backend-monitor.yaml -n project1
 </code></pre>
 </li>
 </ul>
 <h3 id="configure-scaledobject">Configure ScaledObject</h3>
 <ul>
-<li><p>Create Service Account for KEDA to use for query Thanos</p>
+<li><p>Create Service Account <em>app-monitor</em> for KEDA to use for query Thanos</p>
 <pre><code class="lang-bash">oc create sa app-monitor
 </code></pre>
 </li>
-<li><p>Add role <em>cluster-monitoring-view</em> to service account</p>
+<li><p>Add role <em>cluster-monitoring-view</em> to service account <em>app-monitor</em></p>
 <pre><code class="lang-bash">oc adm policy add-cluster-role-to-user cluster-monitoring-view \
 -z app-monitor -n project1
 </code></pre>
 </li>
-<li><p>Let&apos;s say we want to scale backend by concurrent request of each pod. Following PromQL will average concurrent request/sec for each pod</p>
+<li><p>Let&apos;s say we want to scale backend by concurrent request of each pod. Following PromQL will average concurrent request/min for each pod</p>
 <pre><code>avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
-</code></pre></li>
+</code></pre><p>Test by generate load to application with 50 concurrent request.</p>
+<pre><code class="lang-bash">siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+</code></pre>
+<p>Check on Developer console</p>
+<p><img src="images/keda-observe-app-metrics.png" alt=""></p>
+</li>
 <li><p>Create <a href="manifests/keda-prometheus-scaledout.yaml">ScaledObject</a></p>
 <pre><code class="lang-bash">BEARER_TOKEN=$(oc serviceaccounts get-token  app-monitor -n project1|base64)
 CUSTOM_CA_CERT=$(oc get -n openshift-monitoring secret thanos-querier-tls -o jsonpath=&quot;{.data[&apos;tls\.crt&apos;]}&quot;)
@@ -706,7 +711,7 @@ sed &apos;s/BEARER_TOKEN/&apos;$TOKEN&apos;/&apos;| \
 sed &apos;s/CUSTOM_CA_CERT/&apos;$CUSTOM_CA_CERT&apos;/&apos;| \
 oc create -n project1 -f -
 </code></pre>
-<p>Verify status</p>
+<p>Verify that ScaledObject is ready</p>
 <pre><code class="lang-bash">oc get -n project1 scaledobject.keda.sh/prometheus-scaledobject
 </code></pre>
 <p>Output</p>
@@ -717,24 +722,31 @@ prometheus-scaledobject   apps/v1.Deployment   backend-v1        1     20    pro
 </ul>
 <h3 id="test">Test</h3>
 <ul>
-<li><p>Create 50 concurrent request to application</p>
-<pre><code class="lang-bash">siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o yaml -o jsonpath=&apos;{.spec.host}&apos;)
+<li><p>Create 50 concurrent request to application. KEDA will scale up backend pods when average request/min of pods is exceed 10</p>
+<pre><code class="lang-bash">siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 </code></pre>
-<p>Check on Developer console</p>
-<p><img src="images/keda-observe-app-metrics.png" alt=""></p>
 </li>
 <li><p>Check event from Developer console</p>
 <p><img src="images/keda-scale-up.png" alt=""></p>
 </li>
-<li><p>When workload goes down after 2 minutes</p>
+<li><p>KEDA will scale down backend pods when average request/min of pods is below 10 after 2 minutes</p>
 <pre><code class="lang-yaml">spec:
   pollingInterval: 10
   cooldownPeriod: 120
   minReplicaCount: 1
   maxReplicaCount: 20
 </code></pre>
+<p>check backend pods</p>
+<pre><code class="lang-bash">NAME                          READY   STATUS    RESTARTS   AGE
+backend-v1-75d46b59b7-4h84f   1/1     Running   0          48s
+backend-v1-75d46b59b7-g8qrt   1/1     Running   0          33s
+backend-v1-75d46b59b7-lpc8n   1/1     Running   0          33s
+backend-v1-75d46b59b7-t68tx   1/1     Running   1          11h
+</code></pre>
 <p>check event from Developer console</p>
 <p><img src="images/keda-scale-down.png" alt=""></p>
+<p>check that each pod request/min is around 10</p>
+<p><img src="images/keda-dev-console-scaled.png" alt=""></p>
 </li>
 </ul>
 
@@ -776,7 +788,7 @@ prometheus-scaledobject   apps/v1.Deployment   backend-v1        1     20    pro
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"KEDA","level":"1.6.2","depth":2,"previous":{"title":"OpenShift Service Mesh","level":"1.6.1","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"KEDA.md","mtime":"2022-07-09T15:48:45.310Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-09T15:49:30.402Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"KEDA","level":"1.6.3","depth":2,"previous":{"title":"OpenShift Service Mesh","level":"1.6.2","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"KEDA.md","mtime":"2022-07-10T02:40:11.990Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-10T02:40:52.997Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
