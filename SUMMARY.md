@@ -30,7 +30,7 @@
   * [CI/CD with Jenkins](ci-cd-with-jenkins.md)
   * [CI/CD with Azure DevOps](ci-cd.md)
   * [EAP on OpenShift](eap-on-ocp.md)
-  * [OpenShift GitOps](gitops.md)
 * Additional Features
+  * [OpenShift GitOps](gitops.md)
   * [OpenShift Service Mesh](openshift-service-mesh.md)
   * [KEDA](KEDA.md)

@@ -12,13 +12,13 @@
   
   ![](images/keda-operator.png)
 
-- create keda controller in namesapce keda
+- create KEDA controller in namesapce keda
   
   ```bash
   oc create -f manifests/keda-controller.yaml
   ```
   
-  Verify status
+  Verify controller pod is rum and running.
 
   ```bash
   oc -n keda get pods
@@ -36,7 +36,7 @@
 ## Scale by Application Metrics
 
 ### Prepare Application
-- Enable [user workload monitoring](application-metrics.md#prerequisites)
+- Enable [user workload monitoring](application-metrics.md#prerequisites) if your cluster still not enable this feature.
 - Deploy frontend-v1 and backend-v1 application to namespace project1
   
   ```bash
@@ -47,7 +47,7 @@
   oc delete deployment frontend-v2 -n project1
   oc delete deployment backend-v2 -n project1
   ```
-- Create [service monitor](manifests/backend-monitor.yaml) for backend app
+- Create [service monitor](manifests/backend-monitor.yaml) to monitor backend service
   
   ```bash
   oc apply -f manifests/backend-monitor.yaml -n project1
@@ -55,24 +55,34 @@
 
 ### Configure ScaledObject
 
-- Create Service Account for KEDA to use for query Thanos
+- Create Service Account *app-monitor* for KEDA to use for query Thanos
   
   ```bash
   oc create sa app-monitor
   ```
 
-- Add role *cluster-monitoring-view* to service account
+- Add role *cluster-monitoring-view* to service account *app-monitor*
   
   ```bash
   oc adm policy add-cluster-role-to-user cluster-monitoring-view \
   -z app-monitor -n project1
   ```
 
-- Let's say we want to scale backend by concurrent request of each pod. Following PromQL will average concurrent request/sec for each pod
+- Let's say we want to scale backend by concurrent request of each pod. Following PromQL will average concurrent request/min for each pod
   
   ```
   avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
   ```
+
+  Test by generate load to application with 50 concurrent request.
+
+  ```bash
+  siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+  ```
+  
+  Check on Developer console
+
+  ![](metrics/../images/keda-observe-app-metrics.png)
 
 - Create [ScaledObject](manifests/keda-prometheus-scaledout.yaml)
 
@@ -85,7 +95,7 @@
   oc create -n project1 -f -
   ```
 
-  Verify status
+  Verify that ScaledObject is ready
 
   ```bash
   oc get -n project1 scaledobject.keda.sh/prometheus-scaledobject
@@ -100,21 +110,17 @@
 
 ### Test
 
-- Create 50 concurrent request to application
+- Create 50 concurrent request to application. KEDA will scale up backend pods when average request/min of pods is exceed 10
   
   ```bash
-  siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o yaml -o jsonpath='{.spec.host}')
+  siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
   ```
-
-  Check on Developer console
-
-  ![](metrics/../images/keda-observe-app-metrics.png)
 
 - Check event from Developer console
   
   ![](images/keda-scale-up.png)
 
-- When workload goes down after 2 minutes
+- KEDA will scale down backend pods when average request/min of pods is below 10 after 2 minutes
   
   ```yaml
   spec:
@@ -123,8 +129,20 @@
     minReplicaCount: 1
     maxReplicaCount: 20  
   ```
+  check backend pods
 
+  ```bash
+  NAME                          READY   STATUS    RESTARTS   AGE
+  backend-v1-75d46b59b7-4h84f   1/1     Running   0          48s
+  backend-v1-75d46b59b7-g8qrt   1/1     Running   0          33s
+  backend-v1-75d46b59b7-lpc8n   1/1     Running   0          33s
+  backend-v1-75d46b59b7-t68tx   1/1     Running   1          11h
+  ```
+  
   check event from Developer console
 
   ![](images/keda-scale-down.png)
 
+  check that each pod request/min is around 10
+
+  ![](images/keda-dev-console-scaled.png)
