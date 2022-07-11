@@ -12,7 +12,7 @@
   
   ![](images/keda-operator.png)
 
-- create KEDA controller in namesapce keda
+- create [KEDA controller](manifests/keda-controller.yaml) in namesapce keda
   
   ```bash
   oc create -f manifests/keda-controller.yaml
@@ -89,8 +89,8 @@
   ```bash
   BEARER_TOKEN=$(oc serviceaccounts get-token  app-monitor -n project1|base64)
   CUSTOM_CA_CERT=$(oc get -n openshift-monitoring secret thanos-querier-tls -o jsonpath="{.data['tls\.crt']}")
-  echo $BEARER_TOKEN | cat manifests/keda-prometheus-scaledout.yaml| \
-  sed 's/BEARER_TOKEN/'$TOKEN'/'| \
+  cat manifests/keda-prometheus-scaledout.yaml| \
+  sed 's/BEARER_TOKEN/'$BEARER_TOKEN'/'| \
   sed 's/CUSTOM_CA_CERT/'$CUSTOM_CA_CERT'/'| \
   oc create -n project1 -f -
   ```
@@ -120,16 +120,13 @@
   
   ![](images/keda-scale-up.png)
 
-- KEDA will scale down backend pods when average request/min of pods is below 10 after 2 minutes
-  
-  ```yaml
-  spec:
-    pollingInterval: 10
-    cooldownPeriod: 120
-    minReplicaCount: 1
-    maxReplicaCount: 20  
-  ```
   check backend pods
+
+  ```bash
+  watch oc get pods -n project1 -l app=backend
+  ```
+
+  Output
 
   ```bash
   NAME                          READY   STATUS    RESTARTS   AGE
@@ -138,6 +135,17 @@
   backend-v1-75d46b59b7-lpc8n   1/1     Running   0          33s
   backend-v1-75d46b59b7-t68tx   1/1     Running   1          11h
   ```
+
+- KEDA will scale down backend pods when average request/min of pods is below 10 after 2 minutes. This duration is configured by *spec.colldownPeriod*
+  
+  ```yaml
+  spec:
+    pollingInterval: 10
+    cooldownPeriod: 120
+    minReplicaCount: 1
+    maxReplicaCount: 20  
+  ```
+
   
   check event from Developer console
 

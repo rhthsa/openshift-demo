@@ -1,13 +1,13 @@
-kind: KedaController
 apiVersion: keda.sh/v1alpha1
+kind: KedaController
 metadata:
   name: keda
   namespace: keda
 spec:
-  watchNamespace: ''
+  metricsServer:
+    logLevel: '0'
   operator:
     logLevel: info
     logEncoder: console
-  metricsServer:
-    logLevel: '0'
   serviceAccount: {}
+  watchNamespace: ''

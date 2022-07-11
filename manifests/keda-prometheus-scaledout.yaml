@@ -45,6 +45,6 @@ spec:
         threshold: '10'
         query: avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
         authModes: "bearer"
-        namespace: openshift-monitoring
+        namespace: project1
       authenticationRef:
         name: keda-prom-creds
