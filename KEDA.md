@@ -112,9 +112,23 @@
 
 - Create 50 concurrent request to application. KEDA will scale up backend pods when average request/min of pods is exceed 10
   
-  ```bash
-  siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
-  ```
+  - Use K6
+    
+    ```bash
+    oc run load-test -n project1 -i --rm \
+    --image=loadimpact/k6 --rm=true --restart=Never \
+    --  run -  < manifests/load-test-k6.js \
+    -e URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}') \
+    -e THREADS=50 -e DURATION=5m -e RAMPUP=1s -e RAMPDOWN=0s
+    ```
+
+  - Use siege
+  
+    ```bash
+    siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+    ```
+
+
 
 - Check event from Developer console
   
