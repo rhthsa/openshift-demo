@@ -19,6 +19,7 @@
   
   ```bash
   oc apply -f  manifests/cluster-monitoring-config.yaml
+  sleep 10
   oc -n openshift-user-workload-monitoring wait --for condition=ready \
    --timeout=180s pod -l app.kubernetes.io/name=prometheus
   oc -n openshift-user-workload-monitoring wait --for condition=ready \
