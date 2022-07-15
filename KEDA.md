@@ -33,6 +33,10 @@
   keda-operator-75bf78b6fb-kjzzd           1/1     Running   0          1m
   ```
 
+  CPU request and limit for KEDA
+
+  ![](images/keda-operators-request-limit.png)
+
 ## Scale by Application Metrics
 
 ### Prepare Application
