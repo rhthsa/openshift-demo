@@ -4,10 +4,6 @@
 - [OpenShift Service Mesh](#openshift-service-mesh)
   - [Overview](#overview)
   - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
-  - [Traffic Management](#traffic-management)
-    - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
-      - [Kiali](#kiali)
-      - [CLI/YAML](#cliyaml)
     - [Test Istio Gateway](#test-istio-gateway)
     - [A/B Deployment with Weight-Routing](#ab-deployment-with-weight-routing)
     - [Conditional Routing by URI](#conditional-routing-by-uri)
@@ -54,23 +50,28 @@ Sample application
 
   ```bash
   oc apply -f manifests/ossm-sub.yaml
+  sleep 10
   oc wait --for condition=established --timeout=180s \
   crd/servicemeshcontrolplanes.maistra.io \
   crd/kialis.kiali.io \
   crd/jaegers.jaegertracing.io
-  oc get csv
+  oc get csv -n istio-system
   ```
 
   Output
 
   ```bash
-  NAME                         DISPLAY                                          VERSION   REPLACES                     PHASE
-  jaeger-operator.v1.30.0      Red Hat OpenShift distributed tracing platform   1.30.0                                 Succeeded
-  kiali-operator.v1.36.7       Kiali Operator                                   1.36.7    kiali-operator.v1.36.6       Succeeded
-  servicemeshoperator.v2.1.1   Red Hat OpenShift Service Mesh                   2.1.1-0   servicemeshoperator.v2.1.0   Succeeded
+  customresourcedefinition.apiextensions.k8s.io/servicemeshcontrolplanes.maistra.io condition met
+  customresourcedefinition.apiextensions.k8s.io/kialis.kiali.io condition met
+  customresourcedefinition.apiextensions.k8s.io/jaegers.jaegertracing.io condition met
+  NAME                         DISPLAY                                          VERSION    REPLACES                     PHASE
+  jaeger-operator.v1.34.1-5    Red Hat OpenShift distributed tracing platform   1.34.1-5   jaeger-operator.v1.30.2      Succeeded
+  keda.v2.7.1                  KEDA                                             2.7.1      keda.v2.6.1                  Succeeded
+  kiali-operator.v1.48.0       Kiali Operator                                   1.48.0     kiali-operator.v1.36.10      Succeeded
+  servicemeshoperator.v2.2.0   Red Hat OpenShift Service Mesh                   2.2.0-0    servicemeshoperator.v2.1.3   Succeeded
   ```
- 
-- Create control plane by create ServiceMeshControlPlane CRD
+ o
+- Create control plane by create [ServiceMeshControlPlane](manifests/smcp.yaml) CRD
   
   - CLI
     
@@ -111,23 +112,23 @@ Sample application
 
   ![](images/admin-console-smcp-status.png)
 
-  or Bash shell [get-smcp-status.sh](bin/get-smcp-status.sh)
+  <!-- or Bash shell [get-smcp-status.sh](bin/get-smcp-status.sh)
 
   ```bash
   bin/get-smcp-status.sh basic istio-system
-  ```
+  ``` -->
 
-  or just CLI
+  or use CLI
 
   ```bash
-  oc get smcp/basic -n istio-system
+  watch oc get smcp/basic -n istio-system
   ```
 
   Output
 
   ```bash
   NAME    READY   STATUS            PROFILES      VERSION   AGE
-  basic   10/10   ComponentsReady   ["default"]   2.1.1     66s
+  basic   10/10   ComponentsReady   ["default"]   2.2.0     83s
   ```
   
 - Join project1 into control plane
