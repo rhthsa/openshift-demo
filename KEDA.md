@@ -76,15 +76,63 @@
 
   Test by generate load to application with 50 concurrent request.
 
+  Use K6
+
+  ```bash
+    oc run load-test -n project1 -i --rm \
+    --image=loadimpact/k6 --rm=true --restart=Never \
+    --  run -  < manifests/load-test-k6.js \
+    -e URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}') \
+    -e THREADS=50 -e DURATION=5m -e RAMPUP=1s -e RAMPDOWN=0s
+  ```
+
+  Use *siege* CLI
+
   ```bash
   siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
   ```
   
-  Check on Developer console
+  Check on Developer console and navigate to Observe -> Metrics -> Custom Query and input following PromQL
+
+  ```
+  avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
+  ```
+  
+  Following graph show average request/min from all backend pods in namesapce project1
 
   ![](metrics/../images/keda-observe-app-metrics.png)
 
 - Create [ScaledObject](manifests/keda-prometheus-scaledout.yaml)
+Review ScaledObject YAML
+  - scaleTargetRef is configure to monitor deployment object name backend-v1
+  - Prometheus address is configure to OpenShift's Thanos Querier in namespace openshift-monitoring
+  - Bearer token for access OpenShift's Thanos Querier stored in secret name keda-prom-creds
+  - Check for average request/min of backend pods if exceed 10
+
+  ```yaml
+  spec:
+    pollingInterval: 10
+    cooldownPeriod: 120
+    minReplicaCount: 1
+    maxReplicaCount: 20
+    scaleTargetRef:
+      kind: Deployment  
+      name: backend-v1  # Monitor for Deployment named backend-v1
+    triggers:
+      - type: prometheus
+        metadata:
+          serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+          metricName: application_com_example_quarkus_BackendResource_countBackend_total
+          metricType: Value
+          threshold: '10'
+          query: avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
+          authModes: "bearer"
+          namespace: project1
+        authenticationRef:
+          name: keda-prom-creds
+  ```
+
+  We need to configure bearer token and root CA for ScaledObject to access OpenShift's Thanos in namesapce openshift-monitoring.
 
   ```bash
   BEARER_TOKEN=$(oc serviceaccounts get-token  app-monitor -n project1|base64)

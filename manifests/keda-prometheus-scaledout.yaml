@@ -34,8 +34,8 @@ spec:
   minReplicaCount: 1
   maxReplicaCount: 20
   scaleTargetRef:
-    kind: Deployment
-    name: backend-v1
+    kind: Deployment  
+    name: backend-v1  # Monitor for Deployment named backend-v1
   triggers:
     - type: prometheus
       metadata:
