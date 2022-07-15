@@ -698,12 +698,51 @@ oc delete deployment backend-v2 -n project1
 <li><p>Let&apos;s say we want to scale backend by concurrent request of each pod. Following PromQL will average concurrent request/min for each pod</p>
 <pre><code>avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
 </code></pre><p>Test by generate load to application with 50 concurrent request.</p>
+<p>Use K6</p>
+<pre><code class="lang-bash">  oc run load-test -n project1 -i --rm \
+  --image=loadimpact/k6 --rm=true --restart=Never \
+  --  run -  &lt; manifests/load-test-k6.js \
+  -e URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;) \
+  -e THREADS=50 -e DURATION=5m -e RAMPUP=1s -e RAMPDOWN=0s
+</code></pre>
+<p>Use <em>siege</em> CLI</p>
 <pre><code class="lang-bash">siege -c 50 -t 5m https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 </code></pre>
-<p>Check on Developer console</p>
+<p>Check on Developer console and navigate to Observe -&gt; Metrics -&gt; Custom Query and input following PromQL</p>
+<pre><code>avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
+</code></pre><p>Following graph show average request/min from all backend pods in namesapce project1</p>
 <p><img src="images/keda-observe-app-metrics.png" alt=""></p>
 </li>
-<li><p>Create <a href="manifests/keda-prometheus-scaledout.yaml">ScaledObject</a></p>
+<li><p>Create <a href="manifests/keda-prometheus-scaledout.yaml">ScaledObject</a>
+Review ScaledObject YAML</p>
+<ul>
+<li>scaleTargetRef is configure to monitor deployment object name backend-v1</li>
+<li>Prometheus address is configure to OpenShift&apos;s Thanos Querier in namespace openshift-monitoring</li>
+<li>Bearer token for access OpenShift&apos;s Thanos Querier stored in secret name keda-prom-creds</li>
+<li>Check for average request/min of backend pods if exceed 10</li>
+</ul>
+<pre><code class="lang-yaml">spec:
+  pollingInterval: 10
+  cooldownPeriod: 120
+  minReplicaCount: 1
+  maxReplicaCount: 20
+  scaleTargetRef:
+    kind: Deployment  
+    name: backend-v1  # Monitor for Deployment named backend-v1
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9091
+        metricName: application_com_example_quarkus_BackendResource_countBackend_total
+        metricType: Value
+        threshold: &apos;10&apos;
+        query: avg(rate(application_com_example_quarkus_BackendResource_countBackend_total[1m]))
+        authModes: &quot;bearer&quot;
+        namespace: project1
+      authenticationRef:
+        name: keda-prom-creds
+</code></pre>
+<p>We need to configure bearer token and root CA for ScaledObject to access OpenShift&apos;s Thanos in namesapce openshift-monitoring.</p>
 <pre><code class="lang-bash">BEARER_TOKEN=$(oc serviceaccounts get-token  app-monitor -n project1|base64)
 CUSTOM_CA_CERT=$(oc get -n openshift-monitoring secret thanos-querier-tls -o jsonpath=&quot;{.data[&apos;tls\.crt&apos;]}&quot;)
 cat manifests/keda-prometheus-scaledout.yaml| \
@@ -805,7 +844,7 @@ backend-v1-75d46b59b7-t68tx   1/1     Running   1          11h
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"KEDA","level":"1.6.3","depth":2,"previous":{"title":"OpenShift Service Mesh","level":"1.6.2","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"KEDA.md","mtime":"2022-07-11T06:14:08.387Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-11T06:14:46.526Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"KEDA","level":"1.6.3","depth":2,"previous":{"title":"OpenShift Service Mesh","level":"1.6.2","depth":2,"path":"openshift-service-mesh.md","ref":"openshift-service-mesh.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"KEDA.md","mtime":"2022-07-15T03:16:08.972Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-15T03:17:01.270Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
