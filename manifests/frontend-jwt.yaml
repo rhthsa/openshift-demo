@@ -1,0 +1,28 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: frontend-jwt
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  jwtRules:
+  - issuer: "https://keycloak-sso.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com/auth/realms/demo"
+    jwksUri: "https://keycloak-sso.apps.cluster-7bbc.7bbc.sandbox1708.opentlc.com/auth/realms/demo/protocol/openid-connect/certs"
+--- 
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: frontend-jwt
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+       requestPrincipals: ["*/c71ffa11-cfc5-4e53-8837-22c1bb5ee591"] # iss/sub 
+    # when:
+    # - key: request.auth.claims[groups]
+    #   values: ["group1"]
