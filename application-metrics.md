@@ -52,8 +52,30 @@
   thanos-ruler-user-workload-0           3/3     Running   5          8m55s
   thanos-ruler-user-workload-1           3/3     Running   0          11s
   ```
+- CPU and Memory used by User Workload Monitoring
   
+  Overall resouces consumed by user workload monitoring
+
+  ![](images/user-workload-monitoring-overall-resources.png)
+
+  CPU Usage
+  
+  ![](images/user-workload-monitoring-cpu-usage.png)
+
+  Memory Usage
+
+  ![](images/user-workload-minitoring-memory-usage.png)
+
+  CPU Quota
+  
+  ![](images/user-workload-monitoring-cpu-quota.png)
+
+  Memory Quota
+
+  ![](images/user-workload-monitoring-memory-quota.png)
+
 ## Service Monitoring
+
 - Deploy application with custom metrics
   - Backend application provides metrics by /q/metrics and /q/metrics/applications
   
@@ -109,6 +131,30 @@
     
 - Create [Service Monitoring](manifests/backend-monitor.yaml) to monitor backend service
     
+    ```yaml
+    apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+    metadata:
+      labels:
+        k8s-app: backend-monitor
+      name: backend-monitor
+    spec:
+      endpoints:
+      - interval: 30s  # pull metrics every 30 sec
+        port: http
+        path: /q/metrics  # URI to query metrics 
+        scheme: http
+      - interval: 30s
+        port: http
+        path: /q/metrics/application # URI to query metrics 
+        scheme: http
+      selector:
+        matchLabels:
+          app: backend # pull metrics from services with label app equal to backend
+    ```
+
+    Create service monitor
+    
     ```bash
     oc apply -f manifests/backend-monitor.yaml -n project1
     ```
@@ -148,7 +194,10 @@
 
 ## Custom Grafana Dashboard
 <!-- https://access.redhat.com/solutions/5335491 -->
-Use Grafana Operator (Community Edition) to deploy Grafana and configure datasource to Thanos Querier
+Use **Grafana Operator by Red Hat** to deploy Grafana and configure datasource to Thanos Querier
+
+Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
+
 - Create project
   
   ```bash
