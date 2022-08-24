@@ -73,7 +73,7 @@
   Memory Quota
 
   ![](images/user-workload-monitoring-memory-quota.png)
-
+  
 ## Service Monitoring
 
 - Deploy application with custom metrics
@@ -154,7 +154,7 @@
     ```
 
     Create service monitor
-    
+
     ```bash
     oc apply -f manifests/backend-monitor.yaml -n project1
     ```
