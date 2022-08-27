@@ -20,7 +20,7 @@ spec:
       containers:
       - name: network-tools
         image: quay.io/voravitl/tools:latest
-        command: ["sleep", "3000"]
+        command: ["sleep", "6000"]
         imagePullPolicy: Always
         resources:
           requests:
@@ -28,6 +28,7 @@ spec:
             memory: 250Mi
           limits:
             cpu: "0.2"
+            memory: 700Mi
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
