@@ -13,7 +13,7 @@ metadata:
     app.openshift.io/runtime: quarkus
     app.openshift.io/runtime-version: '11'
 spec:
-  replicas: 1
+  replicas: 14
   selector:
     matchLabels:
       app: backend
@@ -27,27 +27,50 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: rack 
+        whenUnsatisfiable: DoNotSchedule 
+        labelSelector: 
+          matchLabels:
+           app: backend
+           version: v1
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname 
+        whenUnsatisfiable: DoNotSchedule 
+        labelSelector: 
+          matchLabels:
+           app: backend
+           version: v1
       containers:
       - name: backend
         image: quay.io/voravitl/backend-native:v1
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           requests:
-            cpu: "0.01"
-            memory: 30Mi
+            cpu: "0.05"
+            memory: 50Mi
           limits:
-            cpu: "0.01"
-            memory: 30Mi
+            cpu: "0.2"
+            memory: 120Mi
         env:
           - name: APP_BACKEND
-            value: https://httpbin.org/status/200
+            value: https://httpbin.org/delay/5
           - name: APP_VERSION
             value: v1
           - name: quarkus.log.console.color
             value: 'false'
         ports:
         - containerPort: 8080
-      # initContainers:
-      # - name: init-myservice
-      #   image: busybox:1.28
-      #   command: ['sh', '-c', "sleep 360"]
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: false
+      terminationGracePeriodSeconds: 10
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+
