@@ -641,10 +641,10 @@
 <li><a href="#custom-monitoring">Custom Monitoring</a><ul>
 <li><a href="#monitor-for-pod-creation">Monitor for Pod Creation</a><ul>
 <li><a href="#cluster-level">Cluster Level</a></li>
-<li><a href="#user-workload-monitoring">User Workload Monitoring</a></li>
 </ul>
 </li>
 <li><a href="#test-alert">Test Alert</a></li>
+<li><a href="#alert-with-line">Alert with LINE</a></li>
 </ul>
 </li>
 </ul>
@@ -660,60 +660,11 @@
 <li>PodStuckCrashLoopBackOff for 2 minutes</li>
 <li>PodStuckCreateContainerError for 2 minutes</li>
 </ul>
-<pre><code class="lang-yaml">apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-name: pod-stuck
-spec:
-groups:
-- name: PodStuck
-    rules:
-    - alert: PodStuckContainerCreating
-    annotations:
-        description: Pod creation failed with ContainerCreating
-        message: Pod    in project  project stuck at ContainerCreating
-    expr: kube_pod_container_status_waiting_reason{reason=&quot;ContainerCreating&quot;}  == 1
-    for: 2m
-    labels:
-        severity: critical
-    - alert: PodStuckImagePullBackOff
-    annotations:
-        description: Pod creation failed with ImagePullBackOff
-        message: Pod    in project  project stuck at ImagePullBackOff
-    expr: kube_pod_container_status_waiting_reason{reason=&quot;ImagePullBackOff&quot;} == 1 
-    for: 2m
-    labels:
-        severity: critical
-    - alert: PodStuckErrImagePull
-    annotations:
-        description: Pod creation failed with ErrImagePull
-        message: Pod    in project  project stuck at ErrImagePull
-    expr: kube_pod_container_status_waiting_reason{reason=&quot;ErrImagePull&quot;} == 1 
-    for: 30s
-    labels:
-        severity: critical
-    - alert: PodStuckCrashLoopBackOff
-    annotations:
-        description: Pod creation failed with ImagePullBackOff
-        message: Pod    in project  project stuck at CrashLoopBackOff
-    expr: kube_pod_container_status_waiting_reason{reason=&quot;CrashLoopBackOff&quot;} == 1 
-    for: 2m
-    labels:
-        severity: critical
-    - alert: PodStuckCreateContainerError
-    annotations:
-        description: Pod creation failed with ErrImagePull
-        message: Pod    in project  project stuck at CreateContainerError
-    expr: kube_pod_container_status_waiting_reason{reason=&quot;CreateContainerError&quot;} == 1 
-    for: 2m
-    labels:
-        severity: critical
-</code></pre>
 </li>
 </ul>
 <h3 id="cluster-level">Cluster Level</h3>
 <ul>
-<li><p>Create <em>PrometheusRule</em> in namespace <em>openshift-monitoring</em></p>
+<li><p>Create <em><a href="manifests/pod-stuck-alerts.yaml">PrometheusRule</a></em> in namespace <em>openshift-monitoring</em></p>
 <pre><code class="lang-bash">oc create -f manifests/pod-stuck-alerts.yaml -n openshift-monitoring
 </code></pre>
 </li>
@@ -721,27 +672,29 @@ groups:
 <p><img src="images/monitoring-alert.png" alt=""></p>
 </li>
 </ul>
-<h3 id="user-workload-monitoring">User Workload Monitoring</h3>
-<ul>
-<li><p>If <a href="application-metrics.html">user workload monitoring</a> is enabled. Prometheus Rule can be created at project level.</p>
-<pre><code class="lang-bash">oc create -f manifests/pod-stuck-alerts.yaml -n demo
-</code></pre>
-</li>
-<li><p>Add following label to deploy rules to Thanos Ruler</p>
-<pre><code class="lang-yaml">metadata:
-  name: pod-stuck
-  labels:
-   openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
-</code></pre>
-</li>
-<li><p>Check for alert rules in Developer Console</p>
-<p>  <img src="images/monitoring-alert-user-workload.png" alt=""></p>
-</li>
-</ul>
+<!-- ### User Workload Monitoring
+  - If [user workload monitoring](application-metrics.md) is enabled. Prometheus Rule can be created at project level.
+
+    ```bash
+    oc create -f manifests/pod-stuck-alerts.yaml -n demo
+    ```
+
+  - Add following label to deploy rules to Thanos Ruler
+
+    ```yaml
+    metadata:
+      name: pod-stuck
+      labels:
+       openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+    ```
+
+  - Check for alert rules in Developer Console
+
+      ![](images/monitoring-alert-user-workload.png) -->
 <h2 id="test-alert">Test Alert</h2>
 <ul>
-<li><p>Create following deployments. These deployments intentionally put pods into error state.</p>
-<pre><code class="lang-bash">oc create -f manifests/pod-stuck -n demo
+<li><p>Create following <a href="manifests/pod-stuck.yaml">pod-stuck</a> deployments. These deployments intentionally put pods into error state.</p>
+<pre><code class="lang-bash">oc create -f manifests/pod-stuck.yaml -n demo
 </code></pre>
 </li>
 <li><p>Check for result</p>
@@ -749,10 +702,9 @@ groups:
 </code></pre>
 </li>
 <li><p>Sample result</p>
-<pre><code class="lang-bash">NAME                          READY   STATUS                 RESTARTS   AGE
-backend-v1-759c485867-27ql6   0/1     ContainerCreating      0          2m42s
-backend-v2-5c866fb9bf-2fzj4   0/1     CreateContainerError   0          2m40s
-backend-v3-cbcd9cddb-pjbvl    0/1     ImagePullBackOff       0          2m39s
+<pre><code class="lang-bash">NAME                          READY   STATUS             RESTARTS     AGE
+backend-v5-65569d96b9-ht5zl   0/1     CrashLoopBackOff   1 (8s ago)   13s
+backend-v6-794c9fc748-hgpl2   0/1     ImagePullBackOff   0            13s
 </code></pre>
 </li>
 </ul>
@@ -760,14 +712,93 @@ backend-v3-cbcd9cddb-pjbvl    0/1     ImagePullBackOff       0          2m39s
 <li><p>Check for alerts on Notifications menu</p>
 <p>  <img src="images/alerts-notification.png" alt=""></p>
 </li>
-<li><p>Overview</p>
+<li><p>Administrator -&gt; Overview</p>
 <p>  <img src="images/pod-stuck-alert-overview.png" alt=""></p>
 </li>
-<li><p>For User Workload Monitoring</p>
-<p>  <img src="images/pod-stuck-alert-dev-console.png" alt=""></p>
-</li>
+</ul>
+<!-- - For User Workload Monitoring
+
+    ![](images/pod-stuck-alert-dev-console.png) -->
+<ul>
 <li><p>Check for details of an alert</p>
-<p>  <img src="images/pod-stuck-containercreating.png" alt=""></p>
+<p>  <img src="images/pod-stuck-crashloopbackoff.png" alt=""></p>
+</li>
+</ul>
+<h2 id="alert-with-line">Alert with LINE</h2>
+<ul>
+<li>Login to <a href="https://developers.line.biz/" target="_blank">LINE Developer</a> and create Channel</li>
+<li><p>Deploy LINE BOT app</p>
+<pre><code class="lang-bash">oc new-project line-alert
+oc create -f manifests/line-bot.yaml -n line-alert
+</code></pre>
+<p>Verify deployment</p>
+<p>  <img src="images/line-bot-alert-pod.png" alt=""></p>
+</li>
+<li><p>Update line-bot deployment environment variable <em>API_LINE_TOKEN</em> with your channel access token</p>
+<p>Developer Console</p>
+<p>  <img src="images/line-bot-api-line-token.png" alt=""></p>
+<p>CLI</p>
+<pre><code class="lang-bash">  oc set env -n line-alert deployment/line-bot API_LINE_TOKEN-
+  oc set env -n line-alert deployment/line-bot API_LINE_TOKEN=$API_LINE_TOKEN
+</code></pre>
+</li>
+<li><p>Update your Channel&apos;s Webhook with line-bot route</p>
+<p>Webhook URL </p>
+<pre><code class="lang-bash">LINE_WEBHOOK=https://$(oc get route line-bot -n line-alert -o jsonpath=&apos;{.spec.host}&apos;)/webhook
+echo $LINE_WEBHOOK
+</code></pre>
+<p>Configure Line BOT Webhook to your channel</p>
+<p>  <img src="images/line-developer-webhook.png" alt=""></p>
+</li>
+</ul>
+<p>  Send some message to your LINE BOT and check line-bot pod&apos;s log</p>
+<pre><code>```bash
+2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) Message Type: text
+2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) Message: Hi
+2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) userId: U*************, userType: user
+2022-09-06 06:47:14,767 INFO  [com.vor.LineBotResource] (executor-thread-0) replyToken: 0a5b7*********
+```
+</code></pre><ul>
+<li><p>Register your LINE account to receiving alert by send message <strong>register</strong> to LINE BOT</p>
+<p>  <img src="images/line-bot-register.jpg" alt=""></p>
+<p>  line-bot pod&apos;s log</p>
+<pre><code class="lang-log">  2022-09-06 07:14:04,915 INFO [com.vor.LineBotResource] (executor-thread-0) destination: Uef7db62e42ed955b58d9810f64955806
+  2022-09-06 07:14:04,916 INFO [com.vor.LineBotResource] (executor-thread-0) Message Type: text
+  2022-09-06 07:14:04,916 INFO [com.vor.LineBotResource] (executor-thread-0) Message: Register
+  2022-09-06 07:14:07,142 INFO [com.vor.LineBotResource] (executor-thread-0) Register user: U*************
+  2022-09-06 07:14:07,143 INFO [com.vor.LineBotResource] (executor-thread-0) userId: U*************, userType: user
+  2022-09-06 07:14:07,143 INFO [com.vor.LineBotResource] (executor-thread-0) replyToken: 741b1*********
+</code></pre>
+</li>
+<li><p>Configure Alert Manger Webhook</p>
+<ul>
+<li><p>Administrator Console, Administration-&gt;Cluster Settings-&gt;Configuration and select <em>Alertmanager</em></p>
+<p>  <img src="images/admin-console-config-alertmanager.png" alt=""></p>
+</li>
+<li><p>Create Receiver</p>
+<p>  <img src="images/line-webhook-receiver.png" alt=""></p>
+</li>
+<li><p>Check that PrometheusRule <a href="manifests/pod-stuck-alerts.yaml">pod-stuck</a> contains label receiver with value equals to line for each alert</p>
+<pre><code class="lang-yaml">- alert: PodStuckErrImagePull
+  annotations:
+    message: Pod    in project  project stuck at ErrImagePull
+    description: Pod    in project  project stuck at ErrImagePull
+  expr: kube_pod_container_status_waiting_reason{reason=&quot;ErrImagePull&quot;} == 1 
+  for: 30s
+  labels:
+    severity: critical
+    receiver: &apos;line&apos;
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>Create deployment with CrashLoopBackoff</p>
+<pre><code class="lang-bash">  oc create -f manifests/pod-stuck -n demo
+  watch oc get pods -n demo
+</code></pre>
+</li>
+<li><p>Check LINE message</p>
+<p><img src="images/line-alert-crashloopbackoff.png" alt=""></p>
 </li>
 </ul>
 
@@ -813,7 +844,7 @@ backend-v3-cbcd9cddb-pjbvl    0/1     ImagePullBackOff       0          2m39s
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-09-05T04:56:32.960Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-05T04:57:15.092Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-09-06T13:36:44.771Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-06T13:37:28.988Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
