@@ -39,6 +39,8 @@ spec:
             value: YOUR_TOKEN
           - name: QUARKUS_LOG_CATEGORY__COM_VORAVIZ__LEVEL
             value: INFO
+          - name: APP_ALERT_ANNOTATIONS
+            value: description,summary,message
         ports:
         - containerPort: 8080
         securityContext:
