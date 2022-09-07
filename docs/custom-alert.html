@@ -644,7 +644,10 @@
 </ul>
 </li>
 <li><a href="#test-alert">Test Alert</a></li>
-<li><a href="#alert-with-line">Alert with LINE</a></li>
+<li><a href="#alert-with-line">Alert with LINE</a><ul>
+<li><a href="#line-bot-configuration">LINE BOT Configuration</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -808,6 +811,30 @@ echo $LINE_WEBHOOK
 <p><img src="images/line-alert-crashloopbackoff.png" alt=""></p>
 </li>
 </ul>
+<h3 id="line-bot-configuration">LINE BOT Configuration</h3>
+<p>Use following enviroment variables to configure LINE BOT</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP_LINE_TOKEN</td>
+<td>LINE Channel Token</td>
+</tr>
+<tr>
+<td>QUARKUS_LOG_CATEGORY<strong>COM_VORAVIZ</strong>LEVEL</td>
+<td>Set to DEBUG if you want to log whole JSON message from AlertManager</td>
+</tr>
+<tr>
+<td>APP_ALERT_ANNOTATIONS</td>
+<td>List of attributes from Annotations to including in message</td>
+</tr>
+</tbody>
+</table>
 
                                 
                                 </section>
@@ -851,7 +878,7 @@ echo $LINE_WEBHOOK
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-09-07T04:48:42.882Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-07T04:49:20.996Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-09-07T09:58:53.838Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-07T09:59:33.076Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
