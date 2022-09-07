@@ -102,12 +102,18 @@
     ![](images/line-bot-alert-pod.png)
 
 - Update line-bot deployment environment variable *API_LINE_TOKEN* with your channel access token
+
+  Channel access token
+
+  ![](images/line-channel-access-token.png)
     
-  Developer Console
+  Update Environment variable 
+  
+  - Developer Console
 
     ![](images/line-bot-api-line-token.png)
 
-  CLI
+  - CLI
 
     ```bash
     oc set env -n line-alert deployment/line-bot API_LINE_TOKEN-
