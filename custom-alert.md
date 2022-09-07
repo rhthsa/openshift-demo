@@ -5,6 +5,7 @@
     - [Cluster Level](#cluster-level)
   - [Test Alert](#test-alert)
   - [Alert with LINE](#alert-with-line)
+    - [LINE BOT Configuration](#line-bot-configuration)
 
 ## Monitor for Pod Creation
   - Create custom alerts to monitor for pod creating status with PrometheusRule [pod-stuck-alerts.yaml](manifests/pod-stuck-alerts.yaml)
@@ -192,3 +193,15 @@
 - Check LINE message
   
   ![](images/line-alert-crashloopbackoff.png)
+
+
+### LINE BOT Configuration
+
+Use following enviroment variables to configure LINE BOT
+
+| Variable                                 | Description                                                          |
+|------------------------------------------|----------------------------------------------------------------------|
+| APP_LINE_TOKEN                           | LINE Channel Token                                                   |
+| QUARKUS_LOG_CATEGORY__COM_VORAVIZ__LEVEL | Set to DEBUG if you want to log whole JSON message from AlertManager |
+| APP_ALERT_ANNOTATIONS                    | List of attributes from Annotations to including in message          |
+
