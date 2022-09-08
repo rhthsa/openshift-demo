@@ -199,9 +199,19 @@
 
 Use following enviroment variables to configure LINE BOT
 
-| Variable                                 | Description                                                          |
-|------------------------------------------|----------------------------------------------------------------------|
-| APP_LINE_TOKEN                           | LINE Channel Token                                                   |
-| QUARKUS_LOG_CATEGORY__COM_VORAVIZ__LEVEL | Set to DEBUG if you want to log whole JSON message from AlertManager |
-| APP_ALERT_ANNOTATIONS                    | List of attributes from Annotations to including in message          |
+  | Variable                                 | Description                                                          |
+  |------------------------------------------|----------------------------------------------------------------------|
+  | APP_LINE_TOKEN                           | LINE Channel Token                                                   |
+  | QUARKUS_LOG_CATEGORY__COM_VORAVIZ__LEVEL | Set to DEBUG if you want to log whole JSON message from AlertManager |
+  | APP_ALERT_ANNOTATIONS                    | List of attributes from Annotations to including in message          |
 
+
+Alert Rule annotaions
+
+  ```yaml
+  - alert: PodStuckCrashLoopBackOff
+        annotations:
+          summary: CrashLoopBackOff in project {{ $labels.namespace }}
+          message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+          description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+  ```
