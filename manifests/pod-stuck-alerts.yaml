@@ -1,0 +1,61 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-stuck
+  # If the label is not present, the alerting rule is deployed to Thanos Ruler
+  # labels:
+  #  openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: PodStuck
+    rules:
+    - alert: PodStuckContainerCreating
+      annotations:
+        summary: Pod stuck at ContainerCreating in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
+      expr: kube_pod_container_status_waiting_reason{reason="ContainerCreating"}  == 1
+      for: 3m
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: PodStuckImagePullBackOff
+      annotations:
+        summary: Cannot pull images in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
+      expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} == 1
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
+    # - alert: PodStuckErrImagePull
+    #   annotations:
+    #     summary: Cannot pull images in project {{ $labels.namespace }}
+    #     message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #     description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #   expr: kube_pod_container_status_waiting_reason{reason="ErrImagePull"} == 2
+    #   for: 2m
+    #   labels:
+    #     severity: critical
+    #     receiver: 'line'
+    - alert: PodStuckCrashLoopBackOff
+      annotations:
+        summary: CrashLoopBackOff in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+      expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1 
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: PodStuckCreateContainerError
+      annotations:
+        summary: Pod cannot created in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CreateContainerError
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CreateContainerError
+      expr: kube_pod_container_status_waiting_reason{reason="CreateContainerError"} == 1 
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
