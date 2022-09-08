@@ -15,7 +15,7 @@ spec:
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
         description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
       expr: kube_pod_container_status_waiting_reason{reason="ContainerCreating"}  == 1
-      for: 2m
+      for: 3m
       labels:
         severity: critical
         receiver: 'line'
@@ -24,21 +24,21 @@ spec:
         summary: Cannot pull images in project {{ $labels.namespace }}
         message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
         description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
-      expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} == 1 
+      expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} == 1
       for: 2m
       labels:
         severity: critical
         receiver: 'line'
-    - alert: PodStuckErrImagePull
-      annotations:
-        summary: Cannot pull images in project {{ $labels.namespace }}
-        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
-        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
-      expr: kube_pod_container_status_waiting_reason{reason="ErrImagePull"} == 1 
-      for: 2m
-      labels:
-        severity: critical
-        receiver: 'line'
+    # - alert: PodStuckErrImagePull
+    #   annotations:
+    #     summary: Cannot pull images in project {{ $labels.namespace }}
+    #     message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #     description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #   expr: kube_pod_container_status_waiting_reason{reason="ErrImagePull"} == 2
+    #   for: 2m
+    #   labels:
+    #     severity: critical
+    #     receiver: 'line'
     - alert: PodStuckCrashLoopBackOff
       annotations:
         summary: CrashLoopBackOff in project {{ $labels.namespace }}
