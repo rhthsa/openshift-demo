@@ -10,11 +10,6 @@
   - [Setup](#setup)
     - [Projects](#projects)
     - [Jenkins, SonarQube and Nexus](#jenkins-sonarqube-and-nexus)
-    - [Jenkins Slave](#jenkins-slave)
-    - [Jenkins Pipelines](#jenkins-pipelines)
-    - [Jenkins Remote API](#jenkins-remote-api)
-  - [Checkpoints](#checkpoints)
-  - [Possible improvement](#possible-improvement)
 
 <!-- /TOC -->
 ## Overall Solution
@@ -96,11 +91,13 @@ Remark:
 
 ### Jenkins, SonarQube and Nexus
 - Setup
-  - Run [setup_ci_cd_tools.sh](bin/setup_ci_cd_tools.sh) to setup Jenkins, SonarQube and Nexus
+  - Run *bash scripts* to setup Jenkins, SonarQube and Nexus
   
     ```bash
     cd bin
-    ./setup_ci_cd_tools.sh
+    ./setup_nexus.sh
+    ./setup_jenkins.sh
+    ./setup_sonar.sh
     ```
     Sample output
 
@@ -138,7 +135,7 @@ Remark:
       username:  8 bytes
       ```
 
-### Jenkins Slave
+<!-- ### Jenkins Slave
 - Create custom jenkins slave which contains maven 3.6, skopeo and nexus-cli by run [setup_maven36_slave.sh](bin/setup_maven36_slave.sh)
   
   ```bash
@@ -149,7 +146,7 @@ Remark:
     
   ```bash
   oc get is/maven36-with-tools
-  ```
+  ``` -->
 
 ### Jenkins Pipelines
 - Create pipelines
@@ -261,7 +258,7 @@ curl -X POST -L -v --user $USERID:$TOKEN "$JENKINS_URL/job/ci-cd/job/ci-cd-backe
   
     ![](images/backend-stage-env.png)
 
-## Possible improvement
+<!-- ## Possible improvement
 - Change from deploymentconfig to deployment
 - Change from OpenShift's template to kustomize
-- Validate SonarQube result
+- Validate SonarQube result -->
