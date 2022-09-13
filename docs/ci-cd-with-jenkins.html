@@ -650,13 +650,8 @@
 <li><a href="#setup">Setup</a><ul>
 <li><a href="#projects">Projects</a></li>
 <li><a href="#jenkins-sonarqube-and-nexus">Jenkins, SonarQube and Nexus</a></li>
-<li><a href="#jenkins-slave">Jenkins Slave</a></li>
-<li><a href="#jenkins-pipelines">Jenkins Pipelines</a></li>
-<li><a href="#jenkins-remote-api">Jenkins Remote API</a></li>
 </ul>
 </li>
-<li><a href="#checkpoints">Checkpoints</a></li>
-<li><a href="#possible-improvement">Possible improvement</a></li>
 </ul>
 </li>
 </ul>
@@ -733,9 +728,11 @@ oc policy add-role-to-group system:image-puller system:serviceaccounts:${PROD} -
 <ul>
 <li><p>Setup</p>
 <ul>
-<li><p>Run <a href="bin/setup_ci_cd_tools.sh">setup_ci_cd_tools.sh</a> to setup Jenkins, SonarQube and Nexus</p>
+<li><p>Run <em>bash scripts</em> to setup Jenkins, SonarQube and Nexus</p>
 <pre><code class="lang-bash">cd bin
-./setup_ci_cd_tools.sh
+./setup_nexus.sh
+./setup_jenkins.sh
+./setup_sonar.sh
 </code></pre>
 <p>Sample output</p>
 <p><img src="images/create-nexus.gif" alt=""></p>
@@ -771,18 +768,18 @@ username:  8 bytes
 </ul>
 </li>
 </ul>
-<h3 id="jenkins-slave">Jenkins Slave</h3>
-<ul>
-<li><p>Create custom jenkins slave which contains maven 3.6, skopeo and nexus-cli by run <a href="bin/setup_maven36_slave.sh">setup_maven36_slave.sh</a></p>
-<pre><code class="lang-bash">oc project ci-cd
-./setup_maven36_slave.sh
-</code></pre>
-</li>
-<li><p>Check imagestream in project ci-cd</p>
-<pre><code class="lang-bash">oc get is/maven36-with-tools
-</code></pre>
-</li>
-</ul>
+<!-- ### Jenkins Slave
+- Create custom jenkins slave which contains maven 3.6, skopeo and nexus-cli by run [setup_maven36_slave.sh](bin/setup_maven36_slave.sh)
+
+  ```bash
+  oc project ci-cd
+  ./setup_maven36_slave.sh
+  ```
+- Check imagestream in project ci-cd
+
+  ```bash
+  oc get is/maven36-with-tools
+  ``` -->
 <h3 id="jenkins-pipelines">Jenkins Pipelines</h3>
 <ul>
 <li><p>Create pipelines</p>
@@ -891,12 +888,10 @@ script {
 <p>  <img src="images/backend-stage-env.png" alt=""></p>
 </li>
 </ul>
-<h2 id="possible-improvement">Possible improvement</h2>
-<ul>
-<li>Change from deploymentconfig to deployment</li>
-<li>Change from OpenShift&apos;s template to kustomize</li>
-<li>Validate SonarQube result</li>
-</ul>
+<!-- ## Possible improvement
+- Change from deploymentconfig to deployment
+- Change from OpenShift's template to kustomize
+- Validate SonarQube result -->
 
                                 
                                 </section>
@@ -940,7 +935,7 @@ script {
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd-with-jenkins.md","mtime":"2022-09-08T03:31:48.125Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-08T03:32:36.671Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd-with-jenkins.md","mtime":"2022-09-13T06:16:53.339Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-09-13T06:17:46.845Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
