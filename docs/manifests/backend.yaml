@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '2.7.5.Final'
+    app.openshift.io/runtime-version: '2.12.3.Final'
 spec:
   replicas: 1
   selector:
@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: quay.io/voravitl/backend-native:v1
+        image: quay.io/voravitl/backend:v1
         imagePullPolicy: Always
         resources:
           requests:
@@ -72,7 +72,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    #app.openshift.io/runtime-version: '11'
+    app.openshift.io/runtime-version: '17'
 spec:
   replicas: 1
   selector:
@@ -90,7 +90,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: quay.io/voravitl/backend-native:v1
+        image: quay.io/voravitl/backend:v1
         imagePullPolicy: Always
         resources:
           requests:
