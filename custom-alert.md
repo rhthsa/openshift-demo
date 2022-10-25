@@ -94,8 +94,50 @@
     ![](images/pod-stuck-crashloopbackoff.png)
 
 ### OOMKilled
-WIP
 
+  - Create following [memory-hungry](manifests/memory-hungry.yaml) deployments. These deployments intentionally put pods into error state.
+  
+  ```bash
+  oc create -f manifests/memory-hungry.yaml -n demo
+  ```
+  - Check for result
+  
+    ```bash
+    oc get pods -n demo
+    ```
+
+  - Get route to access memory-hungry app
+    
+    ```bash
+    HUNGER=https://$(oc get route memory-hungry -n demo -o jsonpath='{.spec.host}')
+    ```
+
+  - Run following command
+    
+    ```bash
+    curl -s $HUNGER/eat/6
+    ```
+
+  - Check application log
+    
+    ```bash
+    2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) leak 1.0.0-SNAPSHOT native (powered by Quarkus 2.13.1.Final) started in 0.202s. Listening on: http://0.0.0.0:8080
+    2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Profile prod activated.
+    2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy, smallrye-context-propagation, smallrye-health, smallrye-metrics, smallrye-openapi, vertx]
+    2022-10-25 09:55:54,697 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 1
+    2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+    2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 2
+    2022-10-25 09:55:55,141 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+    2022-10-25 09:55:55,142 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 3
+    2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+    2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 4
+    2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+    2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 5
+    ```
+  - Check for alert in console
+
+    ![](images/OOMKilled-alert.png)
+    
 ## Alert with LINE
 
 - Login to [LINE Developer](https://developers.line.biz/) and create Channel
