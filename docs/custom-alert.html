@@ -734,7 +734,42 @@ backend-v6-794c9fc748-hgpl2   0/1     ImagePullBackOff   0            13s
 </li>
 </ul>
 <h3 id="oomkilled">OOMKilled</h3>
-<p>WIP</p>
+<ul>
+<li><p>Create following <a href="manifests/memory-hungry.yaml">memory-hungry</a> deployments. These deployments intentionally put pods into error state.</p>
+<pre><code class="lang-bash">oc create -f manifests/memory-hungry.yaml -n demo
+</code></pre>
+</li>
+<li><p>Check for result</p>
+<pre><code class="lang-bash">oc get pods -n demo
+</code></pre>
+</li>
+<li><p>Get route to access memory-hungry app</p>
+<pre><code class="lang-bash">HUNGER=https://$(oc get route memory-hungry -n demo -o jsonpath=&apos;{.spec.host}&apos;)
+</code></pre>
+</li>
+<li><p>Run following command</p>
+<pre><code class="lang-bash">curl -s $HUNGER/eat/6
+</code></pre>
+</li>
+<li><p>Check application log</p>
+<pre><code class="lang-bash">2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) leak 1.0.0-SNAPSHOT native (powered by Quarkus 2.13.1.Final) started in 0.202s. Listening on: http://0.0.0.0:8080
+2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Profile prod activated.
+2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy, smallrye-context-propagation, smallrye-health, smallrye-metrics, smallrye-openapi, vertx]
+2022-10-25 09:55:54,697 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 1
+2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 2
+2022-10-25 09:55:55,141 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+2022-10-25 09:55:55,142 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 3
+2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 4
+2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
+2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 5
+</code></pre>
+</li>
+<li><p>Check for alert in console</p>
+<p><img src="images/OOMKilled-alert.png" alt=""></p>
+</li>
+</ul>
 <h2 id="alert-with-line">Alert with LINE</h2>
 <ul>
 <li>Login to <a href="https://developers.line.biz/" target="_blank">LINE Developer</a> and create Channel</li>
@@ -893,7 +928,7 @@ echo $LINE_WEBHOOK
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-10-25T06:15:22.156Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-10-25T06:16:12.052Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-10-25T10:21:34.591Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-10-25T10:22:14.512Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
