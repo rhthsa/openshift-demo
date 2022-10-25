@@ -3,6 +3,7 @@
 
 - [User Workload Metrics](#user-workload-metrics)
   - [Prerequisites](#prerequisites)
+  - [Custom Grafana Dashboard](#custom-grafana-dashboard)
   - [Custom Alert](#custom-alert)
 
 <!-- /TOC -->
@@ -86,8 +87,8 @@
     oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
     ```
     
-    Remark: 
-    If frontend and backend deployment configured with service mesh and mTLS for dataplane is enbled. User workload monitoring will not work properly because prometheus-user-workload doesn't have sidecar and not in the service mesh.
+    <!-- Remark: 
+    If frontend and backend deployment configured with service mesh and mTLS for dataplane is enbled. User workload monitoring will not work properly because prometheus-user-workload doesn't have sidecar and not in the service mesh. -->
 
   - Test backend's  metrics
   

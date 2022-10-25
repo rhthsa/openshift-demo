@@ -4,6 +4,8 @@
   - [Monitor for Pod Creation](#monitor-for-pod-creation)
     - [Cluster Level](#cluster-level)
   - [Test Alert](#test-alert)
+    - [CrashLoopBackOff and ImagePullBackOff](#crashloopbackoff-and-imagepullbackoff)
+    - [OOMKilled](#oomkilled)
   - [Alert with LINE](#alert-with-line)
     - [LINE BOT Configuration](#line-bot-configuration)
 
@@ -16,6 +18,7 @@
     - PodStuckErrImagePull for 2 minuts
     - PodStuckCrashLoopBackOff for 2 minutes
     - PodStuckCreateContainerError for 2 minutes
+    - OOMKilled for 3 minutes
 
     
     
@@ -51,6 +54,9 @@
       ![](images/monitoring-alert-user-workload.png) -->
 
 ## Test Alert
+
+### CrashLoopBackOff and ImagePullBackOff
+
   - Create following [pod-stuck](manifests/pod-stuck.yaml) deployments. These deployments intentionally put pods into error state.
   
   ```bash
@@ -87,6 +93,8 @@
         
     ![](images/pod-stuck-crashloopbackoff.png)
 
+### OOMKilled
+WIP
 
 ## Alert with LINE
 

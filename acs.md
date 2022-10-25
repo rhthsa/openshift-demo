@@ -958,6 +958,10 @@
 
 ## Compliance
 
+Initial compliance scan
+
+![](images/acs-initial-compliance-scan.png)
+
 ### Overall reports
 
 ![](images/acs-compliance-overall.png)
