@@ -83,6 +83,10 @@
     ```bash
     oc apply -f manifests/frontend.yaml -n project1
     oc apply -f manifests/backend.yaml -n project1
+    oc scale deployment frontend-v1 --replicas=3 -n project1
+    oc scale deployment frontend-v2 --replicas=3 -n project1
+    oc scale deployment backend-v1 --replicas=3 -n project1
+    oc scale deployment backend-v2 --replicas=3 -n project1
     oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
     oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
     ```
@@ -93,7 +97,7 @@
   - Test backend's  metrics
   
     ```bash
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
+    oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns='Name:.metadata.name' -n project1 |head -n 1 ) \
     -- curl -s  http://localhost:8080/q/metrics
     ```
     Sample output
@@ -112,8 +116,8 @@
   - Test backend application level's metrics
   
     ```bash
-    oc exec -n project1 $(oc get pods -n project1 | grep backend | head -n 1 | awk '{print $1}') \
-    -- curl -s http://localhost:8080/q/metrics/application
+    oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns='Name:.metadata.name' -n project1 |head -n 1 ) \
+    -- curl -s  http://localhost:8080/q/metrics/application  
     ```
     Sample output
   
