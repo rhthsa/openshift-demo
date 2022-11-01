@@ -26,11 +26,17 @@ spec:
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
+  labels:
+    operators.coreos.com/servicemeshoperator.openshift-operators: ""
   name: servicemeshoperator
   namespace: openshift-operators
 spec:
   channel: stable
-  installPlanApproval: Automatic
+  installPlanApproval: Automatic # Manual,Automatic
+  #startingCSV: servicemeshoperator.v2.1.3
   name: servicemeshoperator
   source: redhat-operators
   sourceNamespace: openshift-marketplace
+
+# oc -n openshift-operators get installplans -l operators.coreos.com/servicemeshoperator.openshift-operators= -oname | \
+#xargs -r -n 1 oc -n openshift-operators patch --type json --patch '[{"op": "replace", "path": "/spec/approved", "value": true }]'
