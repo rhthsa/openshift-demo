@@ -15,3 +15,6 @@ oc get crds -o name | grep '.*\.istio\.io' | xargs -r -n 1 oc delete
 oc get crds -o name | grep '.*\.maistra\.io' | xargs -r -n 1 oc delete
 oc delete secret -n openshift-operators maistra-operator-serving-cert
 oc delete cm -n openshift-operators maistra-operator-cabundl
+oc delete subscription kiali-ossm -n openshift-operators 
+oc delete subscription jaeger-product -n openshift-operators 
+oc delete subscription servicemeshoperator -n openshift-operators 
