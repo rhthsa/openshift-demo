@@ -101,3 +101,34 @@ spec:
     #       enabled: false
     #       minAvailable: 1
 
+#### Annotation for Prometheus - OSSM 2.0
+# prometheus.io/path: /metrics
+# prometheus.io/port: "8080"
+# prometheus.io/scrape: "true"
+# prometheus.istio.io/merge-metrics: "true"
+# sidecar.istio.io/inject: "true"
+# traffic.sidecar.istio.io/excludeInboundPorts: "15020"
+
+#### Annotation for Prometheus - OSSM 2.1
+# prometheus.io/path: /metrics
+# prometheus.io/port: "8080"
+# prometheus.io/scrape: "true"
+# sidecar.istio.io/inject: "true"
+
+#### Update Network Policy 
+# cat << EOF |oc apply -f -
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: user-workload-access
+#   namespace: bookinfo
+# spec:
+#   ingress:
+#   - from:
+#     - namespaceSelector:
+#         matchLabels:
+#           network.openshift.io/policy-group: monitoring
+#   podSelector: {}
+#   policyTypes:
+#   - Ingress
+# EOF
