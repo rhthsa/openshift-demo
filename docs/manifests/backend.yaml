@@ -26,8 +26,12 @@ spec:
         version: v1
       annotations:
         sidecar.istio.io/inject: "true"
-        # traffic.sidecar.istio.io/excludeInboundPorts: 15090,15020,15021
-        # traffic.sidecar.istio.io/includeInboundPorts: '*'
+        # Prometheus with mTLS - need to create network policy to allow from network.openshift.io/policy-group: monitoring
+        #prometheus.io/path: /q/metrics
+        #prometheus.io/port: "8080"
+        #prometheus.io/scrape: "true"
+        #sidecar.istio.io/inject: "true"
+        #Sidecar request/limit
         #sidecar.istio.io/proxyCPU:
         #sidecar.istio.io/proxyMemory:
         #sidecar.istio.io/proxyCPULimit:
