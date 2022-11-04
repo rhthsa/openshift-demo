@@ -26,7 +26,7 @@
   - Create *[PrometheusRule](manifests/pod-stuck-alerts.yaml)* in namespace *openshift-monitoring*
   
   ```bash
-  oc create -f manifests/pod-stuck-alerts.yaml -n openshift-monitoring
+  oc create -f manifests/pod-stuck-alerts.yaml
   ```
 
   - Check alert rules
@@ -138,6 +138,22 @@
 
     ![](images/OOMKilled-alert.png)
     
+  - Check pod with oc *get pod <pod name> -o yaml*
+    
+    ```yaml
+      containerStatuses:
+        - containerID: cri-o://c3cb6a9b2a967f35bda906e5e20b1d22c1c4f8f1dc15d2e797618e1f8438f7fb
+          image: quay.io/voravitl/leak:native
+          imageID: quay.io/voravitl/leak@sha256:f74d7653c2ebf71144f16019143b9849fff3f3491e4ec199fab6db51dab02b8f
+          lastState:
+            terminated:
+              containerID: cri-o://08f70b1f69bc00906edaa17241d300abf2df4b356c13b7dd1896eae5b0bb6760
+              exitCode: 137
+              finishedAt: "2022-11-03T07:03:06Z"
+              reason: OOMKilled
+              startedAt: "2022-11-03T06:56:55Z"
+    ```
+
 ## Alert with LINE
 
 - Login to [LINE Developer](https://developers.line.biz/) and create Channel
