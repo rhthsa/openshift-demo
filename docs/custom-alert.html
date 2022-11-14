@@ -673,7 +673,7 @@
 <h3 id="cluster-level">Cluster Level</h3>
 <ul>
 <li><p>Create <em><a href="manifests/pod-stuck-alerts.yaml">PrometheusRule</a></em> in namespace <em>openshift-monitoring</em></p>
-<pre><code class="lang-bash">oc create -f manifests/pod-stuck-alerts.yaml -n openshift-monitoring
+<pre><code class="lang-bash">oc create -f manifests/pod-stuck-alerts.yaml
 </code></pre>
 </li>
 <li><p>Check alert rules</p>
@@ -768,6 +768,20 @@ backend-v6-794c9fc748-hgpl2   0/1     ImagePullBackOff   0            13s
 </li>
 <li><p>Check for alert in console</p>
 <p><img src="images/OOMKilled-alert.png" alt=""></p>
+</li>
+<li><p>Check pod with oc <em>get pod <pod name=""> -o yaml</pod></em></p>
+<pre><code class="lang-yaml">  containerStatuses:
+    - containerID: cri-o://c3cb6a9b2a967f35bda906e5e20b1d22c1c4f8f1dc15d2e797618e1f8438f7fb
+      image: quay.io/voravitl/leak:native
+      imageID: quay.io/voravitl/leak@sha256:f74d7653c2ebf71144f16019143b9849fff3f3491e4ec199fab6db51dab02b8f
+      lastState:
+        terminated:
+          containerID: cri-o://08f70b1f69bc00906edaa17241d300abf2df4b356c13b7dd1896eae5b0bb6760
+          exitCode: 137
+          finishedAt: &quot;2022-11-03T07:03:06Z&quot;
+          reason: OOMKilled
+          startedAt: &quot;2022-11-03T06:56:55Z&quot;
+</code></pre>
 </li>
 </ul>
 <h2 id="alert-with-line">Alert with LINE</h2>
@@ -928,7 +942,7 @@ echo $LINE_WEBHOOK
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-11-02T13:59:35.026Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-11-02T14:00:16.159Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.10","depth":2,"next":{"title":"Compliance","level":"1.2.11","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.9","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2022-11-14T08:55:33.621Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-11-14T08:56:16.891Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
