@@ -78,59 +78,49 @@
 ## Service Monitoring
 
 - Deploy application with custom metrics
-  - Backend application provides metrics by /q/metrics and /q/metrics/applications
+
+  ```bash
+  oc create -f manifests/frontend-v1-and-backend-v1-JVM.yaml -n project1
+  ```
+    
+  - Check for backend's metrics
   
     ```bash
-    oc apply -f manifests/frontend.yaml -n project1
-    oc apply -f manifests/backend.yaml -n project1
-    oc scale deployment frontend-v1 --replicas=3 -n project1
-    oc scale deployment frontend-v2 --replicas=3 -n project1
-    oc scale deployment backend-v1 --replicas=3 -n project1
-    oc scale deployment backend-v2 --replicas=3 -n project1
-    oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-    oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
+    oc exec -n project1 $(oc get pods -l app=backend \
+    --no-headers  -o custom-columns='Name:.metadata.name' \
+    -n project1 | head -n 1 ) \
+    -- curl -s  http://localhost:8080/q/metrics | grep http_
+    ```
+    Sample output
+  
+    ```bash
+    # TYPE jvm_gc_memory_allocated_bytes_total counter
+    jvm_gc_memory_allocated_bytes_total 1.9580992E7
+    # HELP jvm_gc_overhead_percent An approximation of the percent of CPU time used by GC activities over the last lookback period or since monitoring began, whichever is shorter, in the range [0..1]
+    # TYPE jvm_gc_overhead_percent gauge
+    jvm_gc_overhead_percent 0.003830234812943298
+    ```
+
+  - Check for backend application related metrics
+  
+    ```bash
+    curl https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+    oc exec -n project1 $(oc get pods -l app=backend \
+    --no-headers  -o custom-columns='Name:.metadata.name' \
+    -n project1 | head -n 1 ) \
+    -- curl -s  http://localhost:8080/q/metrics | grep http_server_requests_seconds
     ```
     
-    <!-- Remark: 
-    If frontend and backend deployment configured with service mesh and mTLS for dataplane is enbled. User workload monitoring will not work properly because prometheus-user-workload doesn't have sidecar and not in the service mesh. -->
-
-  - Test backend's  metrics
+    Check that http_server_requests_seconds_count with method GET and root URI value is 1 with return status 200
   
     ```bash
-    oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns='Name:.metadata.name' -n project1 |head -n 1 ) \
-    -- curl -s  http://localhost:8080/q/metrics
-    ```
-    Sample output
-  
-    ```bash
-    # TYPE vendor_memory_committedNonHeap_bytes gauge
-    vendor_memory_committedNonHeap_bytes 3.1780976E7
-    # HELP vendor_memory_maxNonHeap_bytes Displays the maximum amount of used non-heap memory in bytes.
-    # TYPE vendor_memory_maxNonHeap_bytes gauge
-    vendor_memory_maxNonHeap_bytes -1.0
-    # HELP vendor_memory_usedNonHeap_bytes Displays the amount of used non-heap memory in bytes.
-    # TYPE vendor_memory_usedNonHeap_bytes gauge
-    vendor_memory_usedNonHeap_bytes 3.1780976E7
-    ```
-
-  - Test backend application level's metrics
-  
-    ```bash
-    oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns='Name:.metadata.name' -n project1 |head -n 1 ) \
-    -- curl -s  http://localhost:8080/q/metrics/application  
-    ```
-    Sample output
-  
-    ```bash
-    # HELP application_com_example_quarkus_BackendResource_timeBackend_seconds Times how long it takes to invoke the backend method
-    # TYPE application_com_example_quarkus_BackendResource_timeBackend_seconds summary
-    application_com_example_quarkus_BackendResource_timeBackend_seconds_count 889.0
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.5"} 0.213724005
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.75"} 0.213724005
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.95"} 0.213724005
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.98"} 0.213724005
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.99"} 0.213724005
-    application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile="0.999"} 0.213724005
+    # HELP http_server_requests_seconds
+    # TYPE http_server_requests_seconds summary
+    http_server_requests_seconds_count{method="GET",outcome="SUCCESS",status="200",uri="root",} 1.0
+    http_server_requests_seconds_sum{method="GET",outcome="SUCCESS",status="200",uri="root",} 2.64251063
+    # HELP http_server_requests_seconds_max
+    # TYPE http_server_requests_seconds_max gauge
+    http_server_requests_seconds_max{method="GET",outcome="SUCCESS",status="200",uri="root",} 2.64251063
     ```
 
     
@@ -140,28 +130,22 @@
     apiVersion: monitoring.coreos.com/v1
     kind: ServiceMonitor
     metadata:
-      labels:
-        k8s-app: backend-monitor
       name: backend-monitor
     spec:
       endpoints:
-      - interval: 30s  # pull metrics every 30 sec
-        port: http
-        path: /q/metrics  # URI to query metrics 
-        scheme: http
       - interval: 30s
         port: http
-        path: /q/metrics/application # URI to query metrics 
+        path: /q/metrics # Get metrics from URI /q/metrics
         scheme: http
       selector:
         matchLabels:
-          app: backend # pull metrics from services with label app equal to backend
+          app: backend # select only label app = backend
     ```
 
     Create service monitor
 
     ```bash
-    oc apply -f manifests/backend-monitor.yaml -n project1
+    oc apply -f manifests/backend-service-monitor.yaml -n project1
     ```
     
     Remark: Role **monitor-edit** is required for create **ServiceMonitor** and **PodMonitor** resources. Following example is granting role montior-edit to user1 for project1
@@ -176,26 +160,60 @@
     ![](images/dev-console-custom-metrics.png)
 
   - Application metrics 
+  
+    - Scale backend-v1 and frontend-v1 to 5 pod and run load test tool
+
+      ```bash
+      oc scale deployment backend-v1 --replicas=5 -n project1
+      oc scale deployment frontend-v1 --replicas=5 -n project1
+      ```
+
+      - Use K6
+  
+      ```bash
+       oc run load-test-frontend -n project1 \
+      -i --image=loadimpact/k6  \
+      --rm=true --restart=Never --  run -< manifests/load-test-k6.js \
+      -e URL=http://frontend:8080 \
+      -e THREADS=10 \
+      -e RAMPUP=30s \
+      -e DURATION=3m \
+      -e RAMPDOWN=30s \
+      -e K6_NO_CONNECTION_REUSE=true
+      ```
     
-    - PromQL for query qequest rate for last 1 minute
+      - Use Siege 
+
+      ```bash
+      oc create -f manifests/tools.yaml -n project1
+      TOOL=$(oc get po -n project1 -l app=network-tools --no-headers  -o custom-columns='Name:.metadata.name')
+      ```
+
+      Run siege command
+
+      ```bash
+      oc exec -n project1 $TOOL -- siege -c 20 -t 4m http://frontend:8080
+      ```
+    
+    - PromQL for query request/sec for GET method to root URI of backend service
     
       ```
-      rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
+      rate(http_server_requests_seconds_count{method="GET",uri="root"}[1m])
       ```
 
       Sample stacked graph
 
       ![](images/dev-console-app-metrics-01.png)
 
-    - PromQL for query concurrent requests
+    <!-- - PromQL for query concurrent requests
       
       ```
       application_com_example_quarkus_BackendResource_concurrentBackend_current
-      ```
+      ``` -->
       
-      Sample stacked graph
+      <!-- Sample stacked graph
 
-      ![](images/dev-console-app-metrics-02.png)
+      ![](images/dev-console-app-metrics-02.png) -->
 
 ## Custom Grafana Dashboard
 <!-- https://access.redhat.com/solutions/5335491 -->
@@ -206,7 +224,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 - Create project
   
   ```bash
-  oc new-project application-monitor --display-name="Custom Grafana" --description="Custom Grafana"
+  oc new-project application-monitor --display-name="App Dashboard" --description="Grafana Dashboard for Application Monitoring"
   ```
   
 - Install Grafana Operator to project application-monitor
@@ -264,8 +282,6 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   ![](images/custom-grafana-route.png)
 
   Login with user `admin` and password `openshift`
-
-  
   
 - Generate workload
   - bash script to loop request to frontend application.
@@ -283,42 +299,15 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   - k6 load test tool with 10 threads for 5 minutes
 
     ```bash
-    FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk '{print $1}')
-     oc run load-test-frontend -n project1 \
+    oc run load-test-frontend -n project1 \
     -i --image=loadimpact/k6  \
     --rm=true --restart=Never --  run -< manifests/load-test-k6.js \
-    -e URL=http://$FRONTEND_SVC:8080 \
-    -e THREADS=10 \
+    -e URL=http://frontend:8080 \
+    -e THREADS=15 \
     -e RAMPUP=30s \
     -e DURATION=5m \
     -e RAMPDOWN=30s
-    ```
-    
-    Sample output of k6 load test tool
-
-    ```bash
-    data_received..................: 714 kB 2.0 kB/s
-    data_sent......................: 95 kB  264 B/s
-    http_req_blocked...............: avg=17.62µs min=1.74µs   med=2.84µs  max=5.39ms  p(90)=3.85µs  p(95)=4.35µs
-    http_req_connecting............: avg=12.92µs min=0s       med=0s      max=4ms     p(90)=0s      p(95)=0s
-    http_req_duration..............: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-    { expected_response:true }...: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-    http_req_failed................: 0.00%  ✓ 0    ✗ 1163
-    http_req_receiving.............: avg=65.78µs min=36.34µs  med=64.54µs max=402.6µs p(90)=78.39µs p(95)=82.43µshttp_req_tls_handshaking.......: avg=0s      min=0s       med=0s      max=0s      p(90)=0s      p(95)=0s
-    http_req_waiting...............: avg=2.87s   min=215.49ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-    http_reqs......................: 1163   3.222008/s
-    iteration_duration.............: avg=2.87s   min=215.71ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-    iterations.....................: 1163   3.222008/s
-    vus............................: 2      min=1  max=10
-    vus_max........................: 10     min=10 max=10
-    ```
-
-  **Remark**: You need to configure frontend app to connect to backend app
-
-   ```bash
-   oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-   oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-   ```
+    ```    
   
 - Grafana Dashboard
   
@@ -327,41 +316,18 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 ## Custom Alert
 
 - Check `PrometheusRule` [backend-app-alert](manifests/backend-custom-alert.yaml)
- 
-  ```yaml
-  apiVersion: monitoring.coreos.com/v1
-  kind: PrometheusRule
-  metadata:
-    name: backend-app-alert
-    namespace: project1
-    labels:
-      openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
-  spec:
-    groups:
-    - name: backend-app
-      rules:
-      - alert: ConcurrentBackend
-        expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)>15
-        # wait just 1 minute for demo purpose
-        for: 1m
-        labels:
-          severity: 'warning'
-        annotations:
-          message: 'Total concurrent request is {{ $value }} request/sec'
-      - alert: HighLatency
-        expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds>5
-        labels:
-          severity: 'critical'
-        annotations:
-          message: '{{ $labels.instance }} response time is {{ $value }} sec'
-  ```
+
+```yaml
+
+```
 
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
   
   - ConcurrentBackend
-    severity warning when total concurrent reqeusts is greater than 15
+    severity warning when total concurrent reqeusts is greater than 40 requests/sec
+  
   - HighLatency
-    servierity critical when response time is greateer than 5 sec  
+    servierity critical when percentile 90th of response time is greater than 5 sec  
 
 
 - Create [backend-app-alert](manifests/backend-custom-alert.yaml) 
@@ -380,39 +346,32 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 
   ``` 
   
-- For simplified our test, set backend app to 2 pod
+<!-- - For simplified our test, set backend app to 2 pod
   
   ```bash
   oc delete deployment backend-v2 -n project1
   oc scale deployment backend-v1 --replicas=2 -n project1
-  ```
+  ``` -->
   
 - Test `ConcurrentBackend` alert with 25 concurrent requests
 
   ```bash
-  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
-  siege -c 25 $FRONTEND_URL
-  ```
-  If you don't have siege, run k6 as pod on OpenShift
-  - 25 threads
-  - Duration 2 minutes
-  - Ramp up 30 sec
-  - Ramp down 30 sec
-  
-  ```bash
-  FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
-  oc run load-test -n project1 -i \
-  --image=loadimpact/k6 --rm=true --restart=Never \
-  --  run -  < manifests/load-test-k6.js \
-  -e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
+     oc run load-test-frontend -n project1 \
+    -i --image=loadimpact/k6  \
+    --rm=true --restart=Never --  run -< manifests/load-test-k6.js \
+    -e URL=http://frontend:8080 \
+    -e THREADS=15 \
+    -e RAMPUP=30s \
+    -e DURATION=5m \
+    -e RAMPDOWN=30s 
   ```
 
   Check for alert in Developer Console by select Menu `Monitoring` then select `Alerts`
 
   ![](images/alert-concurrent-backend.png)
 
-- Test `HighLatency` alert
-  - Set backend with 6 sec response tim
+<!-- - Test `HighLatency` alert
+  - Set backend with 6 sec response time
     - By CLI
       ```bash
       oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
@@ -424,12 +383,12 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
         
       - Select `Environment` and set APP_BACKEND to https://httpbin.org/delay/6
 
-        ![](images/dev-console-edit-environment.png)
-  - Request to frontend app
+        ![](images/dev-console-edit-environment.png) -->
+  <!-- - Request to frontend app
     
     ```bash
     curl $FRONTEND_URL
-    ```
+    ``` -->
   - Check for alert in Developer Console 
     
     ![](images/alert-high-latency.png)

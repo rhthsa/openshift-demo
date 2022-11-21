@@ -42,7 +42,7 @@ spec:
             memory: 60Mi
           limits:
             cpu: "0.2"
-            memory: 100Mi
+            memory: 300Mi
         ports:
         - containerPort: 8080
       securityContext:
@@ -96,7 +96,7 @@ metadata:
     app.openshift.io/runtime: quarkus
     app.openshift.io/runtime-version: '17'
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -108,19 +108,19 @@ spec:
         app: backend
         version: v1
       annotations:
-        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - name: backend
-        image: quay.io/voravitl/backend-native:v1
+        image: quay.io/voravitl/backend:micrometer
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: "0.05"
-            memory: 40Mi
+            cpu: "0.1"
+            memory: 100Mi
           limits:
-            cpu: "0.2"
-            memory: 120Mi
+            cpu: "0.3"
+            memory: 300Mi
         env:
           - name: APP_BACKEND
             value: https://httpbin.org/status/200
