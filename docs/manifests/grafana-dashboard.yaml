@@ -24,9 +24,69 @@ spec:
       "editable": true,
       "gnetId": null,
       "graphTooltip": 0,
-      "id": 2,
+      "id": 6,
       "links": [],
       "panels": [
+        {
+          "datasource": null,
+          "description": "Current TPS",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 5,
+            "x": 0,
+            "y": 0
+          },
+          "id": 14,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.5.16",
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "sum(rate(http_server_requests_seconds_count{method=\"GET\",uri=\"root\"}[5m]))",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "title": "request/sec",
+          "type": "stat"
+        },
         {
           "aliasColors": {},
           "bars": false,
@@ -34,17 +94,15 @@ spec:
           "dashes": false,
           "datasource": null,
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
-          "fill": 1,
+          "fill": 3,
           "fillGradient": 0,
           "gridPos": {
             "h": 7,
-            "w": 24,
-            "x": 0,
+            "w": 19,
+            "x": 5,
             "y": 0
           },
           "hiddenSeries": false,
@@ -61,8 +119,11 @@ spec:
           "lines": true,
           "linewidth": 1,
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": false
+          },
           "percentage": false,
-          "pluginVersion": "7.1.1",
+          "pluginVersion": "7.5.16",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -72,7 +133,8 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "application_com_example_quarkus_BackendResource_concurrentBackend_current",
+              "exemplar": true,
+              "expr": "rate(http_server_requests_seconds_count{method=\"GET\",uri=\"root\"}[5m])",
               "instant": false,
               "interval": "",
               "legendFormat": "",
@@ -121,29 +183,91 @@ spec:
           }
         },
         {
-          "aliasColors": {},
-          "bars": true,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "Prometheus",
+          "datasource": null,
+          "description": "",
           "fieldConfig": {
             "defaults": {
-              "custom": {}
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
             },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 5,
+            "x": 0,
+            "y": 7
+          },
+          "id": 4,
+          "links": [],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.5.16",
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "avg(quantile_over_time(0.95, com_example_quarkus_BackendResource_timeBackend_seconds_max[5m]))",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": "5m",
+          "timeShift": null,
+          "title": "Max Response Time",
+          "type": "stat"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "Average max response time",
+          "fieldConfig": {
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 8,
-            "w": 24,
-            "x": 0,
+            "h": 7,
+            "w": 19,
+            "x": 5,
             "y": 7
           },
           "hiddenSeries": false,
-          "hideTimeOverride": false,
-          "id": 2,
-          "interval": "",
+          "id": 16,
           "legend": {
             "avg": false,
             "current": false,
@@ -153,12 +277,108 @@ spec:
             "total": false,
             "values": false
           },
-          "lines": false,
+          "lines": true,
           "linewidth": 1,
-          "links": [],
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.1",
+          "pluginVersion": "7.5.16",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": " avg(com_example_quarkus_BackendResource_timeBackend_seconds_max)",
+              "interval": "",
+              "legendFormat": "",
+              "refId": "A"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Average Response Time",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "fieldConfig": {
+            "defaults": {},
+            "overrides": []
+          },
+          "fill": 3,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 0,
+            "y": 14
+          },
+          "hiddenSeries": false,
+          "id": 10,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null as zero",
+          "options": {
+            "alertThreshold": false
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.16",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -168,24 +388,23 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "application_com_example_quarkus_BackendResource_countBackend_total",
-              "format": "time_series",
-              "intervalFactor": 1,
+              "exemplar": true,
+              "expr": "system_cpu_usage",
+              "interval": "",
               "legendFormat": "",
               "refId": "A"
             }
           ],
           "thresholds": [],
-          "timeFrom": "5m",
+          "timeFrom": null,
           "timeRegions": [],
           "timeShift": null,
-          "title": "Total Count",
+          "title": "CPU Utilization",
           "tooltip": {
             "shared": true,
             "sort": 0,
             "value_type": "individual"
           },
-          "transparent": true,
           "type": "graph",
           "xaxis": {
             "buckets": null,
@@ -225,9 +444,7 @@ spec:
           "dashes": false,
           "datasource": null,
           "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
+            "defaults": {},
             "overrides": []
           },
           "fill": 1,
@@ -235,8 +452,8 @@ spec:
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 0,
-            "y": 15
+            "x": 12,
+            "y": 14
           },
           "hiddenSeries": false,
           "id": 6,
@@ -253,8 +470,11 @@ spec:
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
           "percentage": false,
-          "pluginVersion": "7.1.1",
+          "pluginVersion": "7.5.16",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -264,8 +484,10 @@ spec:
           "steppedLine": false,
           "targets": [
             {
-              "expr": "base_memory_usedHeap_bytes",
+              "exemplar": true,
+              "expr": "sum by (pod) (jvm_memory_used_bytes)/1048576",
               "format": "time_series",
+              "interval": "",
               "intervalFactor": 1,
               "legendFormat": "",
               "refId": "A"
@@ -293,100 +515,7 @@ spec:
             {
               "decimals": null,
               "format": "short",
-              "label": "Bytes",
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false,
-            "alignLevel": null
-          }
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {
-              "custom": {}
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 0,
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 15
-          },
-          "hiddenSeries": false,
-          "id": 4,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pluginVersion": "7.1.1",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "application_com_example_quarkus_BackendResource_timeBackend_max_seconds",
-              "format": "time_series",
-              "intervalFactor": 1,
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": "5m",
-          "timeRegions": [],
-          "timeShift": null,
-          "title": "Max Response Time",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": "ms",
+              "label": "MB",
               "logBase": 1,
               "max": null,
               "min": null,
@@ -408,7 +537,7 @@ spec:
         }
       ],
       "refresh": "10s",
-      "schemaVersion": 26,
+      "schemaVersion": 27,
       "style": "dark",
       "tags": [],
       "templating": {
@@ -445,6 +574,6 @@ spec:
       "timezone": "GMT+7",
       "title": "Backend App",
       "uid": "8-N9ccCZz",
-      "version": 2
+      "version": 1
     }
   name: backend-dashboard.json

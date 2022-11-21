@@ -698,49 +698,38 @@ thanos-ruler-user-workload-1           3/3     Running   0          11s
 <h2 id="service-monitoring">Service Monitoring</h2>
 <ul>
 <li><p>Deploy application with custom metrics</p>
+<pre><code class="lang-bash">oc create -f manifests/frontend-v1-and-backend-v1-JVM.yaml -n project1
+</code></pre>
 <ul>
-<li><p>Backend application provides metrics by /q/metrics and /q/metrics/applications</p>
-<pre><code class="lang-bash">oc apply -f manifests/frontend.yaml -n project1
-oc apply -f manifests/backend.yaml -n project1
-oc scale deployment frontend-v1 --replicas=3 -n project1
-oc scale deployment frontend-v2 --replicas=3 -n project1
-oc scale deployment backend-v1 --replicas=3 -n project1
-oc scale deployment backend-v2 --replicas=3 -n project1
-oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
-oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-</code></pre>
-<!-- Remark: 
-If frontend and backend deployment configured with service mesh and mTLS for dataplane is enbled. User workload monitoring will not work properly because prometheus-user-workload doesn't have sidecar and not in the service mesh. -->
-</li>
-<li><p>Test backend&apos;s  metrics</p>
-<pre><code class="lang-bash">oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns=&apos;Name:.metadata.name&apos; -n project1 |head -n 1 ) \
--- curl -s  http://localhost:8080/q/metrics
+<li><p>Check for backend&apos;s metrics</p>
+<pre><code class="lang-bash">oc exec -n project1 $(oc get pods -l app=backend \
+--no-headers  -o custom-columns=&apos;Name:.metadata.name&apos; \
+-n project1 | head -n 1 ) \
+-- curl -s  http://localhost:8080/q/metrics | grep http_
 </code></pre>
 <p>Sample output</p>
-<pre><code class="lang-bash"># TYPE vendor_memory_committedNonHeap_bytes gauge
-vendor_memory_committedNonHeap_bytes 3.1780976E7
-# HELP vendor_memory_maxNonHeap_bytes Displays the maximum amount of used non-heap memory in bytes.
-# TYPE vendor_memory_maxNonHeap_bytes gauge
-vendor_memory_maxNonHeap_bytes -1.0
-# HELP vendor_memory_usedNonHeap_bytes Displays the amount of used non-heap memory in bytes.
-# TYPE vendor_memory_usedNonHeap_bytes gauge
-vendor_memory_usedNonHeap_bytes 3.1780976E7
+<pre><code class="lang-bash"># TYPE jvm_gc_memory_allocated_bytes_total counter
+jvm_gc_memory_allocated_bytes_total 1.9580992E7
+# HELP jvm_gc_overhead_percent An approximation of the percent of CPU time used by GC activities over the last lookback period or since monitoring began, whichever is shorter, in the range [0..1]
+# TYPE jvm_gc_overhead_percent gauge
+jvm_gc_overhead_percent 0.003830234812943298
 </code></pre>
 </li>
-<li><p>Test backend application level&apos;s metrics</p>
-<pre><code class="lang-bash">oc exec -n project1 $(oc get pods -l app=backend --no-headers  -o custom-columns=&apos;Name:.metadata.name&apos; -n project1 |head -n 1 ) \
--- curl -s  http://localhost:8080/q/metrics/application
+<li><p>Check for backend application related metrics</p>
+<pre><code class="lang-bash">curl https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+oc exec -n project1 $(oc get pods -l app=backend \
+--no-headers  -o custom-columns=&apos;Name:.metadata.name&apos; \
+-n project1 | head -n 1 ) \
+-- curl -s  http://localhost:8080/q/metrics | grep http_server_requests_seconds
 </code></pre>
-<p>Sample output</p>
-<pre><code class="lang-bash"># HELP application_com_example_quarkus_BackendResource_timeBackend_seconds Times how long it takes to invoke the backend method
-# TYPE application_com_example_quarkus_BackendResource_timeBackend_seconds summary
-application_com_example_quarkus_BackendResource_timeBackend_seconds_count 889.0
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.5&quot;} 0.213724005
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.75&quot;} 0.213724005
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.95&quot;} 0.213724005
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.98&quot;} 0.213724005
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.99&quot;} 0.213724005
-application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&quot;0.999&quot;} 0.213724005
+<p>Check that http_server_requests_seconds_count with method GET and root URI value is 1 with return status 200</p>
+<pre><code class="lang-bash"># HELP http_server_requests_seconds
+# TYPE http_server_requests_seconds summary
+http_server_requests_seconds_count{method=&quot;GET&quot;,outcome=&quot;SUCCESS&quot;,status=&quot;200&quot;,uri=&quot;root&quot;,} 1.0
+http_server_requests_seconds_sum{method=&quot;GET&quot;,outcome=&quot;SUCCESS&quot;,status=&quot;200&quot;,uri=&quot;root&quot;,} 2.64251063
+# HELP http_server_requests_seconds_max
+# TYPE http_server_requests_seconds_max gauge
+http_server_requests_seconds_max{method=&quot;GET&quot;,outcome=&quot;SUCCESS&quot;,status=&quot;200&quot;,uri=&quot;root&quot;,} 2.64251063
 </code></pre>
 </li>
 </ul>
@@ -751,25 +740,19 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 <pre><code class="lang-yaml">  apiVersion: monitoring.coreos.com/v1
   kind: ServiceMonitor
   metadata:
-    labels:
-      k8s-app: backend-monitor
     name: backend-monitor
   spec:
     endpoints:
-    - interval: 30s  # pull metrics every 30 sec
-      port: http
-      path: /q/metrics  # URI to query metrics 
-      scheme: http
     - interval: 30s
       port: http
-      path: /q/metrics/application # URI to query metrics 
+      path: /q/metrics # Get metrics from URI /q/metrics
       scheme: http
     selector:
       matchLabels:
-        app: backend # pull metrics from services with label app equal to backend
+        app: backend # select only label app = backend
 </code></pre>
 <p>  Create service monitor</p>
-<pre><code class="lang-bash">  oc apply -f manifests/backend-monitor.yaml -n project1
+<pre><code class="lang-bash">  oc apply -f manifests/backend-service-monitor.yaml -n project1
 </code></pre>
 <p>  Remark: Role <strong>monitor-edit</strong> is required for create <strong>ServiceMonitor</strong> and <strong>PodMonitor</strong> resources. Following example is granting role montior-edit to user1 for project1</p>
 <pre><code class="lang-bash">  oc adm policy add-role-to-user  monitoring-edit user1 -n project1
@@ -782,17 +765,47 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 </li>
 <li><p>Application metrics </p>
 <ul>
-<li><p>PromQL for query qequest rate for last 1 minute</p>
-<pre><code>rate(application_com_example_quarkus_BackendResource_countBackend_total[1m])
+<li><p>Scale backend-v1 and frontend-v1 to 5 pod and run load test tool</p>
+<pre><code class="lang-bash">oc scale deployment backend-v1 --replicas=5 -n project1
+oc scale deployment frontend-v1 --replicas=5 -n project1
+</code></pre>
+<ul>
+<li>Use K6</li>
+</ul>
+<pre><code class="lang-bash"> oc run load-test-frontend -n project1 \
+-i --image=loadimpact/k6  \
+--rm=true --restart=Never --  run -&lt; manifests/load-test-k6.js \
+-e URL=http://frontend:8080 \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=3m \
+-e RAMPDOWN=30s \
+-e K6_NO_CONNECTION_REUSE=true
+</code></pre>
+<ul>
+<li>Use Siege </li>
+</ul>
+<pre><code class="lang-bash">oc create -f manifests/tools.yaml -n project1
+TOOL=$(oc get po -n project1 -l app=network-tools --no-headers  -o custom-columns=&apos;Name:.metadata.name&apos;)
+</code></pre>
+<p>Run siege command</p>
+<pre><code class="lang-bash">oc exec -n project1 $TOOL -- siege -c 20 -t 4m http://frontend:8080
+</code></pre>
+</li>
+<li><p>PromQL for query request/sec for GET method to root URI of backend service</p>
+<pre><code>rate(http_server_requests_seconds_count{method=&quot;GET&quot;,uri=&quot;root&quot;}[1m])
 </code></pre><p>Sample stacked graph</p>
 <p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
 </li>
-<li><p>PromQL for query concurrent requests</p>
-<pre><code>application_com_example_quarkus_BackendResource_concurrentBackend_current
-</code></pre><p>Sample stacked graph</p>
-<p><img src="images/dev-console-app-metrics-02.png" alt=""></p>
-</li>
 </ul>
+<!-- - PromQL for query concurrent requests
+
+  ```
+  application_com_example_quarkus_BackendResource_concurrentBackend_current
+  ``` -->
+  <!-- Sample stacked graph
+
+  ![](images/dev-console-app-metrics-02.png) -->
 </li>
 </ul>
 </li>
@@ -803,7 +816,7 @@ application_com_example_quarkus_BackendResource_timeBackend_seconds{quantile=&qu
 <p>Remark: <strong>Grafana Operator is Community Edition - not supported by Red Hat</strong></p>
 <ul>
 <li><p>Create project</p>
-<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;Custom Grafana&quot; --description=&quot;Custom Grafana&quot;
+<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;App Dashboard&quot; --description=&quot;Grafana Dashboard for Application Monitoring&quot;
 </code></pre>
 </li>
 <li><p>Install Grafana Operator to project application-monitor</p>
@@ -847,8 +860,6 @@ cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$
 <p><img src="images/custom-grafana-route.png" alt=""></p>
 <p>Login with user <code>admin</code> and password <code>openshift</code></p>
 </li>
-</ul>
-<ul>
 <li><p>Generate workload</p>
 <ul>
 <li><p>bash script to loop request to frontend application.</p>
@@ -862,38 +873,17 @@ done
 </code></pre>
 </li>
 <li><p>k6 load test tool with 10 threads for 5 minutes</p>
-<pre><code class="lang-bash">FRONTEND_SVC=$(oc get svc -n project1 | grep frontend | head -n 1 | awk &apos;{print $1}&apos;)
- oc run load-test-frontend -n project1 \
+<pre><code class="lang-bash">oc run load-test-frontend -n project1 \
 -i --image=loadimpact/k6  \
 --rm=true --restart=Never --  run -&lt; manifests/load-test-k6.js \
--e URL=http://$FRONTEND_SVC:8080 \
--e THREADS=10 \
+-e URL=http://frontend:8080 \
+-e THREADS=15 \
 -e RAMPUP=30s \
 -e DURATION=5m \
 -e RAMPDOWN=30s
 </code></pre>
-<p>Sample output of k6 load test tool</p>
-<pre><code class="lang-bash">data_received..................: 714 kB 2.0 kB/s
-data_sent......................: 95 kB  264 B/s
-http_req_blocked...............: avg=17.62&#xB5;s min=1.74&#xB5;s   med=2.84&#xB5;s  max=5.39ms  p(90)=3.85&#xB5;s  p(95)=4.35&#xB5;s
-http_req_connecting............: avg=12.92&#xB5;s min=0s       med=0s      max=4ms     p(90)=0s      p(95)=0s
-http_req_duration..............: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-{ expected_response:true }...: avg=2.87s   min=215.57ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-http_req_failed................: 0.00%  &#x2713; 0    &#x2717; 1163
-http_req_receiving.............: avg=65.78&#xB5;s min=36.34&#xB5;s  med=64.54&#xB5;s max=402.6&#xB5;s p(90)=78.39&#xB5;s p(95)=82.43&#xB5;shttp_req_tls_handshaking.......: avg=0s      min=0s       med=0s      max=0s      p(90)=0s      p(95)=0s
-http_req_waiting...............: avg=2.87s   min=215.49ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-http_reqs......................: 1163   3.222008/s
-iteration_duration.............: avg=2.87s   min=215.71ms med=5.21s   max=5.98s   p(90)=5.64s   p(95)=5.64s
-iterations.....................: 1163   3.222008/s
-vus............................: 2      min=1  max=10
-vus_max........................: 10     min=10 max=10
-</code></pre>
 </li>
 </ul>
-<p><strong>Remark</strong>: You need to configure frontend app to connect to backend app</p>
-<pre><code class="lang-bash"> oc set env deployment/frontend-v1 BACKEND_URL=http://backend:8080/ -n project1
- oc set env deployment/frontend-v2 BACKEND_URL=http://backend:8080/ -n project1
-</code></pre>
 </li>
 <li><p>Grafana Dashboard</p>
 <p><img src="images/grafana-dashboard.png" alt=""></p>
@@ -901,40 +891,18 @@ vus_max........................: 10     min=10 max=10
 </ul>
 <h2 id="custom-alert">Custom Alert</h2>
 <ul>
-<li><p>Check <code>PrometheusRule</code> <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a></p>
-<pre><code class="lang-yaml">apiVersion: monitoring.coreos.com/v1
-kind: PrometheusRule
-metadata:
-  name: backend-app-alert
-  namespace: project1
-  labels:
-    openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
-spec:
-  groups:
-  - name: backend-app
-    rules:
-    - alert: ConcurrentBackend
-      expr: sum(application_com_example_quarkus_BackendResource_concurrentBackend_current)&gt;15
-      # wait just 1 minute for demo purpose
-      for: 1m
-      labels:
-        severity: &apos;warning&apos;
-      annotations:
-        message: &apos;Total concurrent request is  request/sec&apos;
-    - alert: HighLatency
-      expr: application_com_example_quarkus_BackendResource_timeBackend_max_seconds&gt;5
-      labels:
-        severity: &apos;critical&apos;
-      annotations:
-        message: &apos; response time is  sec&apos;
-</code></pre>
-<p><a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
-<ul>
-<li>ConcurrentBackend
-severity warning when total concurrent reqeusts is greater than 15</li>
-<li>HighLatency
-servierity critical when response time is greateer than 5 sec  </li>
+<li>Check <code>PrometheusRule</code> <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a></li>
 </ul>
+<pre><code class="lang-yaml">
+
+</code></pre>
+<p>  <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
+<ul>
+<li><p>ConcurrentBackend
+severity warning when total concurrent reqeusts is greater than 40 requests/sec</p>
+</li>
+<li><p>HighLatency
+servierity critical when percentile 90th of response time is greater than 5 sec  </p>
 </li>
 </ul>
 <ul>
@@ -947,61 +915,53 @@ servierity critical when response time is greateer than 5 sec  </li>
 oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
 </code></pre>
 </li>
-<li><p>For simplified our test, set backend app to 2 pod</p>
-<pre><code class="lang-bash">oc delete deployment backend-v2 -n project1
-oc scale deployment backend-v1 --replicas=2 -n project1
-</code></pre>
-</li>
-<li><p>Test <code>ConcurrentBackend</code> alert with 25 concurrent requests</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-siege -c 25 $FRONTEND_URL
-</code></pre>
-<p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
-<ul>
-<li>25 threads</li>
-<li>Duration 2 minutes</li>
-<li>Ramp up 30 sec</li>
-<li>Ramp down 30 sec</li>
 </ul>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-oc run load-test -n project1 -i \
---image=loadimpact/k6 --rm=true --restart=Never \
---  run -  &lt; manifests/load-test-k6.js \
--e URL=$FRONTEND_URL -e THREADS=25 -e DURATION=2m -e RAMPUP=30s -e RAMPDOWN=30s
+<!-- - For simplified our test, set backend app to 2 pod
+
+  ```bash
+  oc delete deployment backend-v2 -n project1
+  oc scale deployment backend-v1 --replicas=2 -n project1
+  ``` -->
+<ul>
+<li><p>Test <code>ConcurrentBackend</code> alert with 25 concurrent requests</p>
+<pre><code class="lang-bash">   oc run load-test-frontend -n project1 \
+  -i --image=loadimpact/k6  \
+  --rm=true --restart=Never --  run -&lt; manifests/load-test-k6.js \
+  -e URL=http://frontend:8080 \
+  -e THREADS=15 \
+  -e RAMPUP=30s \
+  -e DURATION=5m \
+  -e RAMPDOWN=30s
 </code></pre>
 <p>Check for alert in Developer Console by select Menu <code>Monitoring</code> then select <code>Alerts</code></p>
 <p><img src="images/alert-concurrent-backend.png" alt=""></p>
 </li>
-<li><p>Test <code>HighLatency</code> alert</p>
-<ul>
-<li><p>Set backend with 6 sec response tim</p>
-<ul>
-<li>By CLI<pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
-</code></pre>
-</li>
-<li><p>By Developer Console</p>
-<ul>
-<li><p>Select <code>Topology</code> then select backend-v1 and select dropdown menu <code>Edit Deployment</code></p>
-<p><img src="images/dev-console-edit-deployment.png" alt=""></p>
-</li>
-<li><p>Select <code>Environment</code> and set APP_BACKEND to <a href="https://httpbin.org/delay/6" target="_blank">https://httpbin.org/delay/6</a></p>
-<p><img src="images/dev-console-edit-environment.png" alt=""></p>
-</li>
 </ul>
-</li>
-</ul>
-</li>
-<li><p>Request to frontend app</p>
-<pre><code class="lang-bash">curl $FRONTEND_URL
-</code></pre>
-</li>
+<!-- - Test `HighLatency` alert
+  - Set backend with 6 sec response time
+    - By CLI
+      ```bash
+      oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/delay/6 -n project1
+      ```
+    - By Developer Console
+      - Select `Topology` then select backend-v1 and select dropdown menu `Edit Deployment`
+
+        ![](images/dev-console-edit-deployment.png)
+
+      - Select `Environment` and set APP_BACKEND to https://httpbin.org/delay/6
+
+        ![](images/dev-console-edit-environment.png) -->
+  <!-- - Request to frontend app
+
+    ```bash
+    curl $FRONTEND_URL
+    ``` -->
+<ul>
 <li><p>Check for alert in Developer Console </p>
 <p><img src="images/alert-high-latency.png" alt=""></p>
 </li>
 <li><p>Console overview status</p>
 <p><img src="images/console-overview-status.png" alt=""></p>
-</li>
-</ul>
 </li>
 </ul>
 
@@ -1047,7 +1007,7 @@ oc run load-test -n project1 -i \
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2022-11-14T08:55:33.585Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-11-14T08:56:16.891Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2022-11-21T09:00:45.557Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-11-21T09:01:44.601Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
