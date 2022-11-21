@@ -2,6 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: pod-stuck
+  namespace: openshift-monitoring
   # If the label is not present, the alerting rule is deployed to Thanos Ruler
   # labels:
   #  openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
@@ -75,7 +76,7 @@ spec:
         message: Container {{ $labels.container }} of pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
         description: Container {{ $labels.container }} of pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
       expr:  kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}==1   
-      for: 3m 
+      for: 1m 
       labels:
         severity: critical
         receiver: 'line'
