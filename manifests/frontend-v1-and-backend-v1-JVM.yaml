@@ -112,7 +112,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: quay.io/voravitl/backend:micrometer
+        image: quay.io/voravitl/backend:v1
         imagePullPolicy: Always
         resources:
           requests:
