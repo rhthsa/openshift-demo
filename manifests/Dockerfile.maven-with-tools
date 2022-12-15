@@ -1,0 +1,32 @@
+FROM quay.io/openshift/origin-jenkins-agent-maven:4.4 
+USER root
+RUN curl https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo -o /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo && \ 
+curl https://raw.githubusercontent.com/cloudrouter/centos-repo/master/CentOS-Base.repo -o /etc/yum.repos.d/CentOS-Base.repo && \ 
+curl http://mirror.centos.org/centos-7/7/os/x86_64/RPM-GPG-KEY-CentOS-7 -o /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7 && \ 
+curl -L -o /tmp/apache-maven-3.6.3-bin.tar.gz https://www-eu.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz && \ 
+gzip -d /tmp/apache-maven-3.6.3-bin.tar.gz && \ 
+tar -C /opt -xf /tmp/apache-maven-3.6.3-bin.tar && \ 
+rm -f /tmp/apache-maven-3.6.3-bin.tar && \ 
+chmod -R 755 /opt/apache-maven-3.6.3 && \ 
+chown -R 1001:0 /opt/apache-maven-3.6.3 && \ 
+mkdir -p /opt/rox && \ 
+curl -L -o /opt/rox/roxctl https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Linux/roxctl && \ 
+chmod -R 755 /opt/rox/roxctl && \ 
+chown -R 1001:0 /opt/rox/roxctl && \ 
+curl -L -o /tmp/nexus-cli https://s3.eu-west-2.amazonaws.com/nexus-cli/1.0.0-beta/linux/nexus-cli  && \ 
+mkdir -p /opt/nexus-cli && \ 
+mv /tmp/nexus-cli /opt/nexus-cli && \ 
+chmod -R 755 /opt/nexus-cli/nexus-cli && \
+chown -R 1001:0 /opt/nexus-cli && \ 
+#curl -L -o /tmp/jmeter.tgz https://downloads.apache.org//jmeter/binaries/apache-jmeter-5.4.1.tgz && \ 
+#tar -C /opt -xf /tmp/jmeter.tgz && \ 
+#rm -f /tmp/jmeter.tgz && \ 
+#chmod -R 755 /opt/apache-jmeter-5.4.1 && \ 
+#chown -R 1001:0 /opt/apache-jmeter-5.4.1 && \ 
+DISABLES="--disablerepo=rhel-server-extras --disablerepo=rhel-server --disablerepo=rhel-fast-datapath --disablerepo=rhel-server-optional --disablerepo=rhel-server-ose --disablerepo=rhel-server-rhscl" && \ 
+yum $DISABLES -y --setopt=tsflags=nodocs install skopeo podman buildah && \
+yum clean all
+# alternatives --set java 
+#  java-11-openjdk 
+ENV PATH=/opt/apache-maven-3.6.3/bin:/opt/nexus-cli:/opt/apache-jmeter-5.4.1/bin:/opt/rox:$PATH
+USER 1001
