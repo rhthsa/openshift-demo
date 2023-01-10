@@ -25,10 +25,9 @@
   - Create custom alerts to monitor for project quotas  with PrometheusRule [quota-alert.yaml](manifests/quota-alert.yaml)
    
   - This *PrometheusRule* will sending alerts if
-    - Project used memory request more than 90% will alert with critical severity
-    - Project used memory request more than 80% and less than 90% with warning severity
-    - Project used memory request more than 90% with critical severity
-    - Project used CPU request more than 80% and less than 90% with warning severity
+    - Project used CPU/memory request/limits more than 90% will alert with critical severity
+    - Project used CPU/memory request/limits more than 80% and less than 90% with warning severity
+
     
 ### Cluster Level
   - Create *[PrometheusRule](manifests/pod-stuck-alerts.yaml)* in namespace *openshift-monitoring*
