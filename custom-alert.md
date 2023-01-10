@@ -1,7 +1,8 @@
 # Custom Monitoring
 
 - [Custom Monitoring](#custom-monitoring)
-  - [Monitor for Pod Creation](#monitor-for-pod-creation)
+  - [Monitor Pod Creation](#monitor-pod-creation)
+  - [Monitor Project Quotas](#monitor-project-quotas)
     - [Cluster Level](#cluster-level)
   - [Test Alert](#test-alert)
     - [CrashLoopBackOff and ImagePullBackOff](#crashloopbackoff-and-imagepullbackoff)
@@ -9,7 +10,7 @@
   - [Alert with LINE](#alert-with-line)
     - [LINE BOT Configuration](#line-bot-configuration)
 
-## Monitor for Pod Creation
+## Monitor Pod Creation
   - Create custom alerts to monitor for pod creating status with PrometheusRule [pod-stuck-alerts.yaml](manifests/pod-stuck-alerts.yaml)
    
   - This *PrometheusRule* will sending alerts if pod status 
@@ -20,18 +21,30 @@
     - PodStuckCreateContainerError for 2 minutes
     - OOMKilled for 3 minutes
 
-    
+## Monitor Project Quotas
+  - Create custom alerts to monitor for project quotas  with PrometheusRule [quota-alert.yaml](manifests/quota-alert.yaml)
+   
+  - This *PrometheusRule* will sending alerts if
+    - Project used memory request more than 90% will alert with critical severity
+    - Project used memory request more than 80% and less than 90% with warning severity
+    - Project used memory request more than 90% with critical severity
+    - Project used CPU request more than 80% and less than 90% with warning severity
     
 ### Cluster Level
   - Create *[PrometheusRule](manifests/pod-stuck-alerts.yaml)* in namespace *openshift-monitoring*
   
   ```bash
   oc create -f manifests/pod-stuck-alerts.yaml
+  oc create -f manifests/quota-alert.yaml
   ```
 
-  - Check alert rules
+  - Check alerting rules
 
     ![](images/monitoring-alert.png)
+  
+  - View alerting rules *cpuRequestQuotaCritical*
+
+    ![](images/cpuRequestQuotaCriticalAlert.png)
 
 <!-- ### User Workload Monitoring
   - If [user workload monitoring](application-metrics.md) is enabled. Prometheus Rule can be created at project level.
