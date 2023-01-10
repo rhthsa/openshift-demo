@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-v1
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/backend_quarkus'
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '2.13.3.Final'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      version: v1
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: backend
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+        # Prometheus with mTLS - need to create network policy to allow from network.openshift.io/policy-group: monitoring
+        #prometheus.io/path: /q/metrics
+        #prometheus.io/port: "8080"
+        #prometheus.io/scrape: "true"
+        #Sidecar request/limit
+        #sidecar.istio.io/proxyCPU:
+        #sidecar.istio.io/proxyMemory:
+        #sidecar.istio.io/proxyCPULimit:
+        #sidecar.istio.io/proxyMemoryLimit:
+    spec:
+      containers:
+      - name: backend
+        image: quay.io/voravitl/backend:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.05"
+            memory: 100Mi
+          limits:
+            cpu: "0.2"
+            memory: 350Mi
+        env:
+          - name: APP_BACKEND
+            value: https://httpbin.org/status/200
+          - name: APP_VERSION
+            value: v1
+          - name: quarkus.log.console.color
+            value: 'false'
+        ports:
+        - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: false
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60  
+      terminationGracePeriodSeconds: 10   
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-v2
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/backend_quarkus'
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '2.13.3.Final'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+      version: v2
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: backend
+        version: v2
+      annotations:
+        sidecar.istio.io/inject: "true"
+        # Prometheus with mTLS - need to create network policy to allow from network.openshift.io/policy-group: monitoring
+        # prometheus.io/path: /q/metrics
+        # prometheus.io/port: "8080"
+        # prometheus.io/scrape: "true"
+        #Sidecar request/limit
+        #sidecar.istio.io/proxyCPU:
+        #sidecar.istio.io/proxyMemory:
+        #sidecar.istio.io/proxyCPULimit:
+        #sidecar.istio.io/proxyMemoryLimit:
+    spec:
+      containers:
+      - name: backend
+        image: quay.io/voravitl/backend:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.05"
+            memory: 100Mi
+          limits:
+            cpu: "0.2"
+            memory: 350Mi
+        env:
+          - name: APP_BACKEND
+            value: https://httpbin.org/delay/5
+          - name: APP_VERSION
+            value: v2
+          - name: quarkus.log.console.color
+            value: 'false'
+        ports:
+        - containerPort: 8080
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          drop: ALL
+          readOnlyRootFilesystem: false
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  ports:
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: backend
+---
+
