@@ -1,0 +1,128 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: basic
+spec:
+  version: v2.3
+  security:
+    dataPlane:
+      mtls: true
+      automtls: true
+    controlPlane:
+      mtls: true
+      automtls: true
+  gateways:
+    openshiftRoute:
+      enabled: true
+    ingress:
+        enabled: true
+        ingress: false
+        runtime:
+          container:
+            resources:
+              requests:
+                cpu: 100m  # Adjust request/limit with your load test result
+                memory: 128Mi
+              limits:
+                cpu: 2000m
+                memory: 2048Mi
+                deployment:
+          podDisruption:
+            enabled: true
+            minAvailable: 2
+          deployment:
+            autoScaling:
+              maxReplicas: 4
+              minReplicas: 2
+              targetCPUUtilizationPercentage: 80
+              enabled: true
+            pod:
+              tolerations:
+              - key: node.kubernetes.io/unreachable
+                operator: Exists
+                effect: NoExecute
+                tolerationSeconds: 60
+        service:
+          type: ClusterIP
+    egress:
+        enabled: false
+  general:
+    logging:
+      componentLevels:
+        default: info
+      logAsJSON: false
+  policy:
+    type: Istiod # or Mixer or Remote, Mixer is default for pre v2.0
+  addons:
+    grafana:
+      enabled: true
+    jaeger:
+      install:
+        storage:
+          type: Memory
+    kiali:
+      enabled: true
+    prometheus:
+      enabled: true
+  runtime:
+    defaults:
+      container:
+        imagePullPolicy: Always
+      deployment:
+        # replicas: 2
+        podDisruption:
+          enabled: true
+          # minAvailable: 1
+    components:
+      pilot:
+        deployment:
+          replicas: 2
+        podDisruption:
+          enabled: true
+          # minAvailable: 1
+        pod:
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                operator: In
+                topologyKey: kubernetes.io/hostname
+                values:
+                - istiod
+      prometheus:                   
+        deployment:
+          replicas: 2
+        podDisruption:
+          enabled: true
+          # minAvailable: 1
+        pod:
+          tolerations:
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+            effect: NoExecute
+            tolerationSeconds: 60
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                topologyKey: kubernetes.io/hostname
+                operator: In
+                values:
+                - prometheus
+                # namespaces: istio-system    
+  telemetry:
+    type: Istiod
+  proxy:
+   networking:
+    trafficControl:
+      outbound:
+        policy: ALLOW_ANY # Change to REGISTRY_ONLY to block by default
+    accessLogging:
+      #envoyService:
+      #  enabled: false
+      file:
+        encoding: TEXT
+        name: /dev/stdout 
+tracing:
+  sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
+  type: Jaeger
