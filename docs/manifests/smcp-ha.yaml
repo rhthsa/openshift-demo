@@ -3,7 +3,7 @@ kind: ServiceMeshControlPlane
 metadata:
   name: basic
 spec:
-  version: v2.2
+  version: v2.3
   security:
     dataPlane:
       mtls: true
@@ -21,19 +21,21 @@ spec:
           container:
             resources:
               requests:
-                cpu: 10m
+                cpu: 100m  # Adjust request/limit with your load test result
                 memory: 128Mi
               limits:
                 cpu: 2000m
                 memory: 2048Mi
+                deployment:
+          podDisruption:
+            enabled: true
+            minAvailable: 2
           deployment:
             autoScaling:
               maxReplicas: 4
               minReplicas: 2
-              targetCPUUtilizationPercentage: 85
+              targetCPUUtilizationPercentage: 80
               enabled: true
-            podDisruption:
-              enabled: false
             pod:
               tolerations:
               - key: node.kubernetes.io/unreachable
@@ -66,12 +68,33 @@ spec:
     defaults:
       container:
         imagePullPolicy: Always
+      deployment:
+        # replicas: 2
+        podDisruption:
+          enabled: true
+          # minAvailable: 1
     components:
+      pilot:
+        deployment:
+          replicas: 2
+        podDisruption:
+          enabled: true
+          # minAvailable: 1
+        pod:
+          affinity:
+            podAntiAffinity:
+              requiredDuringScheduling:
+              - key: app
+                operator: In
+                topologyKey: kubernetes.io/hostname
+                values:
+                - istiod
       prometheus:                   
         deployment:
           replicas: 2
         podDisruption:
-          enabled: false
+          enabled: true
+          # minAvailable: 1
         pod:
           tolerations:
           - key: node.kubernetes.io/unreachable
@@ -86,13 +109,7 @@ spec:
                 operator: In
                 values:
                 - prometheus
-                namespaces: istio-system               
-    # defaults:
-    #   deployment:
-    #     podDisruption:
-    #       enabled: false
-    #       minAvailable: 1
-    # Pod Disruption still not official supported for control
+                # namespaces: istio-system    
   telemetry:
     type: Istiod
   proxy:
