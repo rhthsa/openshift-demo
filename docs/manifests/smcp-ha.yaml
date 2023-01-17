@@ -29,7 +29,6 @@ spec:
                 deployment:
           podDisruption:
             enabled: true
-            minAvailable: 2
           deployment:
             autoScaling:
               maxReplicas: 4
