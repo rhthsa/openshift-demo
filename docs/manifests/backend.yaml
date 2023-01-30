@@ -30,6 +30,7 @@ spec:
         #prometheus.io/path: /q/metrics
         #prometheus.io/port: "8080"
         #prometheus.io/scrape: "true"
+        #traffic.sidecar.istio.io/excludeInboundPorts: "15020"
         #Sidecar request/limit
         #sidecar.istio.io/proxyCPU:
         #sidecar.istio.io/proxyMemory:
@@ -59,7 +60,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          # drop: ALL
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
@@ -129,7 +130,7 @@ spec:
         securityContext:
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          # drop: ALL
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
