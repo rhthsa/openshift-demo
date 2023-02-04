@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '11'
+    app.openshift.io/runtime-version: '2.16.1.Final'
 spec:
   replicas: 1
   selector:
@@ -20,7 +20,6 @@ spec:
       version: v1
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: backend
         version: v1
@@ -40,17 +39,22 @@ spec:
             memory: 120Mi
         env:
           - name: APP_BACKEND
-            value: https://httpbin.org/delay/5
+            value: https://httpbin.org/status/200
           - name: APP_VERSION
             value: v1
           - name: quarkus.log.console.color
             value: 'false'
+          - name: quarkus.rest-client.read-timeout
+            value: "30000"
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute

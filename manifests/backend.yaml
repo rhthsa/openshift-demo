@@ -58,9 +58,12 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          # drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
@@ -120,7 +123,7 @@ spec:
             memory: 350Mi
         env:
           - name: APP_BACKEND
-            value: https://httpbin.org/delay/5
+            value: https://httpbin.org/delay/4
           - name: APP_VERSION
             value: v2
           - name: quarkus.log.console.color
@@ -128,9 +131,12 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          # drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute

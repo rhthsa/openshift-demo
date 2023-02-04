@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/name: nodejs
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: nodejs
-    app.openshift.io/runtime-version: '14'
+    app.openshift.io/runtime-version: '18'
 spec:
   replicas: 1
   selector:
@@ -46,9 +46,12 @@ spec:
             cpu: "0.2"
             memory: 100Mi
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: true
         ports:
         - containerPort: 8080
