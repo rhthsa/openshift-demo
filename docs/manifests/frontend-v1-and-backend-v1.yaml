@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/name: nodejs
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: nodejs
-    app.openshift.io/runtime-version: '14'
+    app.openshift.io/runtime-version: '18'
 spec:
   replicas: 1
   selector:
@@ -45,11 +45,14 @@ spec:
             memory: 100Mi
         ports:
         - containerPort: 8080
-      securityContext:
-        allowPrivilegeEscalation: false
-        runAsNonRoot: true
-        drop: ALL
-        readOnlyRootFilesystem: true
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
       terminationGracePeriodSeconds: 10
 ---
 apiVersion: v1
@@ -94,7 +97,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '17'
+    app.openshift.io/runtime-version: '2.16.1.Final'
 spec:
   replicas: 3
   selector:
@@ -130,16 +133,19 @@ spec:
             value: 'false'
         ports:
         - containerPort: 8080
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
         operator: Exists
         tolerationSeconds: 60  
-      securityContext:
-        allowPrivilegeEscalation: false
-        runAsNonRoot: true
-        drop: ALL
-        readOnlyRootFilesystem: false
       terminationGracePeriodSeconds: 10   
 ---
 apiVersion: v1
