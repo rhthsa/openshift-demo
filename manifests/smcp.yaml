@@ -37,17 +37,17 @@ spec:
     openshiftRoute:
       enabled: true
     ingress:
-        enabled: true
-        # ingress: true
-        runtime:
-          container:
-            resources:
-              requests:
-                cpu: 10m
-                memory: 128Mi
-              limits:
-                cpu: 500m
-                memory: 512Mi
+      routeConfig: # specifies whether to create an OpenShift Route for istio-ingressgateway
+        enabled: true        
+      # runtime:
+      #     container:
+      #       resources:
+      #         requests:
+      #           cpu: 10m
+      #           memory: 128Mi
+      #         limits:
+      #           cpu: 500m
+      #           memory: 512Mi
           # deployment:
           #   autoScaling:
           #     maxReplicas: 4
@@ -91,9 +91,6 @@ spec:
       prometheus:                   
         deployment:
           replicas: 2
-        # podDisruption:
-        #   enabled: false
-        #   minAvailable: 1
         pod:
           tolerations:
           - key: node.kubernetes.io/unreachable
