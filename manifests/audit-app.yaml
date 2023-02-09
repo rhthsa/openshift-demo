@@ -20,7 +20,6 @@ spec:
       version: v1
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: audit
         version: v1
@@ -46,9 +45,12 @@ spec:
           - name: quarkus.log.console.color
             value: 'false'
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
         ports:
         - containerPort: 8080
