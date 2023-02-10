@@ -4,25 +4,17 @@ metadata:
   name: frontend
 spec:
   hosts:
-  - frontend.apps.DOMAIN
+    - frontend.apps.DOMAIN
   gateways:
-  - project1/frontend-gateway
-  trafficPolicy:
-    loadBalancer:
-      simple: ROUND_ROBIN
-    tls:
-      mode: DISABLE #ISTIO_MUTUAL
+    - project1/frontend-gateway
+    - mesh
   http:
-  - route:
-    - destination:
-        port:
-          number: 8080
-        host: frontend.project1.svc.cluster.local
-        subset: v1
-      weight: 100
-    - destination:
-        port:
-          number: 8080
-        host: frontend.project1.svc.cluster.local
-        subset: v2
-      weight: 0
+    - route:
+        - destination:
+            host: frontend.project1.svc.cluster.local
+            subset: v1
+          weight: 50
+        - destination:
+            host: frontend.project1.svc.cluster.local
+            subset: v2
+          weight: 50
