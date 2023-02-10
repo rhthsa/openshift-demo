@@ -1,0 +1,15 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: insights-alert-critical
+  namespace: openshift-insights
+spec:
+  groups:
+  - name: health_statuses_insights
+    rules:
+    - alert: CriticalInsightsAlert
+      expr: health_statuses_insights{metric="critical"} > 0
+    labels:
+      severity: critical
+    annotations:
+      summary: Critical Insights alert found 
