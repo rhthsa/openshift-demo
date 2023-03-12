@@ -166,14 +166,14 @@ Order of operation sync by ArgoCD can be managed by Phase and Wave
 
 | Phase | Sync-Wave | Object
 | --- | --- |--- | 
-| PreSync | -1 | Secret
-| PreSync | 1 | pvc for todo-db
-| PreSync | 1 | todo-db deployment
-| Pre-ync | 2 | todo-db service
-|Sync | 1 | todo deployment
-|Sync | 2 | todo service
-|Sync | 3 | todo route
-|PostSync | 1 | todo service monitor
+| PreSync | -100 | Secret
+| PreSync | 100 | pvc for todo-db
+| PreSync | 100 | todo-db deployment
+| PreSync | 200 | todo-db service
+|Sync | 100 | todo deployment
+|Sync | 200 | todo service
+|Sync | 300 | todo route
+|PostSync | 100 | todo service monitor
 
 todo-dev-cluster is ordered by todo-db, todo app and service montioring.
 
