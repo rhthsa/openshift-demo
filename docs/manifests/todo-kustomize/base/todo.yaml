@@ -6,7 +6,7 @@ metadata:
     app.openshift.io/vcs-ref: "master"
     app.openshift.io/vcs-uri: https://github.com/voraviz/quarkus-todo-app
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "100"
   labels:
     app: todo
     app.kubernetes.io/component: todo
@@ -101,7 +101,7 @@ metadata:
     app: todo
   annotations:
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "200"
 spec:
   ports:
   - name: http
@@ -124,7 +124,7 @@ metadata:
     app: todo
   annotations:
     argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "300"
 spec:
   port:
     targetPort: http
