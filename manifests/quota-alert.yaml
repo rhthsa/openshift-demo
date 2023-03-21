@@ -1,0 +1,105 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: quota-alert
+  namespace: openshift-monitoring
+spec:
+  groups:
+  - name: cpuQuota
+    rules:
+    - alert: cpuRequestQuotaCritical
+      expr: >
+        (sum(kube_resourcequota{resource="requests.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.cpu",type="hard"}) by (namespace)*100) > 90
+      for: 1m
+      labels:
+        severity: 'critical'
+        receiver: 'line'
+      annotations:
+        description: 'Total CPU request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total CPU request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: cpuRequestQuotaWarning
+      expr: >
+        ((sum(kube_resourcequota{resource="requests.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.cpu",type="hard"}) by (namespace)*100) > 80 ) and 
+        ((sum(kube_resourcequota{resource="requests.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.cpu",type="hard"}) by (namespace)*100) < 90 )
+      for: 1m
+      labels:
+        severity: 'warning'
+        receiver: 'line'
+      annotations:
+        description: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: cpuLimitsQuotaCritical
+      expr: >
+        (sum(kube_resourcequota{resource="limits.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.cpu",type="hard"}) by (namespace)*100) > 90
+      for: 1m
+      labels:
+        severity: 'critical'
+        receiver: 'line'
+      annotations:
+        description: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: cpuLimitsQuotaWarning
+      expr: >
+        ((sum(kube_resourcequota{resource="limits.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.cpu",type="hard"}) by (namespace)*100) > 80 ) and 
+        ((sum(kube_resourcequota{resource="limits.cpu",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.cpu",type="hard"}) by (namespace)*100) < 90 )
+      for: 1m
+      labels:
+        severity: 'warning'
+        receiver: 'line'
+      annotations:
+        description: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total CPU limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+  - name: memoryQuota
+    rules:
+    - alert: memoryRequestQuotaCritical
+      expr: >
+        (sum(kube_resourcequota{resource="requests.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.memory",type="hard"}) by (namespace) * 100 ) > 90
+      for: 1m
+      labels:
+        severity: 'critical'
+        receiver: 'line'
+      annotations:
+        description: 'Total memory request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total memory request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: memoryRequestQuotaWarning
+      expr: >
+        ((sum(kube_resourcequota{resource="requests.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.memory",type="hard"}) by (namespace)*100) > 80 ) and 
+        ((sum(kube_resourcequota{resource="requests.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="requests.memory",type="hard"}) by (namespace)*100) < 90 )
+      labels:
+        severity: 'warning'
+        receiver: 'line'
+      annotations:
+        description: 'Total memory request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total memory request of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: memoryLimitsQuotaCritical
+      expr: >
+        (sum(kube_resourcequota{resource="limits.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.memory",type="hard"}) by (namespace) * 100 ) > 90
+      for: 1m
+      labels:
+        severity: 'critical'
+        receiver: 'line'
+      annotations:
+        description: 'Total memory limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total memory limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+    - alert: memoryLimitsQuotaWarning
+      expr: >
+        ((sum(kube_resourcequota{resource="limits.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.memory",type="hard"}) by (namespace)*100) > 80 ) and 
+        ((sum(kube_resourcequota{resource="limits.memory",type="used"}) by (namespace) /
+        sum(kube_resourcequota{resource="limits.memory",type="hard"}) by (namespace)*100) < 90 )
+      labels:
+        severity: 'warning'
+        receiver: 'line'
+      annotations:
+        description: 'Total memory limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
+        summary: 'Total memory limits of project {{ $labels.namespace }} is {{ $value }} % of assigned Quota'
