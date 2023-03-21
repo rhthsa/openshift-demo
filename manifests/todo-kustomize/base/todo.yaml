@@ -14,12 +14,12 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: todo-app
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: 2.7.5.Final
+    app.openshift.io/runtime-version: 2.16.0.Final
   name: todo
   namespace: todo
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  #replicas: 1
   revisionHistoryLimit: 5
   selector:
     matchLabels:
