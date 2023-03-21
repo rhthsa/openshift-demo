@@ -1,0 +1,9 @@
+#namePrefix: prod-
+commonLabels:
+  environment: prod
+commonAnnotations:
+  description: This is Production environment
+bases:
+- ../../base
+patchesStrategicMerge:
+- todo.yaml
