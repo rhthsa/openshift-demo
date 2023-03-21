@@ -4,4 +4,4 @@ metadata:
   name: todo
   namespace: todo
 spec:
-  replicas: 3
+  replicas: 1

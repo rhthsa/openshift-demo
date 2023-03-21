@@ -5,5 +5,7 @@ commonAnnotations:
   description: This is Production environment
 bases:
 - ../../base
+resources:
+- todo-hpa.yaml
 patchesStrategicMerge:
 - todo.yaml
