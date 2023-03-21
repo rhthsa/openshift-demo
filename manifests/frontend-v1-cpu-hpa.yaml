@@ -1,4 +1,4 @@
-apiVersion: autoscaling/v2beta2
+apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: frontend-v1-cpu
@@ -10,17 +10,4 @@ spec:
     name: frontend-v1
   minReplicas: 1
   maxReplicas: 3
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          averageUtilization: 80
-          type: Utilization
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
+  targetCPUUtilizationPercentage: 80
