@@ -3,6 +3,7 @@
 
 - [User Workload Metrics](#user-workload-metrics)
   - [Prerequisites](#prerequisites)
+  - [Service Monitoring](#service-monitoring)
   - [Custom Grafana Dashboard](#custom-grafana-dashboard)
   - [Custom Alert](#custom-alert)
 
@@ -82,34 +83,54 @@
   ```bash
   oc create -f manifests/frontend-v1-and-backend-v1-JVM.yaml -n project1
   ```
-    
-  - Check for backend's metrics
-  
-    ```bash
-    oc exec -n project1 $(oc get pods -l app=backend \
-    --no-headers  -o custom-columns='Name:.metadata.name' \
-    -n project1 | head -n 1 ) \
-    -- curl -s  http://localhost:8080/q/metrics | grep http_
-    ```
-    Sample output
-  
-    ```bash
-    # TYPE jvm_gc_memory_allocated_bytes_total counter
-    jvm_gc_memory_allocated_bytes_total 1.9580992E7
-    # HELP jvm_gc_overhead_percent An approximation of the percent of CPU time used by GC activities over the last lookback period or since monitoring began, whichever is shorter, in the range [0..1]
-    # TYPE jvm_gc_overhead_percent gauge
-    jvm_gc_overhead_percent 0.003830234812943298
-    ```
 
-  - Check for backend application related metrics
+  ![](images/frontend-v1-and-backend-v1-topology.png)
   
+  - Call frontend app with curl
+
     ```bash
-    curl https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
-    oc exec -n project1 $(oc get pods -l app=backend \
-    --no-headers  -o custom-columns='Name:.metadata.name' \
-    -n project1 | head -n 1 ) \
-    -- curl -s  http://localhost:8080/q/metrics | grep http_server_requests_seconds
-    ```
+    curl https://$(oc get route frontend -o jsonpath='{.spec.host}' -n project1)
+    ``` 
+
+    Output
+
+    ```bash
+    Frontend version: v1 => [Backend: http://backend:8080, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-5587465b8d-9kvsc, Status:200, Message: Hello, World]
+    ``` 
+  - Check for backend's metrics
+    
+    - Check JVM heap size
+
+      ```bash
+      oc exec -n project1 $(oc get pods -l app=backend \
+      --no-headers  -o custom-columns='Name:.metadata.name' \
+      -n project1 | head -n 1 ) \
+      -- curl -s  http://localhost:8080/q/metrics | grep heap
+      ```
+
+      Sample output
+
+      ```bash
+      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'profiled nmethods'"} 1.22912768E8
+      jvm_memory_max_bytes{area="heap",id="PS Old Gen"} 1.048576E8
+      jvm_memory_max_bytes{area="heap",id="PS Survivor Space"} 1048576.0
+      jvm_memory_max_bytes{area="heap",id="PS Eden Space"} 4.718592E7
+      jvm_memory_max_bytes{area="nonheap",id="Metaspace"} -1.0
+      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'non-nmethods'"} 5828608.0
+      jvm_memory_max_bytes{area="nonheap",id="Compressed Class Space"} 1.073741824E9
+      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'non-profiled nmethods'"} 1.22916864E8
+      ...
+      ```
+
+    - Check for backend application related metrics
+    
+      ```bash
+      curl https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+      oc exec -n project1 $(oc get pods -l app=backend \
+      --no-headers  -o custom-columns='Name:.metadata.name' \
+      -n project1 | head -n 1 ) \
+      -- curl -s  http://localhost:8080/q/metrics | grep http_server_requests_seconds
+      ```
     
     Check that http_server_requests_seconds_count with method GET and root URI value is 1 with return status 200
   
