@@ -11,7 +11,7 @@ NEXUS_PVC_SIZE="300Gi"
 JENKINS_PVC_SIZE="10Gi"
 SONAR_PVC_SIZE="10Gi"
 CICD_NEXUS_USER=jenkins
-CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64 -)
+CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64)
 function add_nexus3_npmproxy_repo() {
   local _REPO_ID=$1
   local _REPO_URL=$2
