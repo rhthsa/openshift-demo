@@ -643,6 +643,9 @@
 </li>
 <li><a href="#secured-cluster-services-managed-cluster">Secured Cluster Services (Managed Cluster)</a><ul>
 <li><a href="#operator">Operator</a></li>
+</ul>
+</li>
+<li><a href="#install-secure-cluster-services-on-remote-cluster">Install Secure Cluster Services on remote cluster</a><ul>
 <li><a href="#cli-roxctl-and-helm">CLI roxctl and Helm</a></li>
 <li><a href="#view-managed-cluster">View Managed Cluster</a></li>
 </ul>
@@ -676,6 +679,11 @@
 <li><a href="#compliance">Compliance</a><ul>
 <li><a href="#overall-reports">Overall reports</a></li>
 <li><a href="#compliance-operator">Compliance Operator</a></li>
+</ul>
+</li>
+<li><a href="#network-graph">Network Graph</a><ul>
+<li><a href="#sample-application">Sample Application</a></li>
+<li><a href="#network-policies">Network Policies</a></li>
 </ul>
 </li>
 </ul>
@@ -855,26 +863,25 @@ collector-x9h8n                     2/2     Running   0          28s
 </li>
 </ul>
 </li>
-<li><p>Install Secure Cluster Services on remote cluster</p>
+</ul>
+<h3 id="install-secure-cluster-services-on-remote-cluster">Install Secure Cluster Services on remote cluster</h3>
 <ul>
 <li>Generate cluster init bundle</li>
 <li><p>Create secret from previously downloaded <em>Kubernetes Secrets file</em> </p>
-<pre><code class="lang-bash">oc new-project stackrox-cluster
-oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
+<pre><code class="lang-bash">  oc new-project stackrox-cluster
+  oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
 </code></pre>
 </li>
 <li><p>Create Secured Cluster Service with centralEndpoint set to Central&apos;s route. </p>
 <p>Get Central&apos;s route and save to ROX_HOST environment variable</p>
-<pre><code class="lang-bash">ROX_HOST=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;)
+<pre><code class="lang-bash">  ROX_HOST=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;)
 </code></pre>
 <p>Login to remote cluster and run following command.</p>
-<pre><code class="lang-bash">cat manifests/acs-secured-cluster.yaml | \
-sed s/central.stackrox.svc/$ROX_HOST/ | \
-sed s/cluster1/cluster2/ | \
-oc create -n stackrox-cluster -f -
+<pre><code class="lang-bash">  cat manifests/acs-secured-cluster.yaml | \
+  sed s/central.stackrox.svc/$ROX_HOST/ | \
+  sed s/cluster1/cluster2/ | \
+  oc create -n stackrox-cluster -f -
 </code></pre>
-</li>
-</ul>
 </li>
 </ul>
 <h4 id="cli-roxctl-and-helm">CLI roxctl and Helm</h4>
@@ -1497,6 +1504,83 @@ Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
 <p><img src="images/acs-compliance-operator-cis-overall.png" alt=""></p>
 </li>
 </ul>
+<h2 id="network-graph">Network Graph</h2>
+<h3 id="sample-application">Sample Application</h3>
+<ul>
+<li><p>Deploy frontend and backend app on namespace ui and api respectively</p>
+<pre><code class="lang-bash">oc new-project ui
+oc new-project api
+oc create -f manifests/frontend.yaml -n ui
+oc create -f manifests/backend-v1.yaml -n api
+oc expose deployment/backend-v1 -n api
+oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+</code></pre>
+</li>
+<li><p>Check for frontend URL</p>
+<pre><code class="lang-bash">FRONTEND_URL=$(oc get route/frontend -o jsonpath=&apos;{.spec.host}&apos; -n ui)
+</code></pre>
+</li>
+<li><p>Test with curl</p>
+<pre><code class="lang-bash">curl https://$FRONTEND_URL
+</code></pre>
+<h3 id="network-policies">Network Policies</h3>
+</li>
+<li><p>Check Network Graph in ACS Console</p>
+<ul>
+<li>Select <em>cluster1</em> then select namespace <em>ui</em> and <em>api</em></li>
+<li><p>Click deployment <em>backend-v1</em></p>
+<p><img src="images/network-graph-backend-v1.png" alt=""></p>
+</li>
+<li><p>Select tab Flows</p>
+<p><img src="images/network-graph-backend-v1-flow.png" alt=""></p>
+<ul>
+<li>Ingress from frontend-v1 in namespace ui</li>
+<li>Ingress from frontend-v2 in namespace ui</li>
+<li>Egress from backend-v1 in namespace api</li>
+<li>Egress from backend-v1 to external entities</li>
+<li>Select above entries and <em>Add to Baseline</em></li>
+</ul>
+</li>
+<li>Click tab <em>Baselines</em> then click Download baseline as network policy</li>
+<li><p>Check network policies which created from actual traffic baseline</p>
+<pre><code class="lang-yaml">apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: &quot;2023-04-18T15:43:08Z&quot;
+  labels:
+    network-policy-generator.stackrox.io/from-baseline: &quot;true&quot;
+  name: stackrox-baseline-generated-backend-v1
+  namespace: api
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ui
+      podSelector:
+        matchLabels:
+          app: frontend
+          version: v2
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ui
+      podSelector:
+        matchLabels:
+          app: frontend
+          version: v1
+    - podSelector:
+        matchLabels:
+          app: backend
+          version: v1
+    ports:
+    - port: 8080
+      protocol: TCP
+</code></pre>
+</li>
+</ul>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -1532,7 +1616,7 @@ Nmap done: 1 IP address (1 host up) scanned in 4.44 seconds
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-04-18T15:16:18.228Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-04-18T15:17:01.050Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-04-18T16:01:41.914Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-04-18T16:02:22.119Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
