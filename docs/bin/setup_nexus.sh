@@ -1,7 +1,8 @@
 START_BUILD=$(date +%s)
 SONARQUBE_VERSION=7.9.2
 #NEXUS_VERSION=3.38.0
-NEXUS_VERSION=3.38.1
+#NEXUS_VERSION=3.38.1
+NEXUS_VERSION=3.51.0
 CICD_PROJECT=ci-cd
 DEV_PROJECT=dev
 PROD_PROJECT=prod
@@ -210,7 +211,7 @@ echo "expose port 5000 for container registry"
 oc expose deployment nexus --port=5000 --name=nexus-registry
 oc create route edge nexus-registry --service=nexus-registry --port=5000
 NEXUS_PASSWORD=$(oc exec $NEXUS_POD -- cat /nexus-data/admin.password)
-CICD_NEXUS_PASSWORD_SECRET=$(echo ${CICD_NEXUS_PASSWORD}|base64 -)
+CICD_NEXUS_PASSWORD_SECRET=$(echo ${CICD_NEXUS_PASSWORD}|base64)
 END_BUILD=$(date +%s)
 BUILD_TIME=$(expr ${END_BUILD} - ${START_BUILD})
 echo ${NEXUS_PASSWORD} > nexus_password.txt
