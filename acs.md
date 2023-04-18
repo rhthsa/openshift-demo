@@ -1018,12 +1018,12 @@ Initial compliance scan
     - Select above entries and *Add to Baseline*
   - Click tab *Baselines* then click Download baseline as network policy
   - Check network policies which created from actual traffic baseline
-  
+    
     ```yaml
     apiVersion: networking.k8s.io/v1
     kind: NetworkPolicy
     metadata:
-      creationTimestamp: "2023-04-18T15:43:08Z"
+      creationTimestamp: "2023-04-18T16:04:11Z"
       labels:
         network-policy-generator.stackrox.io/from-baseline: "true"
       name: stackrox-baseline-generated-backend-v1
@@ -1052,5 +1052,11 @@ Initial compliance scan
         ports:
         - port: 8080
           protocol: TCP
-    ```
-  
+      podSelector:
+        matchLabels:
+          app: backend
+          version: v1
+      policyTypes:
+      - Ingress
+    status: {}
+    ``` 
