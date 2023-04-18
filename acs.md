@@ -2,13 +2,16 @@
 - [Advanced Cluster Security for Kubernetes (ACS)](#advanced-cluster-security-for-kubernetes-acs)
   - [Installation](#installation)
     - [Central Installation](#central-installation)
-      - [[Optional] Create Central at Infra Nodes](#optional-create-central-at-infra-nodes)
+      - [\[Optional\] Create Central at Infra Nodes](#optional-create-central-at-infra-nodes)
       - [Access Central](#access-central)
     - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
+    - [Install Secure Cluster Services on remote cluster](#install-secure-cluster-services-on-remote-cluster)
       - [CLI roxctl and Helm](#cli-roxctl-and-helm)
       - [View Managed Cluster](#view-managed-cluster)
     - [Single Sign-On with OpenShift](#single-sign-on-with-openshift)
+    - [Network Graph](#network-graph)
+      - [Sample Application](#sample-application)
     - [Integration with Nexus](#integration-with-nexus)
       - [Setup Nexus](#setup-nexus)
       - [Config ACS](#config-acs)
@@ -227,25 +230,25 @@
   
     ![](images/acs-secured-cluster-memory.png )
 
-- Install Secure Cluster Services on remote cluster
+### Install Secure Cluster Services on remote cluster
 
-    - Generate cluster init bundle
-    - Create secret from previously downloaded *Kubernetes Secrets file* 
+  - Generate cluster init bundle
+  - Create secret from previously downloaded *Kubernetes Secrets file* 
       
       ```bash
       oc new-project stackrox-cluster
       oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
       ```
 
-    - Create Secured Cluster Service with centralEndpoint set to Central's route. 
+  - Create Secured Cluster Service with centralEndpoint set to Central's route. 
       
-      Get Central's route and save to ROX_HOST environment variable
+    Get Central's route and save to ROX_HOST environment variable
 
       ```bash
       ROX_HOST=$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
       ```
 
-      Login to remote cluster and run following command.
+    Login to remote cluster and run following command.
 
       ```bash
       cat manifests/acs-secured-cluster.yaml | \
@@ -398,6 +401,83 @@
   - Login with OpenShift
 
     ![](images/acs-login-with-openshift.png)
+
+### Network Graph
+#### Sample Application
+- Deploy frontend and backend app on namespace ui and api respectively
+  
+  ```bash
+  oc new-project ui
+  oc new-project api
+  oc create -f manifests/frontend.yaml -n ui
+  oc create -f manifests/backend-v1.yaml -n api
+  oc expose deployment/backend-v1 -n api
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+  ```
+- Check for frontend URL
+  
+  ```bash
+  FRONTEND_URL=$(oc get route/frontend -o jsonpath='{.spec.host}' -n ui)
+  ```
+- Test with curl
+  
+  ```bash
+  curl https://$FRONTEND_URL
+  ```
+
+- Check Network Graph in ACS Console
+  - Select *cluster1* then select namespace *ui* and *api*
+  - Click deployment *backend-v1*
+    
+    ![](images/network-graph-backend-v1.png)
+
+  - Select tab Flows
+
+    ![](images/network-graph-backend-v1-flow.png)
+
+    - Ingress from frontend-v1 in namespace ui
+    - Ingress from frontend-v2 in namespace ui
+    - Egress from backend-v1 in namespace api
+    - Egress from backend-v1 to external entities
+    - Select above entries and *Add to Baseline*
+  - Click tab *Baselines* then click Download baseline as network policy
+  - Check network policies which created from actual traffic baseline
+  
+    ```yaml
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      creationTimestamp: "2023-04-18T15:43:08Z"
+      labels:
+        network-policy-generator.stackrox.io/from-baseline: "true"
+      name: stackrox-baseline-generated-backend-v1
+      namespace: api
+    spec:
+      ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ui
+          podSelector:
+            matchLabels:
+              app: frontend
+              version: v2
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ui
+          podSelector:
+            matchLabels:
+              app: frontend
+              version: v1
+        - podSelector:
+            matchLabels:
+              app: backend
+              version: v1
+        ports:
+        - port: 8080
+          protocol: TCP
+    ```
 
 ### Integration with Nexus
 #### Setup Nexus
