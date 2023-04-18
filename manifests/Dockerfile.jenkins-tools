@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi9-minimal:latest
+RUN mkdir -p /opt/rox && \ 
+    mkdir -p /opt/nexus-cli && \
+    curl -L -o /opt/rox/roxctl https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Linux/roxctl && \ 
+    curl -L -o /opt/nexus-cli/nexus-cli https://s3.eu-west-2.amazonaws.com/nexus-cli/1.0.0-beta/linux/nexus-cli && \
+    chmod -R 755 /opt/rox/roxctl && \ 
+    chown -R 1001:0 /opt/rox/roxctl && \ 
+    chmod -R 755 /opt/nexus-cli/nexus-cli && \
+    chown -R 1001:0 /opt/nexus-cli
+ENV PATH=/opt/nexus-cli:/opt/rox:$PATH
+USER 1001
