@@ -10,8 +10,6 @@
       - [CLI roxctl and Helm](#cli-roxctl-and-helm)
       - [View Managed Cluster](#view-managed-cluster)
     - [Single Sign-On with OpenShift](#single-sign-on-with-openshift)
-    - [Network Graph](#network-graph)
-      - [Sample Application](#sample-application)
     - [Integration with Nexus](#integration-with-nexus)
       - [Setup Nexus](#setup-nexus)
       - [Config ACS](#config-acs)
@@ -30,6 +28,9 @@
   - [Compliance](#compliance)
     - [Overall reports](#overall-reports)
     - [Compliance Operator](#compliance-operator)
+  - [Network Graph](#network-graph)
+    - [Sample Application](#sample-application)
+    - [Network Policies](#network-policies)
 
 ## Installation
 
@@ -401,83 +402,6 @@
   - Login with OpenShift
 
     ![](images/acs-login-with-openshift.png)
-
-### Network Graph
-#### Sample Application
-- Deploy frontend and backend app on namespace ui and api respectively
-  
-  ```bash
-  oc new-project ui
-  oc new-project api
-  oc create -f manifests/frontend.yaml -n ui
-  oc create -f manifests/backend-v1.yaml -n api
-  oc expose deployment/backend-v1 -n api
-  oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
-  oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
-  ```
-- Check for frontend URL
-  
-  ```bash
-  FRONTEND_URL=$(oc get route/frontend -o jsonpath='{.spec.host}' -n ui)
-  ```
-- Test with curl
-  
-  ```bash
-  curl https://$FRONTEND_URL
-  ```
-
-- Check Network Graph in ACS Console
-  - Select *cluster1* then select namespace *ui* and *api*
-  - Click deployment *backend-v1*
-    
-    ![](images/network-graph-backend-v1.png)
-
-  - Select tab Flows
-
-    ![](images/network-graph-backend-v1-flow.png)
-
-    - Ingress from frontend-v1 in namespace ui
-    - Ingress from frontend-v2 in namespace ui
-    - Egress from backend-v1 in namespace api
-    - Egress from backend-v1 to external entities
-    - Select above entries and *Add to Baseline*
-  - Click tab *Baselines* then click Download baseline as network policy
-  - Check network policies which created from actual traffic baseline
-  
-    ```yaml
-    apiVersion: networking.k8s.io/v1
-    kind: NetworkPolicy
-    metadata:
-      creationTimestamp: "2023-04-18T15:43:08Z"
-      labels:
-        network-policy-generator.stackrox.io/from-baseline: "true"
-      name: stackrox-baseline-generated-backend-v1
-      namespace: api
-    spec:
-      ingress:
-      - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ui
-          podSelector:
-            matchLabels:
-              app: frontend
-              version: v2
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: ui
-          podSelector:
-            matchLabels:
-              app: frontend
-              version: v1
-        - podSelector:
-            matchLabels:
-              app: backend
-              version: v1
-        ports:
-        - port: 8080
-          protocol: TCP
-    ```
 
 ### Integration with Nexus
 #### Setup Nexus
@@ -1051,5 +975,82 @@ Initial compliance scan
 
   ![](images/acs-compliance-operator-cis-overall.png)
 
- 
+
+## Network Graph
+### Sample Application
+- Deploy frontend and backend app on namespace ui and api respectively
+  
+  ```bash
+  oc new-project ui
+  oc new-project api
+  oc create -f manifests/frontend.yaml -n ui
+  oc create -f manifests/backend-v1.yaml -n api
+  oc expose deployment/backend-v1 -n api
+  oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+  oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
+  ```
+- Check for frontend URL
+  
+  ```bash
+  FRONTEND_URL=$(oc get route/frontend -o jsonpath='{.spec.host}' -n ui)
+  ```
+- Test with curl
+  
+  ```bash
+  curl https://$FRONTEND_URL
+  ```
+### Network Policies
+
+- Check Network Graph in ACS Console
+  - Select *cluster1* then select namespace *ui* and *api*
+  - Click deployment *backend-v1*
+    
+    ![](images/network-graph-backend-v1.png)
+
+  - Select tab Flows
+
+    ![](images/network-graph-backend-v1-flow.png)
+
+    - Ingress from frontend-v1 in namespace ui
+    - Ingress from frontend-v2 in namespace ui
+    - Egress from backend-v1 in namespace api
+    - Egress from backend-v1 to external entities
+    - Select above entries and *Add to Baseline*
+  - Click tab *Baselines* then click Download baseline as network policy
+  - Check network policies which created from actual traffic baseline
+  
+    ```yaml
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+      creationTimestamp: "2023-04-18T15:43:08Z"
+      labels:
+        network-policy-generator.stackrox.io/from-baseline: "true"
+      name: stackrox-baseline-generated-backend-v1
+      namespace: api
+    spec:
+      ingress:
+      - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ui
+          podSelector:
+            matchLabels:
+              app: frontend
+              version: v2
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ui
+          podSelector:
+            matchLabels:
+              app: frontend
+              version: v1
+        - podSelector:
+            matchLabels:
+              app: backend
+              version: v1
+        ports:
+        - port: 8080
+          protocol: TCP
+    ```
   
