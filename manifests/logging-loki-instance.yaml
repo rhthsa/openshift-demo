@@ -16,6 +16,14 @@ metadata:
   name: logging-loki
   namespace: openshift-logging
 spec:
+  rules:
+    enabled: true
+    selector:
+      matchLabels:
+        openshift.io/cluster-monitoring: "true"
+      namespaceSelector:
+        matchLabels:
+        openshift.io/cluster-monitoring: "true"
   size: 1x.extra-small
   storage:
     schemas:
