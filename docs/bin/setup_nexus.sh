@@ -1,8 +1,6 @@
 START_BUILD=$(date +%s)
 SONARQUBE_VERSION=7.9.2
-#NEXUS_VERSION=3.38.0
-#NEXUS_VERSION=3.38.1
-NEXUS_VERSION=3.51.0
+NEXUS_VERSION=3.54.1
 CICD_PROJECT=ci-cd
 DEV_PROJECT=dev
 PROD_PROJECT=prod
@@ -13,6 +11,7 @@ JENKINS_PVC_SIZE="10Gi"
 SONAR_PVC_SIZE="10Gi"
 CICD_NEXUS_USER=jenkins
 CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64)
+
 function add_nexus3_npmproxy_repo() {
   local _REPO_ID=$1
   local _REPO_URL=$2
@@ -170,6 +169,19 @@ function add_nexus3_user() {
 EOM
   curl -k  -v  -H "accept: application/json" -H "Content-Type: application/json" -d "$_USER_JSON" -u "$_NEXUS_USER:$_NEXUS_PWD" "${_NEXUS_URL}/service/rest/beta/security/users"
 }
+
+function config_nexus3_realms() {
+  local _NEXUS_USER=$1
+  local _NEXUS_PWD=$2
+  local _NEXUS_URL=$3
+  curl -k -v -X 'PUT' \
+  "${_NEXUS_URL}/service/rest/v1/security/realms/active" \
+  -d '[ "NexusAuthenticatingRealm", "NexusAuthorizingRealm", "DockerToken" ]' \
+  -u "$_NEXUS_USER:$_NEXUS_PWD" \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json'
+}
+
 echo "Add Nexus service to insecure registries list"
 oc patch image.config.openshift.io/cluster -p \
 '{"spec":{"registrySources":{"insecureRegistries":["nexus-registry.ci-cd.svc.cluster.local"]}}}' --type='merge'
@@ -207,6 +219,7 @@ add_nexus3_docker_repo docker 5000 admin $NEXUS_PASSWORD $NEXUS_URL
 add_nexus3_user admin $NEXUS_PASSWORD $NEXUS_URL $CICD_NEXUS_USER $CICD_NEXUS_PASSWORD
 add_nexus3_npmproxy_repo npm https://registry.npmjs.org/ admin $NEXUS_PASSWORD $NEXUS_URL
 add_nexus3_nugetproxy_repo nuget https://api.nuget.org/v3/index.json admin $NEXUS_PASSWORD $NEXUS_URL
+config_nexus3_realms admin $NEXUS_PASSWORD $NEXUS_URL
 echo "expose port 5000 for container registry"
 oc expose deployment nexus --port=5000 --name=nexus-registry
 oc create route edge nexus-registry --service=nexus-registry --port=5000
