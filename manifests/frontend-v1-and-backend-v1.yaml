@@ -1,0 +1,165 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-v1
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/frontend-js'
+    app.openshift.io/connects-to: >-
+      [{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v2"},{"apiVersion":"apps/v1","kind":"Deployment","name":"backend-v1"}]
+  labels:
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/instance: frontend
+    app.kubernetes.io/name: nodejs
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: nodejs
+    app.openshift.io/runtime-version: '18'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: v1
+        maistra.io/expose-route: "true"
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: frontend
+        image: quay.io/voravitl/frontend-js:v1
+        imagePullPolicy: Always
+        env:
+          - name: BACKEND_URL
+            value: http://backend:8080
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: 60Mi
+          limits:
+            cpu: "0.2"
+            memory: 100Mi
+        ports:
+        - containerPort: 8080
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  ports:
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: frontend
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend
+spec:
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: frontend
+    weight: 100
+  wildcardPolicy: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-v1
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/backend_quarkus'
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/instance: backend
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '2.16.1.Final'
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+      version: v1
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: backend
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+      - name: backend
+        image: quay.io/voravitl/backend-native:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.05"
+            memory: 40Mi
+          limits:
+            cpu: "0.2"
+            memory: 120Mi
+        env:
+          - name: APP_BACKEND
+            value: https://httpbin.org/status/200
+          - name: APP_VERSION
+            value: v1
+          - name: quarkus.log.console.color
+            value: 'false'
+        ports:
+        - containerPort: 8080
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60  
+      terminationGracePeriodSeconds: 10   
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  ports:
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: backend
+---
+
