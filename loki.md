@@ -6,7 +6,7 @@
   - [Alert](#alert)
 
 ## Install and Config
-- Install Logging Operator and Loki Operator
+- Install [Logging Operator](manifests/logging-operator.yaml) and [Loki Operator](manifests/loki-operator.yaml)
   
   ```bash
   oc create -f manifests/logging-operator.yaml
@@ -33,7 +33,7 @@
         AWS_SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
        ```
 
-  - Create Logging and Loki Instances
+  - Create [Logging and Loki Instances](manifests/logging-loki-instance.yaml)
     
     ```bash
     cat manifests/logging-loki-instance.yaml \
@@ -138,9 +138,27 @@
       ![](images/loki-backend-log-info.png)
   
 ## LogQL
+- Open Developer Console then select Observe->Log
+- Click *Show Query* and input following LogQL to query
+  - Application Log 
+  - in namesapce *api*
+  - only worker node name *ip-10-0-215-10.us-east-2.compute.internal*
+  - and contain string *Return Code*
+  
+  *Remark: replace your worker node hostname to ip-10-0-215-10.us-east-2.compute.internal*
 
-WIP
+  ```bash
+  { log_type="application", kubernetes_namespace_name="api" } | json | hostname=~"ip-10-0-215-10.us-east-2.compute.internal" |~ "Return Code: .*"
+  ```
+
+  Output
+
+  ![](images/logQL-sample-query.png)
+
+
 
 ## Alert
 
 WIP
+
+<!-- delete ingester then queier -->
