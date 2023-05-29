@@ -48,9 +48,12 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
@@ -109,9 +112,12 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
@@ -165,9 +171,12 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       tolerations:
       - effect: NoExecute
