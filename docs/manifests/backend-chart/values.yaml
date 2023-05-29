@@ -5,7 +5,7 @@ replicaCount: 1
 namespace: project1
 
 image:
-  repository: quay.io/voravitl/backend-native:v1
+  repository: quay.io/voravitl/backend:native
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []

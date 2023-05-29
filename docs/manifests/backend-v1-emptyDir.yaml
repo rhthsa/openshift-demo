@@ -29,7 +29,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: backend
-        image: quay.io/voravitl/backend-native:v1
+        image: quay.io/voravitl/backend:native
         imagePullPolicy: Always
         resources:
           requests:

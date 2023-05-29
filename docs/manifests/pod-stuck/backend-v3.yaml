@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: quay.io/voravitl/backend-native:v1234
+        image: quay.io/voravitl/backend:native234
         imagePullPolicy: IfNotPresent
         resources:
           requests:
