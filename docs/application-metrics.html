@@ -862,7 +862,16 @@ grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
 </code></pre>
 </li>
 <li><p>Create <a href="manifests/grafana-datasource.yaml">Grafana DataSource</a> with serviceaccount grafana-serviceaccount&apos;s token and connect to thanos-querier</p>
+<ul>
+<li>For oc version 4.10</li>
+</ul>
 <pre><code class="lang-bash">TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
+cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$TOKEN&quot;&quot;&apos;&quot;&apos;/&apos;|oc apply -n application-monitor -f -
+</code></pre>
+<ul>
+<li>For oc version 4.11 and higher</li>
+</ul>
+<pre><code class="lang-bash">TOKEN=$(oc create token grafana-serviceaccount -n application-monitor)
 cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$TOKEN&quot;&quot;&apos;&quot;&apos;/&apos;|oc apply -n application-monitor -f -
 </code></pre>
 </li>
@@ -1024,7 +1033,7 @@ oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-05-29T03:10:03.145Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-05-29T03:10:44.654Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-05-30T15:42:12.723Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-05-30T15:42:59.621Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
