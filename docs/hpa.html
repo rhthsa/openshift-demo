@@ -650,43 +650,48 @@
 <h2 id="cpu">CPU</h2>
 <ul>
 <li>Deploy frontend app (if you still not deploy it yet)<pre><code class="lang-bash">oc new-project project1
-oc apply -f manifests/frontend.yaml -n project1
-oc delete deployment frontend-v2 -n project1
-FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-curl -k $FRONTEND_URL
+oc apply -f manifests/backend-v1.yaml -n project1
+oc expose deployment backend-v1 -n project1
+oc expose svc backend-v1 -n project1
+oc set env deployment backend-v1 -n project1 APP_BACKEND=https://mockbin.org/status/200
+oc wait --for=condition=ready --timeout=60s pod -l app=backend
+BACKEND_URL=http://$(oc get route backend-v1 -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+curl -v -k $BACKEND_URL
 </code></pre>
 </li>
-<li><p>Review <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
+<li><p>Review <a href="manifests/backend-v1-cpu-hpa.yaml">CPU HPA for deployment backend v1</a></p>
 <ul>
-<li>Scale out when average CPU utilization is greater than 80% of CPU limit</li>
-<li>Maximum pods is 3</li>
+<li>Scale out when average CPU utilization is greater than 10% of CPU limit</li>
+<li>Maximum pods is 5</li>
 <li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
-<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
+<pre><code class="lang-yaml">apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: frontend-v1-cpu
+  name: backend-v1-cpu
   namespace: project1
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: frontend-v1
+    name: backend-v1
   minReplicas: 1
-  maxReplicas: 3
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          averageUtilization: 80
-          type: Utilization
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 20
   behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
+    scaleDown: 
+      policies: 
+      - type: Pods 
+        value: 1
+        periodSeconds: 60 
+      selectPolicy: Min 
+      stabilizationWindowSeconds: 70 
+    scaleUp: 
       policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
+      - type: Pods
+        value: 5
+        periodSeconds: 70
+      selectPolicy: Max
+      stabilizationWindowSeconds: 0
 </code></pre>
 </li>
 </ul>
@@ -694,47 +699,53 @@ spec:
 <li><p>Create <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
 </li>
 </ul>
-<pre><code class="lang-bash">oc create -f manifests/frontend-v1-cpu-hpa.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/backend-v1-cpu-hpa.yaml -n project1
 </code></pre>
 <ul>
-<li><p>Check HPA status</p>
-<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-cpu -n project1
-</code></pre>
-</li>
-<li><p>Generate load with load test tool (siege)</p>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-siege -c 40 $FRONTEND_URL
+<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/backend-v1-cpu -n project1
 </code></pre>
 </li>
 </ul>
-<p>If you don&apos;t have siege, run k6 as pod on OpenShift</p>
+<p>Output</p>
+<pre><code class="lang-bash">NAME             REFERENCE               TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+backend-v1-cpu   Deployment/backend-v1   0%/20%    1         5         1          38s
+</code></pre>
+<!-- - Generate load with load test tool (siege)
+```bash
+FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath='{.spec.host}')
+siege -c 40 $FRONTEND_URL
+```
+
+If you don't have siege, run k6 as pod on OpenShift -->
 <ul>
-<li>40 threads</li>
+<li><p>Load test with K6</p>
+<ul>
+<li>50 threads</li>
 <li>Duration 3 minutes</li>
 <li>Ramp up 30 sec</li>
-<li>Ramp down 30 sec</li>
-</ul>
-<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+<li><p>Ramp down 30 sec</p>
+<pre><code class="lang-bash">URL=http://backend-v1.project1:8080
 oc run load-test -n project1 -i \
 --image=loadimpact/k6 --rm=true --restart=Never \
 --  run -  &lt; manifests/load-test-k6.js \
--e URL=$FRONTEND_URL -e THREADS=40 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+-e URL=$URL -e THREADS=50 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
 </code></pre>
-<p>Remark: k6 will run as pod name <code>load-test</code> for 4 minutes if you want to force stop before 4 minutes just delete <code>load-test</code> pod</p>
-<pre><code class="lang-bash">oc delete pod load-test -n project1
-</code></pre>
-<ul>
-<li><p>Wait for HPA to trigger</p>
-<p><img src="images/hpa-cpu-status.png" alt=""></p>
-</li>
-<li><p>Check Developer Console</p>
-<p><img src="images/hpa-cpu-dev-console.png" alt=""></p>
-</li>
-<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
+<p>Output</p>
+<p><img src="images/hpa-cpu-backend-cli.png" alt=""></p>
+<p>Check pods CPU in developer console</p>
+<p><img src="images/hpa-cpu-backend.png" alt=""></p>
 </li>
 </ul>
-<h2 id="memory">Memory</h2>
+</li>
+</ul>
 <ul>
+<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
+<p> <img src="images/hpa-cpu-backend-scaledown.png" alt=""></p>
+<p>Remark: k6 will run as pod name <code>load-test</code> for 4 minutes if you want to force stop before 4 minutes just delete <code>load-test</code> pod</p>
+<pre><code class="lang-bash">  oc delete pod load-test -n project1
+</code></pre>
+<h2 id="memory">Memory</h2>
+</li>
 <li>Review <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><ul>
 <li>Scale out when average memory utilization is greater than 60M of memory limit</li>
 <li>Maximum pods is 3</li>
@@ -832,7 +843,7 @@ siege -c 40 $FRONTEND_URL
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2023-05-30T15:42:12.771Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-05-30T15:42:59.621Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2023-06-19T05:11:20.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-06-19T05:12:15.671Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
