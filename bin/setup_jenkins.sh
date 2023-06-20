@@ -7,7 +7,7 @@ STAGE_PROJECT=stage
 UAT_PROJECT=uat
 JENKINS_PVC_SIZE="10Gi"
 CICD_NEXUS_USER=jenkins
-CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64 -)
+CICD_NEXUS_USER_SECRET=$(echo $CICD_NEXUS_USER|base64)
 oc project ${CICD_PROJECT}
 clear;echo "Setup Jenkins..."
 oc new-app jenkins-persistent --param ENABLE_OAUTH=true --param MEMORY_LIMIT=2Gi \
