@@ -1,4 +1,6 @@
-FROM registry.access.redhat.com/ubi9-minimal:latest
+FROM registry.access.redhat.com/ubi8-minimal:latest
+RUN  microdnf update --setopt=install_weak_deps=0 --nodocs \
+     && microdnf clean all
 RUN mkdir -p /opt/rox && \ 
     mkdir -p /opt/nexus-cli && \
     curl -L -o /opt/rox/roxctl https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Linux/roxctl && \ 

@@ -44,10 +44,13 @@ spec:
         ports:
         - containerPort: 8080
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
-          readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
       tolerations:
       - effect: NoExecute
         key: node.kubernetes.io/unreachable
