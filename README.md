@@ -47,6 +47,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - [Horizontal Pod Autoscaler](hpa.md)
     - HPA by CPU
     - HPA by Memory
+    - HPA by Custom Metrics
   - [Health Check](health.md)
     - Readiness Probe
     - Liveness Probe
