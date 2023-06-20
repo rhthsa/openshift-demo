@@ -1,7 +1,7 @@
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: backend-v1-cpu
+  name: backend-cpu
   namespace: project1
 spec:
   scaleTargetRef:
