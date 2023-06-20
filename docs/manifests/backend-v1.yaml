@@ -36,7 +36,7 @@ spec:
             memory: 50Mi
           limits:
             cpu: "0.2"
-            memory: 120Mi
+            memory: 300Mi
         env:
           - name: APP_BACKEND
             value: https://httpbin.org/status/200

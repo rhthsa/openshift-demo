@@ -642,7 +642,13 @@
 <li><a href="#horizontal-pod-autoscaler-hpa">Horizontal Pod Autoscaler (HPA)</a><ul>
 <li><a href="#cpu">CPU</a></li>
 <li><a href="#memory">Memory</a></li>
-<li><a href="#custom-metrics">Custom Metrics</a></li>
+<li><a href="#custom-metrics-autoscaler">Custom Metrics Autoscaler</a><ul>
+<li><a href="#configure-user-workload-monitoring">Configure User Workload Monitoring</a></li>
+<li><a href="#install-operator">Install Operator</a></li>
+<li><a href="#create-sacledobject">Create SacledObject</a></li>
+<li><a href="#test">Test</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -651,30 +657,22 @@
 <ul>
 <li>Deploy frontend app (if you still not deploy it yet)<pre><code class="lang-bash">oc new-project project1
 oc apply -f manifests/backend-v1.yaml -n project1
-oc expose deployment backend-v1 -n project1
-oc expose svc backend-v1 -n project1
+oc apply -f manifests/backend-service.yaml -n project1
+oc apply -f manifests/backend-route.yaml -n project1
 oc set env deployment backend-v1 -n project1 APP_BACKEND=https://mockbin.org/status/200
 oc wait --for=condition=ready --timeout=60s pod -l app=backend
-BACKEND_URL=http://$(oc get route backend-v1 -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+BACKEND_URL=http://$(oc get route backend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
 curl -v -k $BACKEND_URL
 </code></pre>
 </li>
-<li><p>Review <a href="manifests/backend-v1-cpu-hpa.yaml">CPU HPA for deployment backend v1</a></p>
+</ul>
 <ul>
-<li>Scale out when average CPU utilization is greater than 10% of CPU limit</li>
+<li><p>Review <a href="manifests/backend-cpu-hpa.yaml">CPU HPA for deployment backend</a></p>
+<ul>
+<li>Scale out when average CPU utilization is greater than 20% of CPU limit</li>
 <li>Maximum pods is 5</li>
 <li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
-<pre><code class="lang-yaml">apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
-metadata:
-  name: backend-v1-cpu
-  namespace: project1
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: backend-v1
-  minReplicas: 1
+<pre><code class="lang-yaml">  minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 20
   behavior:
@@ -696,19 +694,19 @@ spec:
 </li>
 </ul>
 </li>
-<li><p>Create <a href="manifests/frontend-v1-cpu-hpa.yaml">CPU HPA for deployment frontend v1</a></p>
+<li><p>Create <a href="manifests/backend-cpu-hpa.yaml">CPU HPA for deployment backend</a></p>
 </li>
 </ul>
-<pre><code class="lang-bash">oc apply -f manifests/backend-v1-cpu-hpa.yaml -n project1
+<pre><code class="lang-bash">oc apply -f manifests/backend-cpu-hpa.yaml -n project1
 </code></pre>
 <ul>
-<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/backend-v1-cpu -n project1
+<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/backend-cpu -n project1
 </code></pre>
 </li>
 </ul>
 <p>Output</p>
-<pre><code class="lang-bash">NAME             REFERENCE               TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-backend-v1-cpu   Deployment/backend-v1   0%/20%    1         5         1          38s
+<pre><code class="lang-bash">NAME          REFERENCE            TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+backend-cpu   Deployment/backend   &lt;unknown&gt;/20%   1         5         0          2m4s
 </code></pre>
 <!-- - Generate load with load test tool (siege)
 ```bash
@@ -724,7 +722,7 @@ If you don't have siege, run k6 as pod on OpenShift -->
 <li>Duration 3 minutes</li>
 <li>Ramp up 30 sec</li>
 <li><p>Ramp down 30 sec</p>
-<pre><code class="lang-bash">URL=http://backend-v1.project1:8080
+<pre><code class="lang-bash">URL=http://backend.project1:8080
 oc run load-test -n project1 -i \
 --image=loadimpact/k6 --rm=true --restart=Never \
 --  run -  &lt; manifests/load-test-k6.js \
@@ -746,60 +744,178 @@ oc run load-test -n project1 -i \
 </code></pre>
 <h2 id="memory">Memory</h2>
 </li>
-<li>Review <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><ul>
-<li>Scale out when average memory utilization is greater than 60M of memory limit</li>
+<li><p>Deploy <a href="manifests/leak.yaml">Memory Leak App</a></p>
+<pre><code class="lang-yaml">      resources:
+        requests:
+          cpu: &quot;0.1&quot;
+          memory: 100Mi
+        limits:
+          cpu: &quot;0.2&quot;
+          memory: 200Mi
+      env:
+        - name: APP_DISHSIZE
+          value: &quot;10485760&quot;
+</code></pre>
+<p>Deploy Leak App</p>
+<pre><code class="lang-bash">oc apply -f manifests/leak.yaml -n project1
+oc expose deployment leak -n project1
+oc expose svc leak -n project1
+</code></pre>
+<p>Check for leak app memory limit</p>
+<p><img src="images/memory-leak-app-memory-limit.png" alt=""></p>
+</li>
+</ul>
+<ul>
+<li><p>Review <a href="manifests/leak-memory-hpa.yaml">Memory HPA for deployment leak app</a></p>
+<ul>
+<li>Scale out when average memory utilization is greater than 100Mi</li>
 <li>Maximum pods is 3</li>
-<li>Scale down to min replicas if utilization is lower than threshold for 60 sec<pre><code class="lang-yaml">apiVersion: autoscaling/v2beta2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: frontend-v1-memory
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: frontend-v1
-  minReplicas: 1
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageValue: 50Mi
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 60
-      policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 15
+<li><p>Scale down to min replicas if utilization is lower than threshold for 60 sec</p>
+<pre><code class="lang-yaml">
+
 </code></pre>
 </li>
 </ul>
 </li>
-<li>Create <a href="manifests/frontend-v1-memory-hpa.yaml">Memory HPA for deployment frontend v1</a><pre><code class="lang-bash">oc delete -f manifests/frontend-v1-cpu-hpa.yaml -n project1
-oc create -f manifests/frontend-v1-memory-hpa.yaml -n project1
+<li><p>Create <a href="manifests/leak-memory-hpa.yaml">Memory HPA for deployment frontend v1</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/leak-memory-hpa.yaml -n project1
 </code></pre>
 </li>
-<li>Check HPA status<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/frontend-v1-memory -n project1
+<li><p>Check HPA status</p>
+<pre><code class="lang-bash">watch oc get horizontalpodautoscaler/leak-memory -n project1
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME          REFERENCE         TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+leak-memory   Deployment/leak   81829888/100Mi   1         3         1          5h37m
 </code></pre>
 </li>
-<li>Generate load with load test tool (siege)<pre><code class="lang-bash">FRONTEND_URL=https://$(oc get route frontend -n project1 -jsonpath=&apos;{.spec.host}&apos;)
-siege -c 40 $FRONTEND_URL
+<li><p>Test Leak App to consume another 30 MB</p>
+<pre><code class="lang-bash">curl -v http://$(oc get route leak -n project1 -o jsonpath=&apos;{.spec.host}&apos;)/eat/3
+watch oc get po -l app=leak -n project1
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">&lt; HTTP/1.1 200 OK
+&lt; content-type: text/plain;charset=UTF-8
+&lt; content-length: 20
+&lt; set-cookie: 5ba5938c43542864828d859a0c1ca92a=00adce54797d4ef2002e330336942b56; path=/; HttpOnly
+&lt; cache-control: private
+&lt;
+* Connection #0 to host leak-project1.apps.cluster-27h8w.27h8w.sandbox74.opentlc.com left intact
+Added 31457280 bytes
 </code></pre>
 </li>
-<li><p>Wait for HPA to trigger</p>
-<p><img src="images/memory-hpa-status.png" alt=""></p>
+<li><p>Check that another leak pod is created</p>
+<pre><code class="lang-bash">NAME                    READY   STATUS    RESTARTS   AGE
+leak-74d885844d-s4vjz   1/1     Running   0          26s
+leak-74d885844d-vrx6s   1/1     Running   0          2m45s
+</code></pre>
+</li>
+<li><p>Check HPA status again</p>
+<pre><code class="lang-bash">NAME          REFERENCE         TARGETS           MINPODS   MAXPODS   REPLICAS   AGE
+leak-memory   Deployment/leak   127311872/100Mi   1         3         2          97s
+</code></pre>
 </li>
 <li><p>Check memory utilization from Developer console</p>
 <p><img src="images/memory-hpa-utilization.png" alt=""></p>
 </li>
-<li><p>Stop load test and wait  1 minutes to scale down to 1 replica.</p>
+</ul>
+<h2 id="custom-metrics-autoscaler">Custom Metrics Autoscaler</h2>
+<h3 id="configure-user-workload-monitoring">Configure User Workload Monitoring</h3>
+<ul>
+<li>Enable <a href="application-metrics.html">user workload monitoring</a></li>
+<li><p>Create <a href="manifests/backend-monitor.yaml">Service Monitoring</a> to monitor backend service</p>
+<pre><code class="lang-bash">oc apply -f manifests/backend-service-monitor.yaml -n project1
+</code></pre>
+</li>
+<li><p>Remove HPA by CPU and run K6 with 10 threads</p>
+<pre><code class="lang-bash">  oc delete hpa/backend-cpu -n project1
+  URL=http://backend.project1:8080
+  oc run load-test -n project1 -i \
+  --image=loadimpact/k6 --rm=true --restart=Never \
+  --  run -  &lt; manifests/load-test-k6.js \
+  -e URL=$URL -e THREADS=10 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+</code></pre>
+</li>
+<li><p>Check for backends&apos;s concurrent requests/sec metric</p>
+<ul>
+<li>Open Developer Console -&gt; Observe -&gt; Metrics -&gt; Custom metrics</li>
+<li><p>Input following PromQL to check for number of requests/min</p>
+<pre><code class="lang-bash">rate(http_server_requests_seconds_count{method=&quot;GET&quot;,uri=&quot;root&quot;,outcome=&quot;SUCCESS&quot;}[1m])
+</code></pre>
+<p>Output</p>
+<p><img src="images/backend-request-per-miniute-with-k6-10-threads.png" alt=""></p>
 </li>
 </ul>
-<h2 id="custom-metrics">Custom Metrics</h2>
-<p>WIP</p>
+</li>
+</ul>
+<h3 id="install-operator">Install Operator</h3>
+<ul>
+<li><p>Install <em>Custom Metrics Autoscaler</em> Operator</p>
+<p>Verify </p>
+<pre><code class="lang-bash">oc get csv -n openshift-keda
+oc get po -n openshift-keda
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                    DISPLAY                     VERSION      REPLACES   PHASE
+custom-metrics-autoscaler.v2.10.1-253   Custom Metrics Autoscaler   2.10.1-253              Succeeded
+NAME                                                 READY   STATUS    RESTARTS   AGE
+custom-metrics-autoscaler-operator-9c9c7c4cb-26l28   1/1     Running   0          10m
+</code></pre>
+</li>
+</ul>
+<h3 id="create-sacledobject">Create SacledObject</h3>
+<ul>
+<li><p>Create Service Account </p>
+<pre><code class="lang-bash">oc create serviceaccount thanos -n project1
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/cma-trigger-authentication.yaml">TriggerAuthentication</a> and assign cluster role to query thanos</p>
+<pre><code class="lang-bash">TOKEN=$(oc describe serviceaccount thanos -n project1|grep Token|awk -F&apos;:&apos; &apos;{print $2}&apos;|awk &apos;$1=$1&apos;)
+cat manifests/cma-trigger-authentication.yaml|sed &apos;s/TOKEN/&apos;$TOKEN&apos;/&apos;|sed &apos;s/PROJECT/project1/&apos; | oc create -f -
+oc adm policy add-cluster-role-to-user cluster-monitoring-view -z thanos -n project1
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/backend-scaled-object.yaml">ScaledObject</a> to scale backend pod by conncurrent request.</p>
+<pre><code class="lang-bash">oc apply -f manifests/backend-scaled-object.yaml -n project1
+oc get scaledobject/backend -o yaml -n project1 | grep -A4 &quot; conditions:&quot;
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-yaml"> scaledobject.keda.sh/backend created
+conditions:
+- message: ScaledObject is defined correctly and is ready for scaling
+  reason: ScaledObjectReady
+  status: &quot;True&quot;
+  type: Ready
+</code></pre>
+</li>
+</ul>
+<h3 id="test">Test</h3>
+<ul>
+<li><p>Run Load Test with K6</p>
+<pre><code class="lang-bash">  URL=http://$(oc get route backend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
+  oc run load-test -n project1 -i \
+  --image=loadimpact/k6 --rm=true --restart=Never \
+  --  run -  &lt; manifests/load-test-k6.js \
+  -e URL=$URL -e THREADS=20 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+</code></pre>
+</li>
+<li><p>Check that ScaledObject is active</p>
+<pre><code class="lang-bash">NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   AGE
+backend   apps/v1.Deployment   backend-v1        1     5     prometheus   keda-trigger-auth-prometheus   True    True     False      77m
+</code></pre>
+</li>
+<li><p>Check that backend is scaled out</p>
+<pre><code class="lang-bash">NAME                         READY   STATUS    RESTARTS   AGE
+backend-v1-c448b55d9-5t2j6   1/1     Running   0          13s
+backend-v1-c448b55d9-5v9gm   1/1     Running   0          129m
+</code></pre>
+</li>
+<li><p>Check concurent request. Open Developer Console and use custom query</p>
+<pre><code class="lang-bash">sum by (pod)(rate(http_server_requests_seconds_count{method=&quot;GET&quot;,uri=&quot;root&quot;,outcome=&quot;SUCCESS&quot;}[1m]))
+</code></pre>
+<p><img src="images/backend-concurrent-sum-by-pod.png" alt=""></p>
+</li>
+</ul>
 
                                 
                                 </section>
@@ -843,7 +959,7 @@ siege -c 40 $FRONTEND_URL
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2023-06-19T05:11:20.061Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-06-19T05:12:15.671Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2023-06-20T06:09:55.074Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-06-20T06:10:52.733Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
