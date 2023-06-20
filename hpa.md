@@ -277,6 +277,22 @@ If you don't have siege, run k6 as pod on OpenShift -->
   oc get scaledobject/backend -o yaml -n project1 | grep -A4 " conditions:"
   ```
 
+  Number of replicas and triggers configuration
+  
+  ```yaml
+  triggers:
+      - authenticationRef:
+          kind: TriggerAuthentication
+          name: keda-trigger-auth-prometheus
+        metadata:
+          metricName: http_server_requests_seconds_count
+          namespace: project1
+          query: rate(http_server_requests_seconds_count{method="GET",uri="root",outcome="SUCCESS"}[1m])
+          serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+          threshold: "15"
+          authModes: "bearer"
+```
+
   Output
 
    ```yaml
