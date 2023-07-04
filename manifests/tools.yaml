@@ -30,9 +30,12 @@ spec:
             cpu: "0.2"
             memory: 700Mi
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
+          capabilities:
+            drop: ["ALL"]
           readOnlyRootFilesystem: false
       terminationGracePeriodSeconds: 10
 
