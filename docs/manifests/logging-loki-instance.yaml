@@ -17,13 +17,13 @@ metadata:
   namespace: openshift-logging
 spec:
   rules:
-    enabled: true
+    enabled: true # Enable Alert
     selector:
       matchLabels:
-        openshift.io/cluster-monitoring: "true"
+        openshift.io/cluster-monitoring: "true" # Only consider rules matching these labels
     namespaceSelector:
       matchLabels:
-        openshift.io/cluster-monitoring: "true"
+        openshift.io/cluster-monitoring: "true" # Only consider rules in namespaces matching these labels
   size: 1x.extra-small
   storage:
     schemas:
