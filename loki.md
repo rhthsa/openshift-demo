@@ -11,6 +11,10 @@
   ```bash
   oc create -f manifests/logging-operator.yaml
   oc create -f manifests/loki-operator.yaml
+  sleep 30
+  oc wait --for condition=established --timeout=180s \
+  crd/lokistacks.loki.grafana.com \
+  crd/clusterloggings.logging.openshift.io
   oc get csv -n openshift-logging
   ```
 
@@ -41,7 +45,7 @@
     |sed 's/AWS_REGION/'$AWS_REGION'/' \
     |sed 's/AWS_ACCESS_KEY_ID/'$AWS_ACCESS_KEY_ID'/' \
     |sed 's|AWS_SECRET_ACCESS_KEY|'$AWS_SECRET_ACCESS_KEY'|' \
-    |oc apply -f -
+    |oc create -f -
     watch oc get po -n openshift-logging
     ```
     
@@ -112,7 +116,8 @@
 - Test sample app
   
   ```bash
-  curl https://$(oc get route/frontend -o jsonpath='{.spec.host}' -n ui)
+  FRONTEND_URL=$(oc get route/frontend -o jsonpath='{.spec.host}' -n ui)
+  curl -v https://$FRONTEND_URL
   ```
 
   Output
@@ -159,6 +164,9 @@
 
 ## Alert
 
+```bash
+oc set env deployment/backend-v1 APP_BACKEND=https://mockbin.org/status/500/sorry-we-re-closed -n 
+```
 WIP
 
 <!-- delete ingester then queier -->
