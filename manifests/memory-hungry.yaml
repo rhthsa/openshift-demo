@@ -34,10 +34,13 @@ spec:
             cpu: "0.1"
             memory: 100Mi
         securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           runAsNonRoot: true
-          drop: ALL
-          readOnlyRootFilesystem: false
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
         ports:
         - containerPort: 8080
       terminationGracePeriodSeconds: 10
