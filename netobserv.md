@@ -1,8 +1,14 @@
 # Network Observability
 - [Network Observability](#network-observability)
   - [Install Operators](#install-operators)
+    - [Network Observability Operator](#network-observability-operator)
+    - [Loki Operator](#loki-operator)
+      - [Configure Loki for Network Observability](#configure-loki-for-network-observability)
+    - [Create Flow Collector](#create-flow-collector)
+  - [Test](#test)
 
 ## Install Operators
+### Network Observability Operator
 
 - Install Network Observability Operator
    - [Command Line](manifests/netobserv-operator.yaml)
@@ -37,6 +43,7 @@
 
      ![](images/network-observability-operator-enable-console-plugin.png)
 
+### Loki Operator
 - Install [Loki Operator](loki.md) and config Loki instance 
   - Install Loki Operator
     
@@ -55,6 +62,7 @@
     loki-operator.v5.7.2                    Loki Operator           5.7.2     loki-operator.v5.7.1                    Succeeded
     ```
 
+#### Configure Loki for Network Observability
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
       - For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry
         
@@ -90,6 +98,7 @@
     loki-query-frontend-66d97f7c68-jsgc8   0/1     Running             0          9s
     ```
 
+### Create Flow Collector
  - Create [FlowCollector](manifests/FlowCollector.yaml)
     
    ```bash
@@ -104,6 +113,7 @@
     cluster   EBPF    50                DIRECT             Ready
    ```
 
+## Test
  - Check Network Observability by Open Administrator -> Observe -> Network Traffic
    
    Overview
@@ -114,7 +124,7 @@
      Flow Rate
 
      ![](images/network-observability-overall-flow-rate.png)
-     
+
    Topology
 
   ![](images/network-observability-network-topology.png)
