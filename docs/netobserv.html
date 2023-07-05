@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Custom Alert · OpenShift Demo</title>
+        <title>Network Observability · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="compliance-operator.html" />
     
-    
-    <link rel="prev" href="custom-roles.html" />
+    <link rel="prev" href="compliance-operator.html" />
     
 
     </head>
@@ -250,7 +248,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.2.11" data-path="custom-alert.html">
+        <li class="chapter " data-level="1.2.11" data-path="custom-alert.html">
             
                 <a href="custom-alert.html">
             
@@ -276,7 +274,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.13" data-path="netobserv.html">
+        <li class="chapter active" data-level="1.2.13" data-path="netobserv.html">
             
                 <a href="netobserv.html">
             
@@ -647,7 +645,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Custom Alert</a>
+        <a href="." >Network Observability</a>
     </h1>
 </div>
 
@@ -662,285 +660,111 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="custom-monitoring">Custom Monitoring</h1>
+                                <h1 id="network-observability">Network Observability</h1>
 <ul>
-<li><a href="#custom-monitoring">Custom Monitoring</a><ul>
-<li><a href="#monitor-pod-creation">Monitor Pod Creation</a></li>
-<li><a href="#monitor-project-quotas">Monitor Project Quotas</a><ul>
-<li><a href="#cluster-level">Cluster Level</a></li>
-</ul>
-</li>
-<li><a href="#test-alert">Test Alert</a><ul>
-<li><a href="#crashloopbackoff-and-imagepullbackoff">CrashLoopBackOff and ImagePullBackOff</a></li>
-<li><a href="#oomkilled">OOMKilled</a></li>
-</ul>
-</li>
-<li><a href="#alert-with-line">Alert with LINE</a><ul>
-<li><a href="#line-bot-configuration">LINE BOT Configuration</a></li>
+<li><a href="#network-observability">Network Observability</a><ul>
+<li><a href="#install-operators">Install Operators</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="monitor-pod-creation">Monitor Pod Creation</h2>
+<h2 id="install-operators">Install Operators</h2>
 <ul>
-<li><p>Create custom alerts to monitor for pod creating status with PrometheusRule <a href="manifests/pod-stuck-alerts.yaml">pod-stuck-alerts.yaml</a></p>
-</li>
-<li><p>This <em>PrometheusRule</em> will sending alerts if pod status </p>
+<li><p>Install Network Observability Operator</p>
 <ul>
-<li>PodStuckContainerCreating for 2 minutes</li>
-<li>PodStuckImagePullBackOff for 30 seconds</li>
-<li>PodStuckErrImagePull for 2 minuts</li>
-<li>PodStuckCrashLoopBackOff for 2 minutes</li>
-<li>PodStuckCreateContainerError for 2 minutes</li>
-<li>OOMKilled for 3 minutes</li>
-</ul>
+<li><p><a href="manifests/netobserv-operator.yaml">Command Line</a></p>
+<pre><code class="lang-bash"> oc create -f manifests/netobserv-operator.yaml
+ oc wait --for condition=established --timeout=180s \
+ crd/flowcollectors.flows.netobserv.io
+ oc get csv -n openshift-netobserv-operator
+</code></pre>
+<p> Output</p>
+<pre><code class="lang-bash"> customresourcedefinition.apiextensions.k8s.io/flowcollectors.flows.netobserv.io condition met
+ NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
+ network-observability-operator.v1.3.0   Network Observability   1.3.0     network-observability-operator.v1.2.0   Succeeded
+</code></pre>
+<p> Enable console plugin</p>
+<pre><code class="lang-bash"> oc patch console.operator cluster  \
+ --type json -p &apos;[{&quot;op&quot;: &quot;add&quot;, &quot;path&quot;: &quot;/spec/plugins/-&quot;, &quot;value&quot;: &quot;netobserv-plugin&quot;}]&apos;
+</code></pre>
+</li>
+<li><p>Admin Console</p>
+<p><img src="images/network-observability-operator.png" alt=""></p>
+<p>Enable console plugin</p>
+<p><img src="images/network-observability-operator-enable-console-plugin.png" alt=""></p>
 </li>
 </ul>
-<h2 id="monitor-project-quotas">Monitor Project Quotas</h2>
+</li>
+<li><p>Install <a href="loki.html">Loki Operator</a> and config Loki instance </p>
 <ul>
-<li><p>Create custom alerts to monitor for project quotas  with PrometheusRule <a href="manifests/quota-alert.yaml">quota-alert.yaml</a></p>
+<li><p>Install Loki Operator</p>
+<pre><code class="lang-bash">oc create -f manifests/loki-operator.yaml
+oc wait --for condition=established --timeout=180s \
+crd/lokistacks.loki.grafana.com
+oc get csv
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">customresourcedefinition.apiextensions.k8s.io/lokistacks.loki.grafana.com condition met
+NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
+loki-operator.v5.7.2                    Loki Operator           5.7.2     loki-operator.v5.7.1                    Succeeded
+</code></pre>
 </li>
-<li><p>This <em>PrometheusRule</em> will sending alerts if</p>
+<li><p>Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region</p>
 <ul>
-<li>Project used CPU/memory request/limits more than 90% will alert with critical severity</li>
-<li>Project used CPU/memory request/limits more than 80% and less than 90% with warning severity</li>
-</ul>
+<li><p>For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry</p>
+<pre><code class="lang-bash">  S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
+  AWS_REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
+  AWS_ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+  AWS_SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+</code></pre>
 </li>
 </ul>
-<h3 id="cluster-level">Cluster Level</h3>
+</li>
+<li><p>Create <a href="manifests/netobserv-loki-s3.yaml">Loki Instance</a></p>
+<pre><code class="lang-bash">    cat manifests/netobserv-loki-s3.yaml \
+    |sed &apos;s/S3_BUCKET/&apos;$S3_BUCKET&apos;/&apos; \
+    |sed &apos;s/AWS_REGION/&apos;$AWS_REGION&apos;/&apos; \
+    |sed &apos;s/AWS_ACCESS_KEY_ID/&apos;$AWS_ACCESS_KEY_ID&apos;/&apos; \
+    |sed &apos;s|AWS_SECRET_ACCESS_KEY|&apos;$AWS_SECRET_ACCESS_KEY&apos;|&apos; \
+    |oc apply -f -
+    watch oc get po -n netobserv
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                                   READY   STATUS              RESTARTS   AGE
+loki-compactor-0                       0/1     ContainerCreating   0          9s
+loki-distributor-57476f98bf-vhw9q      0/1     Running             0          9s
+loki-gateway-54cf794dcf-5pqgd          0/2     ContainerCreating   0          9s
+loki-gateway-54cf794dcf-6pw4g          0/2     ContainerCreating   0          9s
+loki-index-gateway-0                   0/1     ContainerCreating   0          9s
+loki-ingester-0                        0/1     ContainerCreating   0          9s
+loki-querier-6fdbf9bf5c-gw8c7          0/1     ContainerCreating   0          9s
+loki-query-frontend-66d97f7c68-jsgc8   0/1     Running             0          9s
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/FlowCollector.yaml">FlowCollector</a></p>
+<pre><code class="lang-bash">oc create -f manifests/FlowCollector.yaml
+oc get flowcollector -n netobserv
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">flowcollector.flows.netobserv.io/cluster created
+NAME      AGENT   SAMPLING (EBPF)   DEPLOYMENT MODEL   STATUS
+cluster   EBPF    50                DIRECT             Ready
+</code></pre>
+</li>
+<li><p>Check Network Observability by Open Administrator -&gt; Observe -&gt; Network Traffic</p>
+<p>Overview</p>
 <ul>
-<li><p>Create <em><a href="manifests/pod-stuck-alerts.yaml">PrometheusRule</a></em> in namespace <em>openshift-monitoring</em></p>
-<pre><code class="lang-bash">oc create -f manifests/pod-stuck-alerts.yaml
-oc create -f manifests/quota-alert.yaml
-</code></pre>
-</li>
-<li><p>Check alerting rules</p>
-<p><img src="images/monitoring-alert.png" alt=""></p>
-</li>
-<li><p>View alerting rules <em>cpuRequestQuotaCritical</em></p>
-<p><img src="images/cpuRequestQuotaCriticalAlert.png" alt=""></p>
+<li><p>Add filtering by namespace name i.e. monitor for namespace ui and api</p>
+<p><img src="images/network-observability-overview.png" alt=""></p>
+<p>Flow Rate</p>
+<p><img src="images/network-observability-overall-flow-rate.png" alt=""></p>
 </li>
 </ul>
-<!-- ### User Workload Monitoring
-  - If [user workload monitoring](application-metrics.md) is enabled. Prometheus Rule can be created at project level.
-
-    ```bash
-    oc create -f manifests/pod-stuck-alerts.yaml -n demo
-    ```
-
-  - Add following label to deploy rules to Thanos Ruler
-
-    ```yaml
-    metadata:
-      name: pod-stuck
-      labels:
-       openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
-    ```
-
-  - Check for alert rules in Developer Console
-
-      ![](images/monitoring-alert-user-workload.png) -->
-<h2 id="test-alert">Test Alert</h2>
-<h3 id="crashloopbackoff-and-imagepullbackoff">CrashLoopBackOff and ImagePullBackOff</h3>
-<ul>
-<li><p>Create following <a href="manifests/pod-stuck.yaml">pod-stuck</a> deployments. These deployments intentionally put pods into error state.</p>
-<pre><code class="lang-bash">oc create -f manifests/pod-stuck.yaml -n demo
-</code></pre>
-</li>
-<li><p>Check for result</p>
-<pre><code class="lang-bash">oc get pods -n demo
-</code></pre>
-</li>
-<li><p>Sample result</p>
-<pre><code class="lang-bash">NAME                          READY   STATUS             RESTARTS     AGE
-backend-v5-65569d96b9-ht5zl   0/1     CrashLoopBackOff   1 (8s ago)   13s
-backend-v6-794c9fc748-hgpl2   0/1     ImagePullBackOff   0            13s
-</code></pre>
+<p>Topology</p>
 </li>
 </ul>
-<ul>
-<li><p>Check for alerts on Notifications menu</p>
-<p>  <img src="images/alerts-notification.png" alt=""></p>
-</li>
-<li><p>Administrator -&gt; Overview</p>
-<p>  <img src="images/pod-stuck-alert-overview.png" alt=""></p>
+<p><img src="images/network-observability-network-topology.png" alt=""></p>
 </li>
 </ul>
-<!-- - For User Workload Monitoring
-
-    ![](images/pod-stuck-alert-dev-console.png) -->
-<ul>
-<li><p>Check for details of an alert</p>
-<p>  <img src="images/pod-stuck-crashloopbackoff.png" alt=""></p>
-</li>
-</ul>
-<h3 id="oomkilled">OOMKilled</h3>
-<ul>
-<li><p>Create following <a href="manifests/memory-hungry.yaml">memory-hungry</a> deployments. These deployments intentionally put pods into error state.</p>
-<pre><code class="lang-bash">oc create -f manifests/memory-hungry.yaml -n demo
-</code></pre>
-</li>
-<li><p>Check for result</p>
-<pre><code class="lang-bash">oc get pods -n demo
-</code></pre>
-</li>
-<li><p>Get route to access memory-hungry app</p>
-<pre><code class="lang-bash">HUNGER=https://$(oc get route memory-hungry -n demo -o jsonpath=&apos;{.spec.host}&apos;)
-</code></pre>
-</li>
-<li><p>Run following command</p>
-<pre><code class="lang-bash">curl -s $HUNGER/eat/6
-</code></pre>
-</li>
-<li><p>Check application log</p>
-<pre><code class="lang-bash">2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) leak 1.0.0-SNAPSHOT native (powered by Quarkus 2.13.1.Final) started in 0.202s. Listening on: http://0.0.0.0:8080
-2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Profile prod activated.
-2022-10-25 09:03:05,745 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy, smallrye-context-propagation, smallrye-health, smallrye-metrics, smallrye-openapi, vertx]
-2022-10-25 09:55:54,697 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 1
-2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
-2022-10-25 09:55:54,845 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 2
-2022-10-25 09:55:55,141 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
-2022-10-25 09:55:55,142 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 3
-2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
-2022-10-25 09:55:55,346 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 4
-2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Allocated 10485760 bytes
-2022-10-25 09:55:55,641 INFO  [com.exa.HungryResource] (executor-thread-0) Prepare meal for dish no. 5
-</code></pre>
-</li>
-<li><p>Check for alert in console</p>
-<p><img src="images/OOMKilled-alert.png" alt=""></p>
-</li>
-<li><p>Check pod with oc <em>get pod <pod name=""> -o yaml</pod></em></p>
-<pre><code class="lang-yaml">  containerStatuses:
-    - containerID: cri-o://c3cb6a9b2a967f35bda906e5e20b1d22c1c4f8f1dc15d2e797618e1f8438f7fb
-      image: quay.io/voravitl/leak:native
-      imageID: quay.io/voravitl/leak@sha256:f74d7653c2ebf71144f16019143b9849fff3f3491e4ec199fab6db51dab02b8f
-      lastState:
-        terminated:
-          containerID: cri-o://08f70b1f69bc00906edaa17241d300abf2df4b356c13b7dd1896eae5b0bb6760
-          exitCode: 137
-          finishedAt: &quot;2022-11-03T07:03:06Z&quot;
-          reason: OOMKilled
-          startedAt: &quot;2022-11-03T06:56:55Z&quot;
-</code></pre>
-</li>
-</ul>
-<h2 id="alert-with-line">Alert with LINE</h2>
-<ul>
-<li>Login to <a href="https://developers.line.biz/" target="_blank">LINE Developer</a> and create Channel</li>
-<li><p>Deploy LINE BOT app</p>
-<pre><code class="lang-bash">oc new-project line-alert
-oc create -f manifests/line-bot.yaml -n line-alert
-</code></pre>
-<p>Verify deployment</p>
-<p>  <img src="images/line-bot-alert-pod.png" alt=""></p>
-</li>
-<li><p>Update line-bot deployment environment variable <em>API_LINE_TOKEN</em> with your channel access token</p>
-<p>Channel access token</p>
-<p><img src="images/line-channel-access-token.png" alt=""></p>
-<p>Update Environment variable </p>
-<ul>
-<li><p>Developer Console</p>
-<p><img src="images/line-bot-api-line-token.png" alt=""></p>
-</li>
-<li><p>CLI</p>
-<pre><code class="lang-bash">oc set env -n line-alert deployment/line-bot API_LINE_TOKEN-
-oc set env -n line-alert deployment/line-bot API_LINE_TOKEN=$API_LINE_TOKEN
-</code></pre>
-</li>
-</ul>
-</li>
-<li><p>Update your Channel&apos;s Webhook with line-bot route</p>
-<p>Webhook URL </p>
-<pre><code class="lang-bash">LINE_WEBHOOK=https://$(oc get route line-bot -n line-alert -o jsonpath=&apos;{.spec.host}&apos;)/webhook
-echo $LINE_WEBHOOK
-</code></pre>
-<p>Configure Line BOT Webhook to your channel</p>
-<p>  <img src="images/line-developer-webhook.png" alt=""></p>
-</li>
-</ul>
-<p>  Send some message to your LINE BOT and check line-bot pod&apos;s log</p>
-<pre><code>```bash
-2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) Message Type: text
-2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) Message: Hi
-2022-09-06 06:47:14,766 INFO  [com.vor.LineBotResource] (executor-thread-0) userId: U*************, userType: user
-2022-09-06 06:47:14,767 INFO  [com.vor.LineBotResource] (executor-thread-0) replyToken: 0a5b7*********
-```
-</code></pre><ul>
-<li><p>Register your LINE account to receiving alert by send message <strong>register</strong> to LINE BOT</p>
-<p>  <img src="images/line-bot-register.jpg" alt=""></p>
-<p>  line-bot pod&apos;s log</p>
-<pre><code class="lang-log">  2022-09-06 07:14:04,915 INFO [com.vor.LineBotResource] (executor-thread-0) destination: Uef7db62e42ed955b58d9810f64955806
-  2022-09-06 07:14:04,916 INFO [com.vor.LineBotResource] (executor-thread-0) Message Type: text
-  2022-09-06 07:14:04,916 INFO [com.vor.LineBotResource] (executor-thread-0) Message: Register
-  2022-09-06 07:14:07,142 INFO [com.vor.LineBotResource] (executor-thread-0) Register user: U*************
-  2022-09-06 07:14:07,143 INFO [com.vor.LineBotResource] (executor-thread-0) userId: U*************, userType: user
-  2022-09-06 07:14:07,143 INFO [com.vor.LineBotResource] (executor-thread-0) replyToken: 741b1*********
-</code></pre>
-</li>
-<li><p>Configure Alert Manger Webhook</p>
-<ul>
-<li><p>Administrator Console, Administration-&gt;Cluster Settings-&gt;Configuration and select <em>Alertmanager</em></p>
-<p>  <img src="images/admin-console-config-alertmanager.png" alt=""></p>
-</li>
-<li><p>Create Receiver</p>
-<p>  <img src="images/line-webhook-receiver.png" alt=""></p>
-</li>
-<li><p>Check that PrometheusRule <a href="manifests/pod-stuck-alerts.yaml">pod-stuck</a> contains label receiver with value equals to line for each alert</p>
-<pre><code class="lang-yaml">- alert: PodStuckErrImagePull
-  annotations:
-    message: Pod    in project  project stuck at ErrImagePull
-    description: Pod    in project  project stuck at ErrImagePull
-  expr: kube_pod_container_status_waiting_reason{reason=&quot;ErrImagePull&quot;} == 1 
-  for: 30s
-  labels:
-    severity: critical
-    receiver: &apos;line&apos;
-</code></pre>
-</li>
-</ul>
-</li>
-<li><p>Create deployment with CrashLoopBackoff</p>
-<pre><code class="lang-bash">  oc create -f manifests/pod-stuck -n demo
-  watch oc get pods -n demo
-</code></pre>
-</li>
-<li><p>Check LINE message</p>
-<p><img src="images/line-alert-crashloopbackoff.png" alt=""></p>
-</li>
-</ul>
-<h3 id="line-bot-configuration">LINE BOT Configuration</h3>
-<p>Use following enviroment variables to configure LINE BOT</p>
-<table>
-<thead>
-<tr>
-<th>Variable</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>APP_LINE_TOKEN</td>
-<td>LINE Channel Token</td>
-</tr>
-<tr>
-<td>QUARKUS_LOG_CATEGORY<strong>COM_VORAVIZ</strong>LEVEL</td>
-<td>Set to DEBUG if you want to log whole JSON message from AlertManager</td>
-</tr>
-<tr>
-<td>APP_ALERT_ANNOTATIONS</td>
-<td>List of attributes from Annotations to including in message</td>
-</tr>
-</tbody>
-</table>
-<p>Alert Rule annotaions</p>
-<pre><code class="lang-yaml">  - alert: PodStuckCrashLoopBackOff
-        annotations:
-          summary: CrashLoopBackOff in project {{ $labels.namespace }}
-          message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
-          description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
-</code></pre>
 
                                 
                                 </section>
@@ -968,14 +792,10 @@ echo $LINE_WEBHOOK
 
             
                 
-                <a href="custom-roles.html" class="navigation navigation-prev " aria-label="Previous page: Custom Roles and Service Account">
+                <a href="compliance-operator.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Compliance">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="compliance-operator.html" class="navigation navigation-next " aria-label="Next page: Compliance">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -984,7 +804,7 @@ echo $LINE_WEBHOOK
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Custom Alert","level":"1.2.11","depth":2,"next":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"previous":{"title":"Custom Roles and Service Account","level":"1.2.10","depth":2,"path":"custom-roles.md","ref":"custom-roles.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"custom-alert.md","mtime":"2023-07-05T10:46:54.358Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-07-05T10:47:33.636Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Observability","level":"1.2.13","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"netobserv.md","mtime":"2023-07-05T10:46:54.490Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-07-05T10:47:33.636Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
