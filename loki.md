@@ -113,6 +113,17 @@
   oc scale deployment/backend-v1 --replicas=6 -n api
   ```
 
+  Application Flow
+
+  ```mermaid
+  graph TD;
+    Client--> Route
+    Route-->|Project ui|Frontend;
+    Frontend--> |Project api|Backend;
+    Backend-->|External App|https://mockbin.org/status/201/transaction-completed
+   
+  ```
+
 - Test sample app
   
   ```bash
