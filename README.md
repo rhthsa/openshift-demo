@@ -19,6 +19,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - Monitoring Stack
   - AlertRules and Alert Receiver
 - [OpenShift Cluster Logging](infrastructure-cluster-logging.md)
+- [Loki](loki.md)
 - [OpenShift Networking](infrastructure-networking.md)
   - OpenShift Network Policies Based SDN
   - Egress IPs
@@ -29,7 +30,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 - [Custom Roles and Service Account](custom-roles.md)
 - [Custom Alert](custom-alert.md)
 - [Compliance](compliance-operator.md)
-
+- [Network Observability](netobserv.md)
 ### Multi-cluster Management with Advanced Cluster Management (RHACM)
 - [Application Manageement](acm-application-management.md)
 - [Cost saving with hibernating OpenShift](acm-hibernate.md)
