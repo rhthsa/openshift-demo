@@ -78,7 +78,7 @@
   - Or using CLI
     
     ```bash
-    oc patch console.operator cluster -n openshift-logging --type json -p '[{"op": "add", "path": "/spec/plugins", "value": ["logging-view-plugin"]}]'
+    oc patch console.operator cluster --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
     ```
 
 - Restart console pod
