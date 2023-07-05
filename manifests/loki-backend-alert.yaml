@@ -1,0 +1,22 @@
+apiVersion: loki.grafana.com/v1
+kind: AlertingRule
+metadata:
+  name: backend-app-alert
+  namespace: api
+  labels:
+    openshift.io/cluster-monitoring: "true"
+spec:
+  tenantID: application
+  groups:
+  - name: backend-app-alert
+    rules:
+    - alert: client-error
+      expr: |
+        sum(rate({kubernetes_namespace_name="api"} |~ "Return Code: .*" | level=~"error|err" [1m])) > 5
+      for: 60s
+      labels:
+        severity: critical
+      annotations:
+        description: "Backend error rate is  {{ $value }} requests/min"
+        summary: "Backend error rate is {{ $value }} requests/min"
+      
