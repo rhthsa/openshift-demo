@@ -1,10 +1,60 @@
 # Network Observability
 - [Network Observability](#network-observability)
-  - [Install and Config](#install-and-config)
+  - [Install Operators](#install-operators)
 
-## Install and Config
+## Install Operators
 
-- Config Loki
+- Install Network Observability Operator
+   - [Command Line](manifests/netobserv-operator.yaml)
+
+      ```bash
+      oc create -f manifests/netobserv-operator.yaml
+      oc wait --for condition=established --timeout=180s \
+      crd/flowcollectors.flows.netobserv.io
+      oc get csv -n openshift-netobserv-operator
+      ```
+
+      Output
+    
+      ```bash
+      customresourcedefinition.apiextensions.k8s.io/flowcollectors.flows.netobserv.io condition met
+      NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
+      network-observability-operator.v1.3.0   Network Observability   1.3.0     network-observability-operator.v1.2.0   Succeeded
+      ```
+
+      Enable console plugin
+    
+      ```bash
+      oc patch console.operator cluster  \
+      --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "netobserv-plugin"}]'
+      ```
+      
+   - Admin Console
+     
+     ![](images/network-observability-operator.png)
+
+     Enable console plugin
+
+     ![](images/network-observability-operator-enable-console-plugin.png)
+
+- Install [Loki Operator](loki.md) and config Loki instance 
+  - Install Loki Operator
+    
+    ```bash
+    oc create -f manifests/loki-operator.yaml
+    oc wait --for condition=established --timeout=180s \
+    crd/lokistacks.loki.grafana.com
+    oc get csv
+    ```
+
+    Output
+    
+    ```bash
+    customresourcedefinition.apiextensions.k8s.io/lokistacks.loki.grafana.com condition met
+    NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
+    loki-operator.v5.7.2                    Loki Operator           5.7.2     loki-operator.v5.7.1                    Succeeded
+    ```
+
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
       - For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry
         
@@ -26,26 +76,45 @@
         watch oc get po -n netobserv
     ```
 
- 
- - Install [Network Observability Operator](manifests/netobserv-operator.yaml)
+    Output
 
-  *Remark: Loki Operator is prerequistes of Network Observability Operator*
-
-  ```bash
-  oc create -f manifests/netobserv-operator.yaml
-  oc wait --for condition=established --timeout=180s \
-  crd/flowcollectors.flows.netobserv.io
-  oc get csv -n openshift-netobserv-operator
-  ```
+    ```bash
+    NAME                                   READY   STATUS              RESTARTS   AGE
+    loki-compactor-0                       0/1     ContainerCreating   0          9s
+    loki-distributor-57476f98bf-vhw9q      0/1     Running             0          9s
+    loki-gateway-54cf794dcf-5pqgd          0/2     ContainerCreating   0          9s
+    loki-gateway-54cf794dcf-6pw4g          0/2     ContainerCreating   0          9s
+    loki-index-gateway-0                   0/1     ContainerCreating   0          9s
+    loki-ingester-0                        0/1     ContainerCreating   0          9s
+    loki-querier-6fdbf9bf5c-gw8c7          0/1     ContainerCreating   0          9s
+    loki-query-frontend-66d97f7c68-jsgc8   0/1     Running             0          9s
+    ```
 
  - Create [FlowCollector](manifests/FlowCollector.yaml)
     
    ```bash
    oc create -f manifests/FlowCollector.yaml
+   oc get flowcollector -n netobserv
+   ```
+   
+   Output
+   ```bash
+    flowcollector.flows.netobserv.io/cluster created
+    NAME      AGENT   SAMPLING (EBPF)   DEPLOYMENT MODEL   STATUS
+    cluster   EBPF    50                DIRECT             Ready
    ```
 
  - Check Network Observability by Open Administrator -> Observe -> Network Traffic
    
+   Overview
+   - Add filtering by namespace name i.e. monitor for namespace ui and api
+     
+     ![](images/network-observability-overview.png)
+
+     Flow Rate
+
+     ![](images/network-observability-overall-flow-rate.png)
+     
    Topology
 
   ![](images/network-observability-network-topology.png)
