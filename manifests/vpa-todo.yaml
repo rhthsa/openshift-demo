@@ -9,8 +9,9 @@ spec:
     kind:       Deployment 
     name:       todo 
   updatePolicy:
-    updateMode: "Off" 
-    # updateMode: Off, Auto, Initial and Recreate
+    updateMode: "Auto" # updateMode: Off, Auto, Initial and Recreate
+    # autoPolicy:
+    #   policy: "Conservative"
   resourcePolicy:
     containerPolicies:
     - containerName: "todo"
