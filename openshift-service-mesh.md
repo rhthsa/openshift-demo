@@ -4,6 +4,10 @@
 - [OpenShift Service Mesh](#openshift-service-mesh)
   - [Overview](#overview)
   - [Setup Control Plane and sidecar](#setup-control-plane-and-sidecar)
+  - [Traffic Management](#traffic-management)
+    - [Destination Rule, Virtual Service and Gateway](#destination-rule-virtual-service-and-gateway)
+      - [Kiali](#kiali)
+      - [CLI/YAML](#cliyaml)
     - [Test Istio Gateway](#test-istio-gateway)
     - [A/B Deployment with Weight-Routing](#ab-deployment-with-weight-routing)
     - [Conditional Routing by URI](#conditional-routing-by-uri)
@@ -27,6 +31,8 @@
   - [Control Plane with High Availability](#control-plane-with-high-availability)
     - [OpenShift Service Mesh 1.x](#openshift-service-mesh-1x)
     - [OpenShift Service Mesh 2.x](#openshift-service-mesh-2x)
+  - [Rate Limit](#rate-limit)
+    - [OpenShift Service Mesh 2.0.x or Istio 1.6.x](#openshift-service-mesh-20x-or-istio-16x)
 
 <!-- /TOC -->
 
@@ -55,7 +61,7 @@ Sample application
   crd/servicemeshcontrolplanes.maistra.io \
   crd/kialis.kiali.io \
   crd/jaegers.jaegertracing.io
-  oc get csv -n istio-system
+  oc get csv
   ```
 
   Output
@@ -64,11 +70,10 @@ Sample application
   customresourcedefinition.apiextensions.k8s.io/servicemeshcontrolplanes.maistra.io condition met
   customresourcedefinition.apiextensions.k8s.io/kialis.kiali.io condition met
   customresourcedefinition.apiextensions.k8s.io/jaegers.jaegertracing.io condition met
-  NAME                         DISPLAY                                          VERSION    REPLACES                     PHASE
-  jaeger-operator.v1.34.1-5    Red Hat OpenShift distributed tracing platform   1.34.1-5   jaeger-operator.v1.30.2      Succeeded
-  keda.v2.7.1                  KEDA                                             2.7.1      keda.v2.6.1                  Succeeded
-  kiali-operator.v1.48.0       Kiali Operator                                   1.48.0     kiali-operator.v1.36.10      Succeeded
-  servicemeshoperator.v2.2.0   Red Hat OpenShift Service Mesh                   2.2.0-0    servicemeshoperator.v2.1.3   Succeeded
+  NAME                               DISPLAY                                                 VERSION    REPLACES                           PHASE
+  jaeger-operator.v1.38.0-2          Red Hat OpenShift distributed tracing platform          1.38.0-2   jaeger-operator.v1.36.0-2          Succeeded
+  kiali-operator.v1.57.3             Kiali Operator                                          1.57.3     kiali-operator.v1.48.3             Succeeded
+  servicemeshoperator.v2.3.0         Red Hat OpenShift Service Mesh                          2.3.0-0    servicemeshoperator.v2.2.3         Succeeded
   ```
  o
 - Create control plane by create [ServiceMeshControlPlane](manifests/smcp.yaml) CRD
@@ -128,7 +133,7 @@ Sample application
 
   ```bash
   NAME    READY   STATUS            PROFILES      VERSION   AGE
-  basic   10/10   ComponentsReady   ["default"]   2.2.0     83s
+  basic   9/9     ComponentsReady   ["default"]   2.3.0     80s
   ```
   
 - Join project1 into control plane
@@ -239,27 +244,30 @@ Sample application
   - Review [Destination Rule CRD](manifests/frontend-destination-rule.yaml)
   
     ```yaml
-    apiVersion: networking.istio.io/v1alpha3
+    apiVersion: networking.istio.io/v1beta1
     kind: DestinationRule
     metadata:
-        name: frontend
+      name: frontend
     spec:
-        host: frontend
-        subsets:
+      host: frontend.project1.svc.cluster.local
+      trafficPolicy:
+        loadBalancer:
+          simple: ROUND_ROBIN
+        connectionPool:
+          tcp:
+            maxConnections: 20
+          http:
+            http1MaxPendingRequests: 5
+        outlierDetection:
+          consecutiveGatewayErrors: 2
+          consecutive5xxErrors: 2
+      subsets:
         - name: v1
-        labels:
-            app: frontend
+          labels:
             version: v1
-        trafficPolicy:
-            loadBalancer:
-            simple: ROUND_ROBIN
         - name: v2
-        labels:
-            app: frontend
+          labels:
             version: v2
-        trafficPolicy:
-            loadBalancer:
-            simple: ROUND_ROBIN
     ```
   - Create destination rule
   
@@ -274,17 +282,22 @@ Sample application
     apiVersion: networking.istio.io/v1alpha3
     kind: VirtualService
     metadata:
-        name: frontend
+      name: frontend
     spec:
-        hosts:
-        - frontend.apps.DOMAIN
-        gateways:
-        - project1/frontend-gateway
-        http:
-        - route:
+      hosts:
+      - frontend.apps.DOMAIN
+      gateways:
+      - project1/frontend-gateway
+      trafficPolicy:
+        loadBalancer:
+          simple: ROUND_ROBIN
+        tls:
+          mode: DISABLE #ISTIO_MUTUAL
+      http:
+      - route:
         - destination:
             port:
-                number: 8080
+              number: 8080
             host: frontend.project1.svc.cluster.local
     ```
     
@@ -307,20 +320,20 @@ Sample application
   - Review [Gateway CRD](manifests/frontend-gateway.yaml), Replaced DOMAIN with cluster's sub-domain
     
     ```yaml
-    apiVersion: networking.istio.io/v1alpha3
+    apiVersion: networking.istio.io/v1beta1
     kind: Gateway
     metadata:
-    name: frontend-gateway
+      name: frontend-gateway
     spec:
-    selector:
-        istio: ingressgateway # use istio default controller
-    servers:
-    - port:
-        number: 80
-        name: http
-        protocol: HTTP
-        hosts:
-        - 'frontend.apps.DOMAIN'
+      servers:
+        - port:
+            number: 80
+            protocol: HTTP
+            name: http
+          hosts:
+            - frontend.apps.DOMAIN
+      selector:
+        istio: ingressgateway
     ```
 
   - Replace DOMAIN with your clsuter sub-domain and Create [gateway](manifests/frontend-gateway.yaml)
@@ -393,15 +406,7 @@ Sample application
   - Check for [virtual service with weight routing](manifests/frontend-virtual-service-with-weight-routing.yaml), Replace DOMAIN with cluster's DOMAIN
 
     ```yaml
-    apiVersion: networking.istio.io/v1alpha3
-    kind: VirtualService
-    metadata:
-      name: frontend
-    spec:
-      hosts:
-      - frontend.apps.DOMAIN
-      gateways:
-      - project1/frontend-gateway
+    ...
       http:
       - route:
         - destination:
@@ -441,8 +446,8 @@ Sample application
       oc patch virtualservice frontend --type='json' -p='[{"op":"replace","path":"/spec/http/0","value":{"route":[{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v1"},"weight":70},{"destination":{"host":"frontend.project1.svc.cluster.local","port":{"number":8080},"subset":"v2"},"weight":30}]}}]' -n project1
       ```
 
-    #### Kiali
-    - 
+    <!-- #### Kiali
+    -  -->
     
 - Test A/B deployment
   - Run 100 requests
