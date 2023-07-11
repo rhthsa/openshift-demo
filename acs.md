@@ -17,6 +17,7 @@
   - [Shift Left Security](#shift-left-security)
     - [kube-linter](#kube-linter)
     - [Scan and check image with roxctl](#scan-and-check-image-with-roxctl)
+  - [Sample of Default Policies](#sample-of-default-policies)
   - [Enforce policy on Buid Stage](#enforce-policy-on-buid-stage)
     - [Use roxctl in Pipeline](#use-roxctl-in-pipeline)
     - [Stackrox Jenkins Plugin](#stackrox-jenkins-plugin)
@@ -734,6 +735,38 @@ Error: found 8 lint errors
     Output
 
     ![](images/acs-roxctl-check-image-CVE-2020-36518.png) -->
+## Sample of Default Policies 
+- Deploy [Mr.White](manifests/mr-white.yaml) to namespace *bad-ns*
+  
+  ```bash
+  oc new-project bad-ns --display-name="This is Mr. White Namespace"
+  oc apply -f manifests/mr-white.yaml -n bad-ns
+  oc expose deploy mr-white -n bad-ns
+  oc expose svc mr-white -n bad-ns
+  MR_WHITE=$(oc get route mr-white -o jsonpath='{.spec.host}' -n bad-ns)
+  ```
+- Run following command
+  
+  ```
+
+  curl http://$MR_WHITE/exec/whoami
+  curl http://$MR_WHITE/exec/useradd%20jessy-pinkman
+  curl http://$MR_WHITE/exec/groupadd%20van-cooking-station
+  oc exec -n bad-ns $( oc get po -o custom-columns='Name:.metadata.name' -n bad-ns --no-headers) -- pwd
+  ```
+
+  Output
+
+  ![](images/mr-white-namespace-violation.png)
+
+  Check for policies
+  - Shell Spawned by Java Application
+  - Linux Group Add Execution
+  - Linux User Add Execution
+  - Environment Variable Contains Secret
+  - Secret Mounted as Environment Variable
+  - Kubernetes Actions: Exec into Pod
+  - Latest tag
 
 ## Enforce policy on Buid Stage
 - Setup Jenkins and SonarQube
