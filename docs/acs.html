@@ -720,20 +720,35 @@
 <ul>
 <li><p>Install Operator </p>
 <ul>
+<li>Web Console<ul>
 <li>Select <em>Advanced Cluster Security for Kubernetes</em> </li>
 </ul>
 </li>
 </ul>
-<p>  <img src="images/acs-install-operator-01.png" alt=""></p>
-<ul>
-<li>Accept default parameters</li>
+</li>
 </ul>
-<p>  <img src="images/acs-install-operator-02.png" alt=""></p>
-<ul>
-<li><p>Create namespace for central server and scanner.</p>
-<pre><code class="lang-bash">oc new-project stackrox
+<pre><code>![](images/acs-install-operator-01.png)
+
+
+- Accept default parameters
+
+
+![](images/acs-install-operator-02.png)
+</code></pre><ul>
+<li><p>CLI</p>
+<pre><code class="lang-bash">oc create -f manifests/acs-subscription.yaml
+oc get csv -n rhacs-operator
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">namespace/rhacs-operator created
+operatorgroup.operators.coreos.com/rhacs-operator-bqbtj created
+subscription.operators.coreos.com/rhacs-operator created
+NAME                                    DISPLAY                                    VERSION   REPLACES                                PHASE
+rhacs-operator.v4.1.0                   Advanced Cluster Security for Kubernetes   4.1.0     rhacs-operator.v4.0.0                   Succeeded
 </code></pre>
 </li>
+</ul>
+<ul>
 <li><p>Install <em>roxctl</em> CLI</p>
 <ul>
 <li><p>Download latest binary from <a href="https://mirror.openshift.com/pub/rhacs/assets/latest/bin/" target="_blank">here</a></p>
@@ -750,6 +765,13 @@
 </li>
 </ul>
 </li>
+</ul>
+<!-- - Create namespace for central server and scanner.
+
+  ```bash
+  oc new-project stackrox
+  ``` -->
+<ul>
 <li><p>Create ACS Central with <a href="manifests/acs-central.yaml">acs-central.yaml</a></p>
 <ul>
 <li><p>If you want to use custom certificate storedfor central add following section to <a href="manifests/acs-central.yaml">acs-central.yaml</a></p>
@@ -767,13 +789,16 @@
 </ul>
 </li>
 <li><p>Create Central</p>
-<pre><code class="lang-bash">oc create -f manifests/acs-central.yaml -n stackrox
+<pre><code class="lang-bash">oc create -f manifests/acs-central.yaml
 </code></pre>
 <p><em>Remark</em></p>
 <ul>
 <li>Central is configured with memory limit 8 Gi</li>
 <li>Default RWO storage for central is 100 GB</li>
 </ul>
+<p>Output</p>
+<pre><code class="lang-bash">central.platform.stackrox.io/stackrox-central-services created
+</code></pre>
 </li>
 <li><p>Check status</p>
 <pre><code class="lang-bash">oc describe central/stackrox-central-services -n stackrox
@@ -781,9 +806,17 @@ watch oc get pods -n stackrox
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                          READY   STATUS    RESTARTS   AGE
-central-768b975cb4-pznx2      1/1     Running   0          2m36s
-scanner-774867b7f5-vnlds      1/1     Running   0          3m17s
-scanner-db-7784db6d56-7kqvq   1/1     Running   0          3m17s
+central-7bc7f94657-7gzbg      1/1     Running   0          4m10s
+central-db-5c4fbdccc9-9m7d8   1/1     Running   0          4m10s
+scanner-69777457d7-bvz5b      1/1     Running   0          4m10s
+scanner-db-6f6f7b7c9c-rkcvk   1/1     Running   0          4m10s
+</code></pre>
+<p>Check PVC</p>
+<pre><code class="lang-bash">oc get pvc -n stackrox
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+central-db   Bound    pvc-71192a00-ed3a-43e0-8533-768c3c3907a3   100Gi      RWO            gp3-csi        3m14s
 </code></pre>
 <p>Resources consumed by ACS central</p>
 <ul>
@@ -850,7 +883,7 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 <li><p>Install Secure Cluster Services on local cluster</p>
 <ul>
 <li><p>Create Secured Cluster Service with <a href="manifests/acs-secured-cluster.yaml">acs-secured-cluster.yaml</a></p>
-<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
+<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster.yaml
 </code></pre>
 <p>Remark: <a href="manifests/acs-secured-cluster.yaml">acs-secured-cluster.yaml</a> is prepared for install Secured Cluster Service within the same cluster with Central.</p>
 <p>If you want Admission Control run on Infra Nodes with <a href="manifests/acs-secured-cluster-infra.yaml">acs-secured-cluster-infra.yaml</a></p>
@@ -858,19 +891,24 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 </code></pre>
 </li>
 <li><p>Check status</p>
-<pre><code class="lang-bash">oc describe securedcluster/cluster1  -n stackrox-cluster
-watch oc get pods -n stackrox-cluster
+<pre><code class="lang-bash">oc get securedcluster/cluster1  -n stackrox-cluster -o jsonpath=&apos;{.status.conditions[0]}&apos;
+oc get pods -n stackrox-cluster
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                                READY   STATUS    RESTARTS   AGE
-admission-control-cb5997c68-4ddp8   1/1     Running   0          28s
-admission-control-cb5997c68-7vtgh   1/1     Running   0          28s
-admission-control-cb5997c68-qhbqc   1/1     Running   0          28s
-collector-59kzw                     2/2     Running   0          28s
-collector-bx2w2                     2/2     Running   0          28s
-collector-kgp57                     2/2     Running   0          28s
-collector-tmscm                     2/2     Running   0          28s
-collector-x9h8n                     2/2     Running   0          28s
+<pre><code class="lang-bash">{&quot;lastTransitionTime&quot;:&quot;2023-07-10T15:35:03Z&quot;,&quot;message&quot;:&quot;StackRox Secured Cluster Services 4.1.0 has been installed.\n\n\n\nThank you for using StackRox!\n&quot;,&quot;reason&quot;:&quot;InstallSuccessful&quot;,&quot;status&quot;:&quot;True&quot;,&quot;type&quot;:&quot;Deployed&quot;}
+NAME                                 READY   STATUS    RESTARTS   AGE
+admission-control-657c66c6bd-2d8bp   1/1     Running   0          65s
+admission-control-657c66c6bd-k6tjd   1/1     Running   0          65s
+admission-control-657c66c6bd-knc9m   1/1     Running   0          65s
+collector-4rm6p                      3/3     Running   0          65s
+collector-572dc                      3/3     Running   0          65s
+collector-9wwrh                      3/3     Running   0          65s
+collector-hlbjb                      3/3     Running   0          65s
+scanner-7ccbb84b7-2jlrr              1/1     Running   0          65s
+scanner-7ccbb84b7-grln4              1/1     Running   0          65s
+scanner-7ccbb84b7-ll8fq              1/1     Running   0          65s
+scanner-db-59db747d66-s558f          1/1     Running   0          65s
+sensor-576bd78c4f-dtzfr              1/1     Running   0          65s
 </code></pre>
 <p>Remark</p>
 <ul>
@@ -1150,32 +1188,41 @@ CVSS score: https://nvd.nist.gov/vuln-metrics/cvss
 <h3 id="kube-linter">kube-linter</h3>
 <ul>
 <li><p>Try kube-linter with deployment YAML</p>
-<pre><code class="lang-bash">kube-linter lint manifests/backend-bad-example.yaml
+<pre><code class="lang-bash">kube-linter lint manifests/mr-white.yaml
 </code></pre>
 <p>Download kube-linter from this <a href="https://github.com/stackrox/kube-linter/releases" target="_blank">link</a></p>
 </li>
 <li><p>Sample recommendation</p>
-<pre><code>manifests/backend-bad-example.yaml: (object: &lt;no namespace&gt;/backend-v2 apps/v1, Kind=Deployment) container &quot;backend&quot; is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
-
-manifests/backend-bad-example.yaml: (object: &lt;no namespace&gt;/backend-v2 apps/v1, Kind=Deployment) container &quot;backend&quot; has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
-</code></pre></li>
-<li><p>Try kube-linter with <a href="manifests/backend-v1.yaml">backend-v1.yaml</a></p>
-<pre><code class="lang-bash">kube-linter lint manifests/backend-v1.yaml
-</code></pre>
-<p>Output</p>
-<pre><code class="lang-bash">manifests/backend.yaml: (object: &lt;no namespace&gt;/backend-v1 apps/v1, Kind=Deployment) container &quot;backend&quot; does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)
-</code></pre>
-<p>Container &quot;backend&quot; still does not have a read-only root file system because Vert.X still need to write /tmp then try <a href="manifests/backend-v1-emptyDir.yaml">backend deployment with emptyDir</a></p>
-<p>Try agin with <a href="manifests/backend-v1-emptyDir.yaml">backend-v1-emptyDir.yaml</a> which set <em>readOnlyRootFilesystem</em> to <em>true</em></p>
-<pre><code class="lang-bash">kube-linter lint manifests/backend-v1-emptyDir.yaml
-</code></pre>
-<p>Output</p>
-<pre><code class="lang-bash">KubeLinter 0.3.0
-
-No lint errors found!
-</code></pre>
+<p>```
+KubeLinter 0.6.4</p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) environment variable SECRET in container &quot;mr-white&quot; found (check: env-var-secret, remediation: Do not use raw secrets in environment variables. Instead, either mount the secret as a file or use a secretKeyRef. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets" target="_blank">https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets</a> for details.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) The container &quot;mr-white&quot; is using an invalid container image, &quot;quay.io/voravitl/mr-white:latest&quot;. Please use images that are not blocked by the <code>BlockList</code> criteria : [&quot;.<em>:(latest)$&quot; &quot;^<sup><a href="#fn_:" id="reffn_:">:</a></sup></em>$&quot; &quot;(.*/<sup><a href="#fn_:]+)$" "="" id="reffn_:]+)$">:]+)$&quot;</a></sup> (check: latest-tag, remediation: Use a container image with a specific tag other than latest.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to <a href="https://kubernetes.io/docs/tasks/configure-pod-container/security-context/" target="_blank">https://kubernetes.io/docs/tasks/configure-pod-container/security-context/</a> for details.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits" target="_blank">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits</a> for details.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; has cpu limit 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits" target="_blank">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits</a> for details.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; has memory request 0 (check: unset-memory-requirements, remediation: Set memory requests and limits for your container based on its requirements. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits" target="_blank">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits</a> for details.)</no></p>
+<p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; has memory limit 0 (check: unset-memory-requirements, remediation: Set memory requests and limits for your container based on its requirements. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits" target="_blank">https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits</a> for details.)</no></p>
 </li>
 </ul>
+<p>Error: found 8 lint errors</p>
+<pre><code>
+- Try kube-linter with [backend-v1.yaml](manifests/backend-v1.yaml)
+
+  ```bash
+  kube-linter lint manifests/backend-v1.yaml
+</code></pre><p>  Output</p>
+<pre><code class="lang-bash">  manifests/backend.yaml: (object: &lt;no namespace&gt;/backend-v1 apps/v1, Kind=Deployment) container &quot;backend&quot; does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)
+</code></pre>
+<p>  Container &quot;backend&quot; still does not have a read-only root file system because Vert.X still need to write /tmp then try <a href="manifests/backend-v1-emptyDir.yaml">backend deployment with emptyDir</a></p>
+<p>  Try agin with <a href="manifests/backend-v1-emptyDir.yaml">backend-v1-emptyDir.yaml</a> which set <em>readOnlyRootFilesystem</em> to <em>true</em></p>
+<pre><code class="lang-bash">  kube-linter lint manifests/backend-v1-emptyDir.yaml
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  KubeLinter 0.3.0
+
+  No lint errors found!
+</code></pre>
 <h3 id="scan-and-check-image-with-roxctl">Scan and check image with roxctl</h3>
 <ul>
 <li><p>Create token for DevOps tools</p>
@@ -1410,11 +1457,11 @@ oc create -n ci-cd -f -
 </li>
 <li>Navigate to <em>Policy Scope</em> and check for <em>Preview violations</em></li>
 <li><p>Deploy following app</p>
-<pre><code class="lang-bash">oc create -f manifests/backend-bad-example.yaml -n demo
+<pre><code class="lang-bash">oc create -f manifests/mr-white.yaml -n demo
 </code></pre>
 <p>Output</p>
 <p>```bash
-Error from server (Failed currently enforced policies from StackRox): error when creating &quot;manifests/backend-bad-example.yaml&quot;: admission webhook &quot;policyeval.stackrox.io&quot; denied the request:
+Error from server (Failed currently enforced policies from StackRox): error when creating &quot;manifests/mr-white.yaml&quot;: admission webhook &quot;policyeval.stackrox.io&quot; denied the request:
 The attempted operation violated 1 enforced policy, described below:</p>
 <p>Policy: Request and Limit are required</p>
 <ul>
@@ -1426,10 +1473,10 @@ The attempted operation violated 1 enforced policy, described below:</p>
 <li>Remediation:
   &#x21B3; Specify the requests and limits of CPU and Memory for your deployment.</li>
 <li>Violations:<ul>
-<li>CPU limit set to 0 cores for container &apos;backend&apos;</li>
-<li>CPU request set to 0 cores for container &apos;backend&apos;</li>
-<li>Memory limit set to 0 MB for container &apos;backend&apos;</li>
-<li>Memory request set to 0 MB for container &apos;backend&apos;</li>
+<li>CPU limit set to 0 cores for container &apos;mr-white&apos;</li>
+<li>CPU request set to 0 cores for container &apos;mr-white&apos;</li>
+<li>Memory limit set to 0 MB for container &apos;mr-white&apos;</li>
+<li>Memory request set to 0 MB for container &apos;mr-white&apos;</li>
 </ul>
 </li>
 </ul>
@@ -1649,7 +1696,7 @@ status: {}
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-07-05T10:50:20.324Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-07-05T10:51:00.481Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-07-11T05:50:52.283Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-07-11T05:51:45.485Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
