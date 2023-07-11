@@ -38,23 +38,34 @@
 
 - Install Operator 
   
-  - Select *Advanced Cluster Security for Kubernetes* 
+  - Web Console
+    - Select *Advanced Cluster Security for Kubernetes* 
 
 
-  ![](images/acs-install-operator-01.png)
+    ![](images/acs-install-operator-01.png)
 
 
-  - Accept default parameters
+    - Accept default parameters
 
+    
+    ![](images/acs-install-operator-02.png)
   
-  ![](images/acs-install-operator-02.png)
+  - CLI
+    
+    ```bash
+    oc create -f manifests/acs-subscription.yaml
+    oc get csv -n rhacs-operator
+    ```
 
-  
-- Create namespace for central server and scanner.
+    Output
 
-  ```bash
-  oc new-project stackrox
-  ```
+    ```bash
+    namespace/rhacs-operator created
+    operatorgroup.operators.coreos.com/rhacs-operator-bqbtj created
+    subscription.operators.coreos.com/rhacs-operator created
+    NAME                                    DISPLAY                                    VERSION   REPLACES                                PHASE
+    rhacs-operator.v4.1.0                   Advanced Cluster Security for Kubernetes   4.1.0     rhacs-operator.v4.0.0                   Succeeded
+    ```
 
 - Install *roxctl* CLI
   - Download latest binary from [here](https://mirror.openshift.com/pub/rhacs/assets/latest/bin/)
@@ -70,6 +81,12 @@
     ```bash
     podman run docker://quay.io/stackrox-io/roxctl <parameter here>
     ```
+
+<!-- - Create namespace for central server and scanner.
+
+  ```bash
+  oc new-project stackrox
+  ``` -->
 
 - Create ACS Central with [acs-central.yaml](manifests/acs-central.yaml)
   
@@ -91,13 +108,18 @@
 - Create Central
 
   ```bash
-  oc create -f manifests/acs-central.yaml -n stackrox
+  oc create -f manifests/acs-central.yaml 
   ```
 
   *Remark*
   - Central is configured with memory limit 8 Gi
   - Default RWO storage for central is 100 GB
+  
+  Output
 
+  ```bash
+  central.platform.stackrox.io/stackrox-central-services created
+  ```
 - Check status
   
   ```bash
@@ -109,9 +131,23 @@
   
   ```bash
   NAME                          READY   STATUS    RESTARTS   AGE
-  central-768b975cb4-pznx2      1/1     Running   0          2m36s
-  scanner-774867b7f5-vnlds      1/1     Running   0          3m17s
-  scanner-db-7784db6d56-7kqvq   1/1     Running   0          3m17s
+  central-7bc7f94657-7gzbg      1/1     Running   0          4m10s
+  central-db-5c4fbdccc9-9m7d8   1/1     Running   0          4m10s
+  scanner-69777457d7-bvz5b      1/1     Running   0          4m10s
+  scanner-db-6f6f7b7c9c-rkcvk   1/1     Running   0          4m10s
+  ```
+
+  Check PVC
+
+  ```bash
+  oc get pvc -n stackrox
+  ```
+
+  Output
+
+  ```bash
+  NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  central-db   Bound    pvc-71192a00-ed3a-43e0-8533-768c3c3907a3   100Gi      RWO            gp3-csi        3m14s
   ```
 
   Resources consumed by ACS central
@@ -185,7 +221,7 @@
     - Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
       
       ```bash
-      oc create -f manifests/acs-secured-cluster.yaml -n stackrox-cluster
+      oc create -f manifests/acs-secured-cluster.yaml 
       ```
 
       Remark: [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml) is prepared for install Secured Cluster Service within the same cluster with Central.
@@ -199,22 +235,27 @@
     - Check status
       
       ```bash
-      oc describe securedcluster/cluster1  -n stackrox-cluster
-      watch oc get pods -n stackrox-cluster
+      oc get securedcluster/cluster1  -n stackrox-cluster -o jsonpath='{.status.conditions[0]}'
+      oc get pods -n stackrox-cluster
       ```
 
       Output
 
       ```bash
-      NAME                                READY   STATUS    RESTARTS   AGE
-      admission-control-cb5997c68-4ddp8   1/1     Running   0          28s
-      admission-control-cb5997c68-7vtgh   1/1     Running   0          28s
-      admission-control-cb5997c68-qhbqc   1/1     Running   0          28s
-      collector-59kzw                     2/2     Running   0          28s
-      collector-bx2w2                     2/2     Running   0          28s
-      collector-kgp57                     2/2     Running   0          28s
-      collector-tmscm                     2/2     Running   0          28s
-      collector-x9h8n                     2/2     Running   0          28s
+      {"lastTransitionTime":"2023-07-10T15:35:03Z","message":"StackRox Secured Cluster Services 4.1.0 has been installed.\n\n\n\nThank you for using StackRox!\n","reason":"InstallSuccessful","status":"True","type":"Deployed"}
+      NAME                                 READY   STATUS    RESTARTS   AGE
+      admission-control-657c66c6bd-2d8bp   1/1     Running   0          65s
+      admission-control-657c66c6bd-k6tjd   1/1     Running   0          65s
+      admission-control-657c66c6bd-knc9m   1/1     Running   0          65s
+      collector-4rm6p                      3/3     Running   0          65s
+      collector-572dc                      3/3     Running   0          65s
+      collector-9wwrh                      3/3     Running   0          65s
+      collector-hlbjb                      3/3     Running   0          65s
+      scanner-7ccbb84b7-2jlrr              1/1     Running   0          65s
+      scanner-7ccbb84b7-grln4              1/1     Running   0          65s
+      scanner-7ccbb84b7-ll8fq              1/1     Running   0          65s
+      scanner-db-59db747d66-s558f          1/1     Running   0          65s
+      sensor-576bd78c4f-dtzfr              1/1     Running   0          65s
       ```
 
       Remark
@@ -229,7 +270,7 @@
 
   - Memory
   
-    ![](images/acs-secured-cluster-memory.png )
+    ![](images/acs-secured-cluster-memory.png)
 
 ### Install Secure Cluster Services on remote cluster
 
@@ -532,7 +573,7 @@
 - Try kube-linter with deployment YAML
   
   ```bash
-  kube-linter lint manifests/backend-bad-example.yaml
+  kube-linter lint manifests/mr-white.yaml
   ```
   
   Download kube-linter from this [link](https://github.com/stackrox/kube-linter/releases)
@@ -540,9 +581,25 @@
 - Sample recommendation
   
   ```
-  manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
+  KubeLinter 0.6.4
 
-  manifests/backend-bad-example.yaml: (object: <no namespace>/backend-v2 apps/v1, Kind=Deployment) container "backend" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) environment variable SECRET in container "mr-white" found (check: env-var-secret, remediation: Do not use raw secrets in environment variables. Instead, either mount the secret as a file or use a secretKeyRef. Refer to https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets for details.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) The container "mr-white" is using an invalid container image, "quay.io/voravitl/mr-white:latest". Please use images that are not blocked by the `BlockList` criteria : [".*:(latest)$" "^[^:]*$" "(.*/[^:]+)$"] (check: latest-tag, remediation: Use a container image with a specific tag other than latest.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" has cpu limit 0 (check: unset-cpu-requirements, remediation: Set CPU requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" has memory request 0 (check: unset-memory-requirements, remediation: Set memory requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+
+  manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) container "mr-white" has memory limit 0 (check: unset-memory-requirements, remediation: Set memory requests and limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+
+Error: found 8 lint errors
   ```
 
 - Try kube-linter with [backend-v1.yaml](manifests/backend-v1.yaml)
@@ -843,13 +900,13 @@
 - Deploy following app
   
   ```bash
-  oc create -f manifests/backend-bad-example.yaml -n demo
+  oc create -f manifests/mr-white.yaml -n demo
   ```
 
   Output
 
   ```bash
-  Error from server (Failed currently enforced policies from StackRox): error when creating "manifests/backend-bad-example.yaml": admission webhook "policyeval.stackrox.io" denied the request:
+  Error from server (Failed currently enforced policies from StackRox): error when creating "manifests/mr-white.yaml": admission webhook "policyeval.stackrox.io" denied the request:
   The attempted operation violated 1 enforced policy, described below:
 
   Policy: Request and Limit are required
@@ -861,10 +918,10 @@
   - Remediation:
       ↳ Specify the requests and limits of CPU and Memory for your deployment.
   - Violations:
-      - CPU limit set to 0 cores for container 'backend'
-      - CPU request set to 0 cores for container 'backend'
-      - Memory limit set to 0 MB for container 'backend'
-      - Memory request set to 0 MB for container 'backend'
+      - CPU limit set to 0 cores for container 'mr-white'
+      - CPU request set to 0 cores for container 'mr-white'
+      - Memory limit set to 0 MB for container 'mr-white'
+      - Memory request set to 0 MB for container 'mr-white'
 
 
   In case of emergency, add the annotation {"admission.stackrox.io/break-glass": "ticket-1234"} to your deployment with an updated ticket number
