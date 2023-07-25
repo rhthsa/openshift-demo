@@ -291,17 +291,17 @@ If you don't have siege, run k6 as pod on OpenShift -->
           serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
           threshold: "15"
           authModes: "bearer"
-```
+  ```
 
   Output
 
    ```yaml
    scaledobject.keda.sh/backend created
-  conditions:
-  - message: ScaledObject is defined correctly and is ready for scaling
-    reason: ScaledObjectReady
-    status: "True"
-    type: Ready
+   conditions:
+   - message: ScaledObject is defined correctly and is ready for scaling
+     reason: ScaledObjectReady
+     status: "True"
+     type: Ready
    ```
 
 ### Test
