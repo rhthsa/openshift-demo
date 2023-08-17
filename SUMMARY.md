@@ -35,4 +35,4 @@
 * Additional Features
   * [OpenShift GitOps](gitops.md)
   * [OpenShift Service Mesh](openshift-service-mesh.md)
-  * [KEDA](KEDA.md)
+  <!-- * [KEDA](KEDA.md) -->

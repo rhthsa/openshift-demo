@@ -98,4 +98,4 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
       - Service Level Objective (SLO)
       - Control Plane with High Availability
       - Rate Limit (OSSM 2.0.x or ISTIO 1.6)
-  - [Kubernetes Event Driven Autoscaler - KEDA](KEDA.md)
+  <!-- - [Kubernetes Event Driven Autoscaler - KEDA](KEDA.md) -->
