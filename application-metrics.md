@@ -4,8 +4,10 @@
 - [User Workload Metrics](#user-workload-metrics)
   - [Prerequisites](#prerequisites)
   - [Service Monitoring](#service-monitoring)
+  - [K6](#k6)
   - [Custom Grafana Dashboard](#custom-grafana-dashboard)
   - [Custom Alert](#custom-alert)
+
 
 <!-- /TOC -->
 ## Prerequisites
@@ -207,7 +209,7 @@
       -e RAMPDOWN=30s \
       -e K6_NO_CONNECTION_REUSE=true
       ```
-    
+      
       - Use Siege 
 
       ```bash
@@ -231,21 +233,47 @@
 
       ![](images/dev-console-app-metrics-01.png)
 
-    <!-- - PromQL for query concurrent requests
-      
-      ```
-      application_com_example_quarkus_BackendResource_concurrentBackend_current
-      ``` -->
-      
-      <!-- Sample stacked graph
+## K6
 
-      ![](images/dev-console-app-metrics-02.png) -->
+This is optional steps. If you have k6 on your manchine
+
+```bash
+k6 run manifests/load-test-k6.js \
+--out json=output.json \
+--summary-export=summary-export.json \
+-e URL=https://$(oc get route frontend -o jsonpath='{.spec.host}' -n project1) \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=3m \
+-e RAMPDOWN=30s \
+-e K6_NO_CONNECTION_REUSE=true
+```
+*Remark:* output are stored in output.json and summary-export.json
+
+
+Run K6 with dashboard (You need to install K6 dashbaord first)
+
+```bash
+k6 run manifests/load-test-k6.js \
+--out dashboard \
+-e URL=https://$(oc get route frontend -o jsonpath='{.spec.host}' -n project1) \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=3m \
+-e RAMPDOWN=30s \
+-e K6_NO_CONNECTION_REUSE=true
+```
+
+Dashboard
+
+![](images/k6-dashboard.png)
 
 ## Custom Grafana Dashboard
 <!-- https://access.redhat.com/solutions/5335491 -->
 Use **Grafana Operator by Red Hat** to deploy Grafana and configure datasource to Thanos Querier
 
 Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
+
 
 - Create project
   
@@ -349,11 +377,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 
 ## Custom Alert
 
-- Check `PrometheusRule` [backend-app-alert](manifests/backend-custom-alert.yaml)
-
-```yaml
-
-```
+- Check [PrometheusRule](manifests/backend-custom-alert.yaml)
 
   [backend-app-alert](manifests/backend-custom-alert.yaml) is consists with 2 following alerts:
   
