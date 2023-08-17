@@ -655,6 +655,7 @@
 <li><a href="#user-workload-metrics">User Workload Metrics</a><ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#service-monitoring">Service Monitoring</a></li>
+<li><a href="#k6">K6</a></li>
 <li><a href="#custom-grafana-dashboard">Custom Grafana Dashboard</a></li>
 <li><a href="#custom-alert">Custom Alert</a></li>
 </ul>
@@ -834,18 +835,35 @@ TOOL=$(oc get po -n project1 -l app=network-tools --no-headers  -o custom-column
 <p><img src="images/dev-console-app-metrics-01.png" alt=""></p>
 </li>
 </ul>
-<!-- - PromQL for query concurrent requests
-
-  ```
-  application_com_example_quarkus_BackendResource_concurrentBackend_current
-  ``` -->
-  <!-- Sample stacked graph
-
-  ![](images/dev-console-app-metrics-02.png) -->
 </li>
 </ul>
 </li>
 </ul>
+<h2 id="k6">K6</h2>
+<p>This is optional steps. If you have k6 on your manchine</p>
+<pre><code class="lang-bash">k6 run manifests/load-test-k6.js \
+--out json=output.json \
+--summary-export=summary-export.json \
+-e URL=https://$(oc get route frontend -o jsonpath=&apos;{.spec.host}&apos; -n project1) \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=3m \
+-e RAMPDOWN=30s \
+-e K6_NO_CONNECTION_REUSE=true
+</code></pre>
+<p><em>Remark:</em> output are stored in output.json and summary-export.json</p>
+<p>Run K6 with dashboard (You need to install K6 dashbaord first)</p>
+<pre><code class="lang-bash">k6 run manifests/load-test-k6.js \
+--out dashboard \
+-e URL=https://$(oc get route frontend -o jsonpath=&apos;{.spec.host}&apos; -n project1) \
+-e THREADS=10 \
+-e RAMPUP=30s \
+-e DURATION=3m \
+-e RAMPDOWN=30s \
+-e K6_NO_CONNECTION_REUSE=true
+</code></pre>
+<p>Dashboard</p>
+<p><img src="images/k6-dashboard.png" alt=""></p>
 <h2 id="custom-grafana-dashboard">Custom Grafana Dashboard</h2>
 <!-- https://access.redhat.com/solutions/5335491 -->
 <p>Use <strong>Grafana Operator by Red Hat</strong> to deploy Grafana and configure datasource to Thanos Querier</p>
@@ -936,18 +954,16 @@ done
 </ul>
 <h2 id="custom-alert">Custom Alert</h2>
 <ul>
-<li>Check <code>PrometheusRule</code> <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a></li>
-</ul>
-<pre><code class="lang-yaml">
-
-</code></pre>
-<p>  <a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
+<li><p>Check <a href="manifests/backend-custom-alert.yaml">PrometheusRule</a></p>
+<p><a href="manifests/backend-custom-alert.yaml">backend-app-alert</a> is consists with 2 following alerts:</p>
 <ul>
 <li><p>ConcurrentBackend
 severity warning when total concurrent reqeusts is greater than 40 requests/sec</p>
 </li>
 <li><p>HighLatency
 servierity critical when percentile 90th of response time is greater than 5 sec  </p>
+</li>
+</ul>
 </li>
 </ul>
 <ul>
@@ -1052,7 +1068,7 @@ oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-08-17T08:40:01.226Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-08-17T08:40:40.123Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-08-17T09:19:39.977Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-08-17T09:20:19.405Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
