@@ -17,15 +17,17 @@
 
   <!-- Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration -->
 
-  Remark: You may need to change *storageClassName* based on your cluster configuration
+  
   
   ```bash
-  oc apply -f  manifests/cluster-monitoring-config.yaml
+  DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+  cat manifests/cluster-monitoring-config.yaml | sed 's/storageClassName:.*/storageClassName: '$DEFAULT_STORAGE_CLASS'/' | oc apply -f  -
   sleep 10
   oc -n openshift-user-workload-monitoring wait --for condition=ready \
    --timeout=180s pod -l app.kubernetes.io/name=prometheus
   oc -n openshift-user-workload-monitoring wait --for condition=ready \
    --timeout=180s pod -l app.kubernetes.io/name=thanos-ruler
+  oc get pvc -n openshift-monitoring
   ```
 
   Output
@@ -36,6 +38,9 @@
   pod/prometheus-user-workload-1 condition met
   pod/thanos-ruler-user-workload-0 condition met
   pod/thanos-ruler-user-workload-1 condition met
+  NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  prometheus-k8s-db-prometheus-k8s-0   Bound    pvc-bf534cd7-d8cf-4ab1-a685-14ce1c415720   50Gi       RWO            gp3-csi        18s
+  prometheus-k8s-db-prometheus-k8s-1   Bound    pvc-caa6d564-c1ef-4edb-97d6-7de3a0191022   50Gi       RWO            gp3-csi        18s
   ```
 
 - Verify monitoring stack
