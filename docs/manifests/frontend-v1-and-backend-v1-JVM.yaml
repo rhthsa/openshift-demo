@@ -126,7 +126,7 @@ spec:
             memory: 300Mi
         env:
           - name: APP_BACKEND
-            value: https://httpbin.org/status/200
+            value: https://mockbin.org/status/200
           - name: APP_VERSION
             value: v1
           - name: quarkus.log.console.color

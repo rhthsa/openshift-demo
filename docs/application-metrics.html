@@ -599,19 +599,6 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.3" data-path="KEDA.md">
-            
-                <span>
-            
-                    
-                    KEDA
-            
-                </a>
-            
-
-            
-        </li>
-    
 
             </ul>
             
@@ -681,22 +668,28 @@
 oc apply -f  manifests/user-workload-monitoring.yaml
 ``` -->
 <!-- Remark: You also need to setup and configure [cluster monitoring](infrastructure-monitoring-alerts.md) or use following [simple configuration](manifests/cluster-monitoring-config.yaml). You may need to change *storageClassName* based on your cluster configuration -->
-<p>Remark: You may need to change <em>storageClassName</em> based on your cluster configuration</p>
-<pre><code class="lang-bash">oc apply -f  manifests/cluster-monitoring-config.yaml
-sleep 10
-oc -n openshift-user-workload-monitoring wait --for condition=ready \
- --timeout=180s pod -l app.kubernetes.io/name=prometheus
-oc -n openshift-user-workload-monitoring wait --for condition=ready \
- --timeout=180s pod -l app.kubernetes.io/name=thanos-ruler
-</code></pre>
-<p>Output</p>
-<pre><code class="lang-bash">configmap/cluster-monitoring-config created
-pod/prometheus-user-workload-0 condition met
-pod/prometheus-user-workload-1 condition met
-pod/thanos-ruler-user-workload-0 condition met
-pod/thanos-ruler-user-workload-1 condition met
-</code></pre>
 </li>
+</ul>
+<pre><code class="lang-bash">  DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+  cat manifests/cluster-monitoring-config.yaml | sed &apos;s/storageClassName:.*/storageClassName: &apos;$DEFAULT_STORAGE_CLASS&apos;/&apos; | oc apply -f  -
+  sleep 10
+  oc -n openshift-user-workload-monitoring wait --for condition=ready \
+   --timeout=180s pod -l app.kubernetes.io/name=prometheus
+  oc -n openshift-user-workload-monitoring wait --for condition=ready \
+   --timeout=180s pod -l app.kubernetes.io/name=thanos-ruler
+  oc get pvc -n openshift-monitoring
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  configmap/cluster-monitoring-config created
+  pod/prometheus-user-workload-0 condition met
+  pod/prometheus-user-workload-1 condition met
+  pod/thanos-ruler-user-workload-0 condition met
+  pod/thanos-ruler-user-workload-1 condition met
+  NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  prometheus-k8s-db-prometheus-k8s-0   Bound    pvc-bf534cd7-d8cf-4ab1-a685-14ce1c415720   50Gi       RWO            gp3-csi        18s
+  prometheus-k8s-db-prometheus-k8s-1   Bound    pvc-caa6d564-c1ef-4edb-97d6-7de3a0191022   50Gi       RWO            gp3-csi        18s
+</code></pre>
+<ul>
 <li><p>Verify monitoring stack</p>
 <pre><code class="lang-bash">oc  get pod -n openshift-user-workload-monitoring
 </code></pre>
@@ -1059,7 +1052,7 @@ oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-07-25T04:07:33.299Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-07-25T04:08:19.269Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2023-08-17T08:31:16.724Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-08-17T08:32:14.979Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
