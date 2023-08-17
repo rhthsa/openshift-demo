@@ -209,7 +209,7 @@
       -e RAMPDOWN=30s \
       -e K6_NO_CONNECTION_REUSE=true
       ```
-      
+
       - Use Siege 
 
       ```bash
@@ -264,7 +264,7 @@ k6 run manifests/load-test-k6.js \
 -e K6_NO_CONNECTION_REUSE=true
 ```
 
-Dashboard
+View [Dashboard](http://127.0.0.1:5665/)
 
 ![](images/k6-dashboard.png)
 
