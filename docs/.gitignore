@@ -1,3 +1,6 @@
+.vscode/*
+bin/nexus.properties
+bin/nexus_password.txt
 # Created by https://www.toptal.com/developers/gitignore/api/osx
 # Edit at https://www.toptal.com/developers/gitignore?templates=osx
 
