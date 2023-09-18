@@ -11,7 +11,7 @@
   ```bash
   oc create -f manifests/logging-operator.yaml
   oc create -f manifests/loki-operator.yaml
-  sleep 30
+  sleep 60
   oc wait --for condition=established --timeout=180s \
   crd/lokistacks.loki.grafana.com \
   crd/clusterloggings.logging.openshift.io
