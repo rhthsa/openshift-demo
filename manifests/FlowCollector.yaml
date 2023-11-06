@@ -1,4 +1,4 @@
-apiVersion: flows.netobserv.io/v1beta1
+apiVersion: flows.netobserv.io/v1beta1 
 kind: FlowCollector
 metadata:
   name: cluster
