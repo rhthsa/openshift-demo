@@ -4,12 +4,12 @@
     - [Central Installation](#central-installation)
       - [\[Optional\] Create Central at Infra Nodes](#optional-create-central-at-infra-nodes)
       - [Access Central](#access-central)
+    - [Single Sign-On with OpenShift](#single-sign-on-with-openshift)
     - [Secured Cluster Services (Managed Cluster)](#secured-cluster-services-managed-cluster)
       - [Operator](#operator)
     - [Install Secure Cluster Services on remote cluster](#install-secure-cluster-services-on-remote-cluster)
       - [CLI roxctl and Helm](#cli-roxctl-and-helm)
       - [View Managed Cluster](#view-managed-cluster)
-    - [Single Sign-On with OpenShift](#single-sign-on-with-openshift)
     - [Integration with Nexus](#integration-with-nexus)
       - [Setup Nexus](#setup-nexus)
       - [Config ACS](#config-acs)
@@ -51,7 +51,7 @@
     
     ![](images/acs-install-operator-02.png)
   
-  - CLI
+  - Use CLI to install [operator](manifests/acs-subscription.yaml)
     
     ```bash
     oc create -f manifests/acs-subscription.yaml
@@ -64,9 +64,11 @@
     namespace/rhacs-operator created
     operatorgroup.operators.coreos.com/rhacs-operator-bqbtj created
     subscription.operators.coreos.com/rhacs-operator created
-    NAME                                    DISPLAY                                    VERSION   REPLACES                                PHASE
-    rhacs-operator.v4.1.0                   Advanced Cluster Security for Kubernetes   4.1.0     rhacs-operator.v4.0.0                   Succeeded
+    NAME                    DISPLAY                                    VERSION   REPLACES                PHASE
+    rhacs-operator.v4.2.2   Advanced Cluster Security for Kubernetes   4.2.2     rhacs-operator.v4.2.1   Succeeded
     ```
+  
+  Remark: It should be better if you choose *Manual* for *Update Approval* instead of *Automatic* for production environment
 
 - Install *roxctl* CLI
   - Download latest binary from [here](https://mirror.openshift.com/pub/rhacs/assets/latest/bin/)
@@ -132,10 +134,11 @@
   
   ```bash
   NAME                          READY   STATUS    RESTARTS   AGE
-  central-7bc7f94657-7gzbg      1/1     Running   0          4m10s
-  central-db-5c4fbdccc9-9m7d8   1/1     Running   0          4m10s
-  scanner-69777457d7-bvz5b      1/1     Running   0          4m10s
-  scanner-db-6f6f7b7c9c-rkcvk   1/1     Running   0          4m10s
+  central-9c5567677-s9ggb       1/1     Running   0          2m44s
+  central-db-77b8c8d6c9-2jcr2   1/1     Running   0          2m44s
+  scanner-566f5f5b5b-d6t6d      1/1     Running   0          2m44s
+  scanner-566f5f5b5b-tfgng      1/1     Running   0          2m44s
+  scanner-db-69cd9c4949-hpc4f   1/1     Running   0          2m44s
   ```
 
   Check PVC
@@ -148,7 +151,7 @@
 
   ```bash
   NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-  central-db   Bound    pvc-71192a00-ed3a-43e0-8533-768c3c3907a3   100Gi      RWO            gp3-csi        3m14s
+  central-db   Bound    pvc-a4b5a0ec-7e28-495c-860c-c715aefd836c   100Gi      RWO            gp3-csi        100s
   ```
 
   Resources consumed by ACS central
@@ -192,6 +195,23 @@
   ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath='{.data.password}'|base64 -d)
   ```
 
+### Single Sign-On with OpenShift
+- Navigate to Platform Configuration -> Access Control then click *Create auth Provider* and select *OpenShift Auth*
+
+    ![](images/acs-add-auth-provider.png)
+
+- Input configuration then click save
+  - Name: OpenShift
+  - Minium access role: Analyst
+  - Rules: mapped spcific user to Admin role
+
+    ![](images/acs-openshift-oauth-provider.png)
+  
+  - Logout and refresh your browser. OpenShift provider will be available for you to login with OpenShift's user account
+
+    ![](images/acs-login-with-openshift.png)
+
+
 ### Secured Cluster Services (Managed Cluster)
 
 #### Operator
@@ -208,13 +228,21 @@
 - Create namespace for *Secured Cluster Services*
   
   ```bash
-  oc new-project stackrox-cluster
+  oc new-project stackrox-secured-cluster
   ```
 
 - Create secret from previously downloaded *Kubernetes Secrets file*
   
   ```bash
-  oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
+  oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-secured-cluster
+  ```
+
+  Output
+
+  ```bash
+  secret/admission-control-tls created
+  secret/collector-tls created
+  secret/sensor-tls created
   ```
 
 - Install Secure Cluster Services on local cluster
@@ -222,7 +250,7 @@
     - Create Secured Cluster Service with [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml)
       
       ```bash
-      oc create -f manifests/acs-secured-cluster.yaml 
+      oc create -f manifests/acs-secured-cluster.yaml -n stackrox-secured-cluster
       ```
 
       Remark: [acs-secured-cluster.yaml](manifests/acs-secured-cluster.yaml) is prepared for install Secured Cluster Service within the same cluster with Central.
@@ -230,38 +258,37 @@
       If you want Admission Control run on Infra Nodes with [acs-secured-cluster-infra.yaml](manifests/acs-secured-cluster-infra.yaml)
 
       ```bash
-      oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
+      oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-secured-cluster
       ```
 
     - Check status
       
       ```bash
-      oc get securedcluster/cluster1  -n stackrox-cluster -o jsonpath='{.status.conditions[0]}'
-      oc get pods -n stackrox-cluster
+      oc get securedcluster/cluster1  -n stackrox-secured-cluster -o jsonpath='{.status.conditions[0]}'
+      oc get pods -n stackrox-secured-cluster
       ```
 
       Output
 
       ```bash
-      {"lastTransitionTime":"2023-07-10T15:35:03Z","message":"StackRox Secured Cluster Services 4.1.0 has been installed.\n\n\n\nThank you for using StackRox!\n","reason":"InstallSuccessful","status":"True","type":"Deployed"}
-      NAME                                 READY   STATUS    RESTARTS   AGE
-      admission-control-657c66c6bd-2d8bp   1/1     Running   0          65s
-      admission-control-657c66c6bd-k6tjd   1/1     Running   0          65s
-      admission-control-657c66c6bd-knc9m   1/1     Running   0          65s
-      collector-4rm6p                      3/3     Running   0          65s
-      collector-572dc                      3/3     Running   0          65s
-      collector-9wwrh                      3/3     Running   0          65s
-      collector-hlbjb                      3/3     Running   0          65s
-      scanner-7ccbb84b7-2jlrr              1/1     Running   0          65s
-      scanner-7ccbb84b7-grln4              1/1     Running   0          65s
-      scanner-7ccbb84b7-ll8fq              1/1     Running   0          65s
-      scanner-db-59db747d66-s558f          1/1     Running   0          65s
-      sensor-576bd78c4f-dtzfr              1/1     Running   0          65s
+      {"lastTransitionTime":"2023-11-07T06:13:02Z","message":"StackRox Secured Cluster Services 4.2.2 has been installed.\n\n\n\nThank you for using StackRox!\n","reason":"InstallSuccessful","status":"True","type":"Deployed"}
+      NAME                                 READY   STATUS    RESTARTS        AGE
+      admission-control-64487c7986-ff6j9   1/1     Running   0               10m
+      admission-control-64487c7986-t25ng   1/1     Running   0               10m
+      admission-control-64487c7986-wjl7w   1/1     Running   0               10m
+      collector-dpjfk                      3/3     Running   0               10m
+      collector-mj778                      3/3     Running   0               10m
+      collector-n8cch                      3/3     Running   0               10m
+      collector-z49pb                      3/3     Running   0               10m
+      scanner-7f75dd5879-m6cfm             1/1     Running   0               10m
+      scanner-7f75dd5879-vpkcj             1/1     Running   0               10m
+      scanner-db-6c555b4b7d-x49hl          1/1     Running   0               10m
+      sensor-65c777cf9f-c8zvx              1/1     Running   0               10m
       ```
 
       Remark
       - Adminission control is high availability with default 3 pods
-      - Collector is run on all nodes
+      - Collector is run on every nodes including control plane
 
   Resources consumed by admission control and collector
   
@@ -279,10 +306,10 @@
   - Create secret from previously downloaded *Kubernetes Secrets file* 
       
       ```bash
-      oc new-project stackrox-cluster
-      oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
+      oc new-project stackrox-secured-cluster
+      oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-secured-cluster
       ```
-
+  - Install ACS operator
   - Create Secured Cluster Service with centralEndpoint set to Central's route. 
       
     Get Central's route and save to ROX_HOST environment variable
@@ -295,9 +322,9 @@
 
       ```bash
       cat manifests/acs-secured-cluster.yaml | \
-      sed s/central.stackrox.svc/$ROX_HOST/ | \
+      sed 's/central.stackrox.svc/'$ROX_HOST'/' | \
       sed s/cluster1/cluster2/ | \
-      oc create -n stackrox-cluster -f - 
+      oc create -n stackrox-secured-cluster -f - 
       ```
 
 #### CLI roxctl and Helm
@@ -429,21 +456,7 @@
 
     ![](images/acs-console-managed-clusters-helm.png)
 
-### Single Sign-On with OpenShift
-- Navigate to Platform Configuration -> Access Control then click Add Auth Provider and select OpenShift Auth
 
-    ![](images/acs-add-auth-provider.png)
-
-- Input configuration then click save
-  - Name: OpenShift
-  - Minium access role: Analyst
-  - Rules: mapped spcific user to Admin role
-
-    ![](images/acs-openshift-oauth-provider.png)
-  
-  - Login with OpenShift
-
-    ![](images/acs-login-with-openshift.png)
 
 ### Integration with Nexus
 #### Setup Nexus
@@ -478,12 +491,12 @@
 - Copy sample container images to nexus
 
   ```bash
-  NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')
-  allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
+  NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath='{.spec.host}')/repository/container
+  allImages=(backend:v1 backend:native backend:CVE-2020-36518 frontend-js:v1 frontend-js:node log4shell:latest backend-native:distroless)
   for image in $allImages
   do
     echo "############## Copy $image ##############"
-    podman run docker://quay.io/skopeo/stable:latest \
+    podman run quay.io/skopeo/stable \
     copy --src-tls-verify=true \
     --dest-tls-verify=false \
     --src-no-creds \
@@ -582,7 +595,7 @@
 - Sample recommendation
   
   ```
-  KubeLinter 0.6.4
+  KubeLinter 0.6.5
 
   manifests/mr-white.yaml: (object: <no namespace>/mr-white apps/v1, Kind=Deployment) environment variable SECRET in container "mr-white" found (check: env-var-secret, remediation: Do not use raw secrets in environment variables. Instead, either mount the secret as a file or use a secretKeyRef. Refer to https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets for details.)
 
@@ -626,7 +639,7 @@ Error: found 8 lint errors
   Output
 
   ```bash
-  KubeLinter 0.3.0
+  KubeLinter 0.6.5
 
   No lint errors found!
   ```
