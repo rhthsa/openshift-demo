@@ -2,15 +2,19 @@ apiVersion: platform.stackrox.io/v1alpha1
 kind: SecuredCluster
 metadata:
   name: cluster1
-  namespace: stackrox-cluster
+  #namespace: stackrox-secured-cluster
 spec:
+  monitoring:
+    openshift:
+      enabled: true
   auditLogs:
-    collection: Disabled
+    collection: Auto
   admissionControl:
     listenOnUpdates: true
     bypass: BreakGlassAnnotation
     contactImageScanners: ScanIfMissing
     listenOnCreates: true
+    replicas: 3
     timeoutSeconds: 20
     listenOnEvents: true
   scanner:

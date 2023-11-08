@@ -654,6 +654,7 @@
 <li><a href="#access-central">Access Central</a></li>
 </ul>
 </li>
+<li><a href="#single-sign-on-with-openshift">Single Sign-On with OpenShift</a></li>
 <li><a href="#secured-cluster-services-managed-cluster">Secured Cluster Services (Managed Cluster)</a><ul>
 <li><a href="#operator">Operator</a></li>
 </ul>
@@ -663,7 +664,6 @@
 <li><a href="#view-managed-cluster">View Managed Cluster</a></li>
 </ul>
 </li>
-<li><a href="#single-sign-on-with-openshift">Single Sign-On with OpenShift</a></li>
 <li><a href="#integration-with-nexus">Integration with Nexus</a><ul>
 <li><a href="#setup-nexus">Setup Nexus</a></li>
 <li><a href="#config-acs">Config ACS</a></li>
@@ -723,7 +723,7 @@
 
 ![](images/acs-install-operator-02.png)
 </code></pre><ul>
-<li><p>CLI</p>
+<li><p>Use CLI to install <a href="manifests/acs-subscription.yaml">operator</a></p>
 <pre><code class="lang-bash">oc create -f manifests/acs-subscription.yaml
 oc get csv -n rhacs-operator
 </code></pre>
@@ -731,9 +731,10 @@ oc get csv -n rhacs-operator
 <pre><code class="lang-bash">namespace/rhacs-operator created
 operatorgroup.operators.coreos.com/rhacs-operator-bqbtj created
 subscription.operators.coreos.com/rhacs-operator created
-NAME                                    DISPLAY                                    VERSION   REPLACES                                PHASE
-rhacs-operator.v4.1.0                   Advanced Cluster Security for Kubernetes   4.1.0     rhacs-operator.v4.0.0                   Succeeded
+NAME                    DISPLAY                                    VERSION   REPLACES                PHASE
+rhacs-operator.v4.2.2   Advanced Cluster Security for Kubernetes   4.2.2     rhacs-operator.v4.2.1   Succeeded
 </code></pre>
+<p>Remark: It should be better if you choose <em>Manual</em> for <em>Update Approval</em> instead of <em>Automatic</em> for production environment</p>
 </li>
 </ul>
 <ul>
@@ -794,17 +795,18 @@ watch oc get pods -n stackrox
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                          READY   STATUS    RESTARTS   AGE
-central-7bc7f94657-7gzbg      1/1     Running   0          4m10s
-central-db-5c4fbdccc9-9m7d8   1/1     Running   0          4m10s
-scanner-69777457d7-bvz5b      1/1     Running   0          4m10s
-scanner-db-6f6f7b7c9c-rkcvk   1/1     Running   0          4m10s
+central-9c5567677-s9ggb       1/1     Running   0          2m44s
+central-db-77b8c8d6c9-2jcr2   1/1     Running   0          2m44s
+scanner-566f5f5b5b-d6t6d      1/1     Running   0          2m44s
+scanner-566f5f5b5b-tfgng      1/1     Running   0          2m44s
+scanner-db-69cd9c4949-hpc4f   1/1     Running   0          2m44s
 </code></pre>
 <p>Check PVC</p>
 <pre><code class="lang-bash">oc get pvc -n stackrox
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-central-db   Bound    pvc-71192a00-ed3a-43e0-8533-768c3c3907a3   100Gi      RWO            gp3-csi        3m14s
+central-db   Bound    pvc-a4b5a0ec-7e28-495c-860c-c715aefd836c   100Gi      RWO            gp3-csi        100s
 </code></pre>
 <p>Resources consumed by ACS central</p>
 <ul>
@@ -846,6 +848,24 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 </code></pre>
 </li>
 </ul>
+<h3 id="single-sign-on-with-openshift">Single Sign-On with OpenShift</h3>
+<ul>
+<li><p>Navigate to Platform Configuration -&gt; Access Control then click <em>Create auth Provider</em> and select <em>OpenShift Auth</em></p>
+<p>  <img src="images/acs-add-auth-provider.png" alt=""></p>
+</li>
+<li><p>Input configuration then click save</p>
+<ul>
+<li>Name: OpenShift</li>
+<li>Minium access role: Analyst</li>
+<li><p>Rules: mapped spcific user to Admin role</p>
+<p><img src="images/acs-openshift-oauth-provider.png" alt=""></p>
+</li>
+<li><p>Logout and refresh your browser. OpenShift provider will be available for you to login with OpenShift&apos;s user account</p>
+<p><img src="images/acs-login-with-openshift.png" alt=""></p>
+</li>
+</ul>
+</li>
+</ul>
 <h3 id="secured-cluster-services-managed-cluster">Secured Cluster Services (Managed Cluster)</h3>
 <h4 id="operator">Operator</h4>
 <ul>
@@ -861,47 +881,51 @@ ROX_PASSWORD=$(oc get secret central-htpasswd -n stackrox -o jsonpath=&apos;{.da
 </ul>
 </li>
 <li><p>Create namespace for <em>Secured Cluster Services</em></p>
-<pre><code class="lang-bash">oc new-project stackrox-cluster
+<pre><code class="lang-bash">oc new-project stackrox-secured-cluster
 </code></pre>
 </li>
 <li><p>Create secret from previously downloaded <em>Kubernetes Secrets file</em></p>
-<pre><code class="lang-bash">oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-cluster
+<pre><code class="lang-bash">oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-secured-cluster
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">secret/admission-control-tls created
+secret/collector-tls created
+secret/sensor-tls created
 </code></pre>
 </li>
 <li><p>Install Secure Cluster Services on local cluster</p>
 <ul>
 <li><p>Create Secured Cluster Service with <a href="manifests/acs-secured-cluster.yaml">acs-secured-cluster.yaml</a></p>
-<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster.yaml
+<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster.yaml -n stackrox-secured-cluster
 </code></pre>
 <p>Remark: <a href="manifests/acs-secured-cluster.yaml">acs-secured-cluster.yaml</a> is prepared for install Secured Cluster Service within the same cluster with Central.</p>
 <p>If you want Admission Control run on Infra Nodes with <a href="manifests/acs-secured-cluster-infra.yaml">acs-secured-cluster-infra.yaml</a></p>
-<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-cluster
+<pre><code class="lang-bash">oc create -f manifests/acs-secured-cluster-infra.yaml -n stackrox-secured-cluster
 </code></pre>
 </li>
 <li><p>Check status</p>
-<pre><code class="lang-bash">oc get securedcluster/cluster1  -n stackrox-cluster -o jsonpath=&apos;{.status.conditions[0]}&apos;
-oc get pods -n stackrox-cluster
+<pre><code class="lang-bash">oc get securedcluster/cluster1  -n stackrox-secured-cluster -o jsonpath=&apos;{.status.conditions[0]}&apos;
+oc get pods -n stackrox-secured-cluster
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">{&quot;lastTransitionTime&quot;:&quot;2023-07-10T15:35:03Z&quot;,&quot;message&quot;:&quot;StackRox Secured Cluster Services 4.1.0 has been installed.\n\n\n\nThank you for using StackRox!\n&quot;,&quot;reason&quot;:&quot;InstallSuccessful&quot;,&quot;status&quot;:&quot;True&quot;,&quot;type&quot;:&quot;Deployed&quot;}
-NAME                                 READY   STATUS    RESTARTS   AGE
-admission-control-657c66c6bd-2d8bp   1/1     Running   0          65s
-admission-control-657c66c6bd-k6tjd   1/1     Running   0          65s
-admission-control-657c66c6bd-knc9m   1/1     Running   0          65s
-collector-4rm6p                      3/3     Running   0          65s
-collector-572dc                      3/3     Running   0          65s
-collector-9wwrh                      3/3     Running   0          65s
-collector-hlbjb                      3/3     Running   0          65s
-scanner-7ccbb84b7-2jlrr              1/1     Running   0          65s
-scanner-7ccbb84b7-grln4              1/1     Running   0          65s
-scanner-7ccbb84b7-ll8fq              1/1     Running   0          65s
-scanner-db-59db747d66-s558f          1/1     Running   0          65s
-sensor-576bd78c4f-dtzfr              1/1     Running   0          65s
+<pre><code class="lang-bash">{&quot;lastTransitionTime&quot;:&quot;2023-11-07T06:13:02Z&quot;,&quot;message&quot;:&quot;StackRox Secured Cluster Services 4.2.2 has been installed.\n\n\n\nThank you for using StackRox!\n&quot;,&quot;reason&quot;:&quot;InstallSuccessful&quot;,&quot;status&quot;:&quot;True&quot;,&quot;type&quot;:&quot;Deployed&quot;}
+NAME                                 READY   STATUS    RESTARTS        AGE
+admission-control-64487c7986-ff6j9   1/1     Running   0               10m
+admission-control-64487c7986-t25ng   1/1     Running   0               10m
+admission-control-64487c7986-wjl7w   1/1     Running   0               10m
+collector-dpjfk                      3/3     Running   0               10m
+collector-mj778                      3/3     Running   0               10m
+collector-n8cch                      3/3     Running   0               10m
+collector-z49pb                      3/3     Running   0               10m
+scanner-7f75dd5879-m6cfm             1/1     Running   0               10m
+scanner-7f75dd5879-vpkcj             1/1     Running   0               10m
+scanner-db-6c555b4b7d-x49hl          1/1     Running   0               10m
+sensor-65c777cf9f-c8zvx              1/1     Running   0               10m
 </code></pre>
 <p>Remark</p>
 <ul>
 <li>Adminission control is high availability with default 3 pods</li>
-<li>Collector is run on all nodes</li>
+<li>Collector is run on every nodes including control plane</li>
 </ul>
 </li>
 </ul>
@@ -920,19 +944,20 @@ sensor-576bd78c4f-dtzfr              1/1     Running   0          65s
 <ul>
 <li>Generate cluster init bundle</li>
 <li><p>Create secret from previously downloaded <em>Kubernetes Secrets file</em> </p>
-<pre><code class="lang-bash">  oc new-project stackrox-cluster
-  oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-cluster
+<pre><code class="lang-bash">  oc new-project stackrox-secured-cluster
+  oc create -f cluster2-cluster-init-secrets.yaml -n stackrox-secured-cluster
 </code></pre>
 </li>
+<li>Install ACS operator</li>
 <li><p>Create Secured Cluster Service with centralEndpoint set to Central&apos;s route. </p>
 <p>Get Central&apos;s route and save to ROX_HOST environment variable</p>
 <pre><code class="lang-bash">  ROX_HOST=$(oc get route central -n stackrox -o jsonpath=&apos;{.spec.host}&apos;)
 </code></pre>
 <p>Login to remote cluster and run following command.</p>
 <pre><code class="lang-bash">  cat manifests/acs-secured-cluster.yaml | \
-  sed s/central.stackrox.svc/$ROX_HOST/ | \
+  sed &apos;s/central.stackrox.svc/&apos;$ROX_HOST&apos;/&apos; | \
   sed s/cluster1/cluster2/ | \
-  oc create -n stackrox-cluster -f -
+  oc create -n stackrox-secured-cluster -f -
 </code></pre>
 </li>
 </ul>
@@ -1050,25 +1075,7 @@ Dynamic configuration
 Helm-managed cluster
 
 ![](images/acs-console-managed-clusters-helm.png)
-</code></pre><h3 id="single-sign-on-with-openshift">Single Sign-On with OpenShift</h3>
-<ul>
-<li><p>Navigate to Platform Configuration -&gt; Access Control then click Add Auth Provider and select OpenShift Auth</p>
-<p>  <img src="images/acs-add-auth-provider.png" alt=""></p>
-</li>
-<li><p>Input configuration then click save</p>
-<ul>
-<li>Name: OpenShift</li>
-<li>Minium access role: Analyst</li>
-<li><p>Rules: mapped spcific user to Admin role</p>
-<p><img src="images/acs-openshift-oauth-provider.png" alt=""></p>
-</li>
-<li><p>Login with OpenShift</p>
-<p><img src="images/acs-login-with-openshift.png" alt=""></p>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="integration-with-nexus">Integration with Nexus</h3>
+</code></pre><h3 id="integration-with-nexus">Integration with Nexus</h3>
 <h4 id="setup-nexus">Setup Nexus</h4>
 <ul>
 <li><p>Create namespace</p>
@@ -1095,12 +1102,12 @@ Nexus password is stored at nexus_password.txt
 </ul>
 <ul>
 <li><p>Copy sample container images to nexus</p>
-<pre><code class="lang-bash">NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)
-allImages=(backend:v1 backend:11-ubuntu backend:CVE-2020-36518 frontend-js:v1 frontend-js:node frontend-js:CVE-2020-28471 log4shell:latest backend-native:v1 backend-native:distroless)
+<pre><code class="lang-bash">NEXUS=$(oc get route nexus-registry -n ci-cd -o jsonpath=&apos;{.spec.host}&apos;)/repository/container
+allImages=(backend:v1 backend:native backend:CVE-2020-36518 frontend-js:v1 frontend-js:node log4shell:latest backend-native:distroless)
 for image in $allImages
 do
   echo &quot;############## Copy $image ##############&quot;
-  podman run docker://quay.io/skopeo/stable:latest \
+  podman run quay.io/skopeo/stable \
   copy --src-tls-verify=true \
   --dest-tls-verify=false \
   --src-no-creds \
@@ -1182,7 +1189,7 @@ CVSS score: https://nvd.nist.gov/vuln-metrics/cvss
 </li>
 <li><p>Sample recommendation</p>
 <p>```
-KubeLinter 0.6.4</p>
+KubeLinter 0.6.5</p>
 <p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) environment variable SECRET in container &quot;mr-white&quot; found (check: env-var-secret, remediation: Do not use raw secrets in environment variables. Instead, either mount the secret as a file or use a secretKeyRef. Refer to <a href="https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets" target="_blank">https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets</a> for details.)</no></p>
 <p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) The container &quot;mr-white&quot; is using an invalid container image, &quot;quay.io/voravitl/mr-white:latest&quot;. Please use images that are not blocked by the <code>BlockList</code> criteria : [&quot;.<em>:(latest)$&quot; &quot;^<sup><a href="#fn_:" id="reffn_:">:</a></sup></em>$&quot; &quot;(.*/<sup><a href="#fn_:]+)$" "="" id="reffn_:]+)$">:]+)$&quot;</a></sup> (check: latest-tag, remediation: Use a container image with a specific tag other than latest.)</no></p>
 <p>manifests/mr-white.yaml: (object: <no namespace="">/mr-white apps/v1, Kind=Deployment) container &quot;mr-white&quot; does not have a read-only root file system (check: no-read-only-root-fs, remediation: Set readOnlyRootFilesystem to true in the container securityContext.)</no></p>
@@ -1207,7 +1214,7 @@ KubeLinter 0.6.4</p>
 <pre><code class="lang-bash">  kube-linter lint manifests/backend-v1-emptyDir.yaml
 </code></pre>
 <p>  Output</p>
-<pre><code class="lang-bash">  KubeLinter 0.3.0
+<pre><code class="lang-bash">  KubeLinter 0.6.5
 
   No lint errors found!
 </code></pre>
@@ -1714,7 +1721,7 @@ status: {}
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-10-30T04:27:12.207Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-10-30T04:27:56.474Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"ACS","level":"1.4.1","depth":2,"next":{"title":"Applications","level":"1.5","depth":1,"ref":"","articles":[{"title":"Developer Console","level":"1.5.1","depth":2,"path":"build-with-dev-console.md","ref":"build-with-dev-console.md","articles":[]},{"title":"Application Build & Deployment with oc","level":"1.5.2","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},{"title":"Application Build & Deployment with odo","level":"1.5.3","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},{"title":"Application Deployment with Helm","level":"1.5.4","depth":2,"path":"helm.md","ref":"helm.md","articles":[]},{"title":"Image Streams","level":"1.5.5","depth":2,"path":"imagestreams.md","ref":"imagestreams.md","articles":[]},{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"path":"hpa.md","ref":"hpa.md","articles":[]},{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},{"title":"CI/CD with Jenkins","level":"1.5.11","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},{"title":"CI/CD with Azure DevOps","level":"1.5.12","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},{"title":"EAP on OpenShift","level":"1.5.13","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]}]},"previous":{"title":"Advanced Cluster Security for Kubernetes","level":"1.4","depth":1,"ref":"","articles":[{"title":"ACS","level":"1.4.1","depth":2,"path":"acs.md","ref":"acs.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"acs.md","mtime":"2023-11-08T09:46:42.947Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-11-08T09:47:16.647Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
