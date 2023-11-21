@@ -21,9 +21,9 @@
   Output
 
   ```bash
-    NAME                     DISPLAY                     VERSION   REPLACES                 PHASE
-    cluster-logging.v5.7.1   Red Hat OpenShift Logging   5.7.1     cluster-logging.v5.7.0   Succeeded
-    loki-operator.v5.7.1     Loki Operator               5.7.1     loki-operator.v5.7.0     Succeeded
+  NAME                     DISPLAY                     VERSION   REPLACES   PHASE
+  cluster-logging.v5.8.0   Red Hat OpenShift Logging   5.8.0                Succeeded
+  loki-operator.v5.8.0     Loki Operator               5.8.0                Succeeded
   ```
 
 - Create Logging Instance
@@ -56,17 +56,28 @@
     lokistack.loki.grafana.com/logging-loki created
     clusterlogging.logging.openshift.io/instance created
     
-    NAME                                          READY   STATUS    RESTARTS   AGE
-    cluster-logging-operator-66d774b4d7-bfwvx     1/1     Running   0          29m
-    collector-28gjt                               2/2     Running   0          41s
-    collector-9jpj9                               2/2     Running   0          41s
-    collector-bn22f                               2/2     Running   0          41s
-    collector-zxn6x                               2/2     Running   0          41s
-    logging-loki-compactor-0                      1/1     Running   0          38s
-    logging-loki-distributor-759fdb8d45-gb67f     1/1     Running   0          38s
-    logging-loki-gateway-b49f86589-f6gmc          2/2     Running   0          38s
-    logging-loki-gateway-b49f86589-g8lgr          2/2     Running   0          38s
-    logging-loki-index-gateway-0                  1/1     Running   0          38s
+    NAME                                           READY   STATUS    RESTARTS   AGE
+    cluster-logging-operator-5484948dbb-mlcsr      1/1     Running   0          6m58s
+    collector-2rs2p                                1/1     Running   0          3m39s
+    collector-gkzw5                                1/1     Running   0          3m38s
+    collector-pftdl                                1/1     Running   0          3m38s
+    collector-xnmvz                                1/1     Running   0          3m38s
+    logging-loki-compactor-0                       1/1     Running   0          3m56s
+    logging-loki-distributor-85fc55b7d5-7jwxp      1/1     Running   0          3m56s
+    logging-loki-distributor-85fc55b7d5-l5l2k      1/1     Running   0          3m56s
+    logging-loki-gateway-74f69b964b-lg9vv          2/2     Running   0          3m56s
+    logging-loki-gateway-74f69b964b-mz6tr          2/2     Running   0          3m56s
+    logging-loki-index-gateway-0                   1/1     Running   0          3m56s
+    logging-loki-index-gateway-1                   1/1     Running   0          3m24s
+    logging-loki-ingester-0                        1/1     Running   0          3m56s
+    logging-loki-ingester-1                        1/1     Running   0          2m38s
+    logging-loki-querier-5bd8bf6699-26cwp          1/1     Running   0          3m56s
+    logging-loki-querier-5bd8bf6699-2hd88          1/1     Running   0          3m56s
+    logging-loki-query-frontend-864dd4cf86-wc96f   1/1     Running   0          3m56s
+    logging-loki-query-frontend-864dd4cf86-zfp6b   1/1     Running   0          3m56s
+    logging-loki-ruler-0                           1/1     Running   0          3m56s
+    logging-loki-ruler-1                           1/1     Running   0          3m56s
+    logging-view-plugin-549c6c5-mb5zq              1/1     Running   0          4m1s
     ```
 
 - Enable Console Plugin Operator
@@ -78,7 +89,10 @@
   - Or using CLI
     
     ```bash
-    oc patch console.operator cluster --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
+    oc patch console.operator cluster \
+    --type json -p '[{"op": "add", "path": "/spec/plugins", "value": []}]'
+    oc patch console.operator cluster \
+    --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
     ```
 
 - Restart console pod
@@ -107,7 +121,7 @@
   oc expose deployment/backend-v1 -n api
   oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
   oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
-  oc set env deployment/backend-v1 APP_BACKEND=https://mockbin.org/status/201/transaction-completed -n api
+  oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/201 -n api
   oc scale deployment/frontend-v1 --replicas=3 -n ui
   oc scale deployment/frontend-v2 --replicas=3 -n ui
   oc scale deployment/backend-v1 --replicas=6 -n api
@@ -120,7 +134,7 @@
     Client--> Route
     Route-->|Project ui|Frontend;
     Frontend--> |Project api|Backend;
-    Backend-->|External App|https://mockbin.org/status/201/transaction-completed
+    Backend-->|External App|https://httpbin.org/status/201
    
   ```
 
@@ -175,9 +189,12 @@
 
 ## Alert
 
-```bash
-oc set env deployment/backend-v1 APP_BACKEND=https://mockbin.org/status/500/sorry-we-re-closed -n 
-```
+- Configure backend app to return 500
+  
+  ```bash
+  oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/500 -n api
+  ```
+  
 WIP
 
 <!-- delete ingester then queier -->
