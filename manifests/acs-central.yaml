@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stackrox
+---
+apiVersion: platform.stackrox.io/v1alpha1
+kind: Central
+metadata:
+  name: stackrox-central-services
+  namespace: stackrox
+spec:
+  monitoring:
+    openshift:
+      enabled: true
+  central:
+    # To use your own secret
+    # defaultTLSSecret:
+    #   name: acs-central
+    exposure:
+      loadBalancer:
+        enabled: false
+        port: 443
+      nodePort:
+        enabled: false
+      route:
+        enabled: true
+    telemetry:
+      enabled: true
+    persistence:
+      persistentVolumeClaim:
+        claimName: stackrox-db
+    # adminPasswordSecret:
+    #   name: stackrox-admin-secret
+    db:
+      isEnabled: Default
+      # passwordSecret:
+      #   name: stackrox-db-password
+      persistence:
+        persistentVolumeClaim:
+          claimName: central-db
+  egress:
+    connectivityPolicy: Online
+  scanner:
+    analyzer:
+      scaling:
+        autoScaling: Enabled
+        maxReplicas: 3
+        minReplicas: 2
+        replicas: 2
+    # db:
+    #   nodeSelector:
+    #     node-role.kubernetes.io/acs: ""
+    #   tolerations:
+    #   - key: infra-acs
+    #     value: reserved
+    #     effect: NoSchedule   
+    scannerComponent: Enabled
