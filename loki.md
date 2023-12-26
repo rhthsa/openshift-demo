@@ -21,31 +21,51 @@
   Output
 
   ```bash
-  NAME                     DISPLAY                     VERSION   REPLACES   PHASE
-  cluster-logging.v5.8.0   Red Hat OpenShift Logging   5.8.0                Succeeded
-  loki-operator.v5.8.0     Loki Operator               5.8.0                Succeeded
+  NAME                                    DISPLAY                     VERSION   REPLACES                                PHASE
+  cluster-logging.v5.8.1                  Red Hat OpenShift Logging   5.8.1     cluster-logging.v5.8.0                  Succeeded
+  loki-operator.v5.8.1                    Loki Operator               5.8.1     loki-operator.v5.8.0                    Succeeded
   ```
 
 - Create Logging Instance
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
-    - For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry
+    - In case of using ODF
+        - Navigate to Storage -> Object Storage -> Object Bucket Claims
+        - Create ObjectBucketClaim
+          - Claim Name: *loki*
+          - StorageClass: *openshift-storage.nooba.io*
+          - BucketClass: *nooba-default-bucket-class*
+        - Retrieve configuration into environment variables
+
+          ```bash
+          S3_BUCKET=$(oc get ObjectBucketClaim loki -n openshift-storage -o jsonpath='{.spec.bucketName}')
+          REGION="''"
+          ACCESS_KEY_ID=$(oc get secret loki -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
+          SECRET_ACCESS_KEY=$(oc get secret loki -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
+          ENDPOINT="https://s3.openshift-storage.svc:443"
+          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+        ```
+    - If you have existing S3 bucket used by OpenShift Image Registry
       
       ```bash
-        S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
-        AWS_REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
-        AWS_ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
-        AWS_SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
+          REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
+          ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          ENDPOINT=$(echo "https://s3.$REGION.amazonaws.com")
+          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
        ```
 
   - Create [Logging and Loki Instances](manifests/logging-loki-instance.yaml)
     
     ```bash
     cat manifests/logging-loki-instance.yaml \
-    |sed 's/S3_BUCKET/'$S3_BUCKET'/' \
-    |sed 's/AWS_REGION/'$AWS_REGION'/' \
-    |sed 's/AWS_ACCESS_KEY_ID/'$AWS_ACCESS_KEY_ID'/' \
-    |sed 's|AWS_SECRET_ACCESS_KEY|'$AWS_SECRET_ACCESS_KEY'|' \
-    |oc create -f -
+        |sed 's/S3_BUCKET/'$S3_BUCKET'/' \
+        |sed 's/REGION/'$REGION'/' \
+        |sed 's|ACCESS_KEY_ID|'$ACCESS_KEY_ID'|' \
+        |sed 's|SECRET_ACCESS_KEY|'$SECRET_ACCESS_KEY'|' \
+        |sed 's|ENDPOINT|'$ENDPOINT'|'\
+        |sed 's|DEFAULT_STORAGE_CLASS|'$DEFAULT_STORAGE_CLASS'|' \
+        |oc apply -f -
     watch oc get po -n openshift-logging
     ```
     
@@ -57,27 +77,29 @@
     clusterlogging.logging.openshift.io/instance created
     
     NAME                                           READY   STATUS    RESTARTS   AGE
-    cluster-logging-operator-5484948dbb-mlcsr      1/1     Running   0          6m58s
-    collector-2rs2p                                1/1     Running   0          3m39s
-    collector-gkzw5                                1/1     Running   0          3m38s
-    collector-pftdl                                1/1     Running   0          3m38s
-    collector-xnmvz                                1/1     Running   0          3m38s
-    logging-loki-compactor-0                       1/1     Running   0          3m56s
-    logging-loki-distributor-85fc55b7d5-7jwxp      1/1     Running   0          3m56s
-    logging-loki-distributor-85fc55b7d5-l5l2k      1/1     Running   0          3m56s
-    logging-loki-gateway-74f69b964b-lg9vv          2/2     Running   0          3m56s
-    logging-loki-gateway-74f69b964b-mz6tr          2/2     Running   0          3m56s
-    logging-loki-index-gateway-0                   1/1     Running   0          3m56s
-    logging-loki-index-gateway-1                   1/1     Running   0          3m24s
-    logging-loki-ingester-0                        1/1     Running   0          3m56s
-    logging-loki-ingester-1                        1/1     Running   0          2m38s
-    logging-loki-querier-5bd8bf6699-26cwp          1/1     Running   0          3m56s
-    logging-loki-querier-5bd8bf6699-2hd88          1/1     Running   0          3m56s
-    logging-loki-query-frontend-864dd4cf86-wc96f   1/1     Running   0          3m56s
-    logging-loki-query-frontend-864dd4cf86-zfp6b   1/1     Running   0          3m56s
-    logging-loki-ruler-0                           1/1     Running   0          3m56s
-    logging-loki-ruler-1                           1/1     Running   0          3m56s
-    logging-view-plugin-549c6c5-mb5zq              1/1     Running   0          4m1s
+    cluster-logging-operator-67d4f44f5c-6pn5l      1/1     Running   0          7m18s
+    collector-8zfb7                                1/1     Running   0          75s
+    collector-gpn8c                                1/1     Running   0          76s
+    collector-j5gx7                                1/1     Running   0          74s
+    collector-ktssl                                1/1     Running   0          75s
+    collector-kw9wv                                1/1     Running   0          74s
+    collector-q4lsr                                1/1     Running   0          73s
+    logging-loki-compactor-0                       1/1     Running   0          89s
+    logging-loki-distributor-75d9b9fc8c-gn8d8      1/1     Running   0          89s
+    logging-loki-distributor-75d9b9fc8c-qxttl      1/1     Running   0          89s
+    logging-loki-gateway-946cf94d7-ttddj           2/2     Running   0          88s
+    logging-loki-gateway-946cf94d7-vbx74           2/2     Running   0          88s
+    logging-loki-index-gateway-0                   1/1     Running   0          89s
+    logging-loki-index-gateway-1                   1/1     Running   0          61s
+    logging-loki-ingester-0                        1/1     Running   0          89s
+    logging-loki-ingester-1                        0/1     Pending   0          25s
+    logging-loki-querier-5888b4fdf7-cvdst          1/1     Running   0          89s
+    logging-loki-querier-5888b4fdf7-wx577          1/1     Running   0          89s
+    logging-loki-query-frontend-66c7ffd5d4-4vpgm   1/1     Running   0          89s
+    logging-loki-query-frontend-66c7ffd5d4-flbpv   1/1     Running   0          89s
+    logging-loki-ruler-0                           1/1     Running   0          88s
+    logging-loki-ruler-1                           1/1     Running   0          88s
+    logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
     ```
 
 - Enable Console Plugin Operator
