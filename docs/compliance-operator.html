@@ -942,72 +942,60 @@ scansettingbinding.compliance.openshift.io/pci-dss-profile patched
 <h2 id="openscap-report">Openscap Report</h2>
 <p> Generate HTML reports for latest scan results by using oscap tools. Container image with oscap tools already build with this <a href="manifests/Dockerfile.oscap">Dockerfile</a></p>
 <h3 id="cis">CIS</h3>
-<pre><code>- Create [pods](manifests/cis-report.yaml) to mount to CIS reports PVC
-
-  ```bash
-  oc create -f manifests/cis-report.yaml -n openshift-compliance
+<ul>
+<li><p>Create <a href="manifests/cis-report.yaml">pods</a> to mount to CIS reports PVC</p>
+<pre><code class="lang-bash">  oc create -f manifests/cis-report.yaml -n openshift-compliance
   watch oc get pods -l app=report-generator -n openshift-compliance
-  ```
-
-  Output
-
-  ```bash
-  NAME                READY   STATUS    RESTARTS   AGE
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  NAME                READY   STATUS    RESTARTS   AGE
   cis-master-report   1/1     Running   0          54s
   cis-report          1/1     Running   0          55s
   cis-worker-report   1/1     Running   0          55s
-  ```
+</code></pre>
+<p>  <img src="images/compliance-cis-report-generator-pods.png" alt=""></p>
+<ul>
+<li><p>Generate CIS reports with <em>oscap</em></p>
+<pre><code class="lang-bash">REPORTS_DIR=compliance-operator-reports
+mkdir -p $REPORTS_DIR
+reports=(cis-report cis-worker-report cis-master-report)
+for report in ${reports[@]}
+do
+  DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v &quot;lost+found&quot;|head -n 1)
 
-  ![](images/compliance-cis-report-generator-pods.png)
-
-- Generate CIS reports with *oscap*
-
-  ```bash
-  REPORTS_DIR=compliance-operator-reports
-  mkdir -p $REPORTS_DIR
-  reports=(cis-report cis-worker-report cis-master-report)
-  for report in ${reports[@]}
+  for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
   do
-    DIR=$(oc exec -n openshift-compliance $report -- ls -1t /reports|grep -v &quot;lost+found&quot;|head -n 1)
-
-    for file in $(oc exec -n openshift-compliance $report -- ls -1t /reports/$DIR)
-    do
-      echo &quot;Generate report for $report from $file&quot;
-      oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file &gt; $REPORTS_DIR/$report-$file.html
-    done
-  done 
-  oc delete pods -l app=report-generator -n openshift-compliance
-  ```
-
-  Sample output
-
-  ```bash
-    Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
-    Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
-    Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
-    Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
-    Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
-    Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
-  ```
-</code></pre><h3 id="pci-dss">PCI-DSS</h3>
-<pre><code>- Create [pods](manifests/cis-report.yaml) to mount to PCI-DSS reports PVC
-
-  ```bash
-  oc create -f manifests/pci-dss-report.yaml -n openshift-compliance
+    echo &quot;Generate report for $report from $file&quot;
+    oc exec -n openshift-compliance $report -- oscap xccdf generate report /reports/$DIR/$file &gt; $REPORTS_DIR/$report-$file.html
+  done
+done 
+oc delete pods -l app=report-generator -n openshift-compliance
+</code></pre>
+<p>Sample output</p>
+<pre><code class="lang-bash">  Generate report for cis-report from ocp4-cis-api-checks-pod.xml.bzip2
+  Generate report for cis-worker-report from openscap-pod-f73cef8b1e6a98fa8233b84163f62300c60df10e.xml.bzip2
+  Generate report for cis-worker-report from openscap-pod-ac5e7838c12d9bea905d474069522b5b502ad724.xml.bzip2
+  Generate report for cis-master-report from openscap-pod-47877a9e79536f85e552662526e0cd247278bf47.xml.bzip2
+  Generate report for cis-master-report from openscap-pod-3c5d5e72bf73ebbdbc4ff5cf27f6c3443534e9d6.xml.bzip2
+  Generate report for cis-master-report from openscap-pod-cd506d793bc03ad62909572b95df1d2d94d13a3e.xml.bzip2
+</code></pre>
+<h3 id="pci-dss">PCI-DSS</h3>
+</li>
+</ul>
+</li>
+<li><p>Create <a href="manifests/cis-report.yaml">pods</a> to mount to PCI-DSS reports PVC</p>
+<pre><code class="lang-bash">  oc create -f manifests/pci-dss-report.yaml -n openshift-compliance
   watch oc get pods -l app=report-generator -n openshift-compliance
-  ```
-
-  Output
-
-  ```bash
-  NAME                    READY   STATUS    RESTARTS   AGE
+</code></pre>
+<p>  Output</p>
+<pre><code class="lang-bash">  NAME                    READY   STATUS    RESTARTS   AGE
   pci-dss-master-report   1/1     Running   0          11s
   pci-dss-report          1/1     Running   0          12s
   pci-dss-worker-report   1/1     Running   0          12
-  ```
-
-
-- Generate PCI-DSS reports with *oscap*
+</code></pre>
+</li>
+</ul>
+<pre><code>- Generate PCI-DSS reports with *oscap*
 
   ```bash
   REPORTS_DIR=compliance-operator-reports
@@ -1108,7 +1096,7 @@ kernel.keys.root_maxbytes=25000000
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.12","depth":2,"next":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"previous":{"title":"Custom Alert","level":"1.2.11","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2023-12-26T04:58:10.640Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-12-26T04:58:48.305Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Compliance","level":"1.2.12","depth":2,"next":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"previous":{"title":"Custom Alert","level":"1.2.11","depth":2,"path":"custom-alert.md","ref":"custom-alert.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"compliance-operator.md","mtime":"2023-12-26T05:13:51.208Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-12-26T05:14:26.725Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
