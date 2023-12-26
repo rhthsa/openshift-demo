@@ -9,11 +9,11 @@ metadata:
   name: loki-s3
   namespace: netobserv
 stringData:
-  access_key_id: AWS_ACCESS_KEY_ID
-  access_key_secret: AWS_SECRET_ACCESS_KEY
+  access_key_id: ACCESS_KEY_ID
+  access_key_secret: ASECRET_ACCESS_KEY
   bucketnames: S3_BUCKET
-  endpoint: https://s3.AWS_REGION.amazonaws.com
-  region: AWS_REGION
+  endpoint: ENDPOINT # https://s3.AWS_REGION.amazonaws.com
+  region: REGION
 ---
 apiVersion: loki.grafana.com/v1
 kind: LokiStack
@@ -29,7 +29,7 @@ spec:
     secret:
       name:  loki-s3
       type: s3
-  storageClassName: gp3-csi 
+  storageClassName: DEFAULT_STORAGE_CLASS
   tenants:
     mode:  openshift-network
 ---

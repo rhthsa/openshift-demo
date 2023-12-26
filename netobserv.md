@@ -64,22 +64,43 @@
 
 #### Configure Loki for Network Observability
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
-      - For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry
+      - In case of using ODF
+        - Navigate to Storage -> Object Storage -> Object Bucket Claims
+        - Create ObjectBucketClaim
+          - Claim Name: *netobserv*
+          - StorageClass: *openshift-storage.nooba.io*
+          - BucketClass: *nooba-default-bucket-class*
+        - Retrieve configuration into environment variables
+
+          ```bash
+          S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath='{.spec.bucketName}')
+          REGION="''"
+          ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
+          SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
+          ENDPOINT="https://s3.openshift-storage.svc:443"
+          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+        ``` 
+      - If you have existing S3 bucket used by OpenShift Image Registry
         
         ```bash
           S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
-          AWS_REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
-          AWS_ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
-          AWS_SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
+          ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+          ENDPOINT=$(echo "https://s3.$REGION.amazonaws.com")
+          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
          ```
+
   - Create [Loki Instance](manifests/netobserv-loki-s3.yaml)
   
     ```bash
         cat manifests/netobserv-loki-s3.yaml \
         |sed 's/S3_BUCKET/'$S3_BUCKET'/' \
-        |sed 's/AWS_REGION/'$AWS_REGION'/' \
-        |sed 's/AWS_ACCESS_KEY_ID/'$AWS_ACCESS_KEY_ID'/' \
-        |sed 's|AWS_SECRET_ACCESS_KEY|'$AWS_SECRET_ACCESS_KEY'|' \
+        |sed 's/REGION/'$REGION'/' \
+        |sed 's|ACCESS_KEY_ID|'$ACCESS_KEY_ID'|' \
+        |sed 's|SECRET_ACCESS_KEY|'$SECRET_ACCESS_KEY'|' \
+        |sed 's|ENDPOINT|'$ENDPOINT'|'\
+        |sed 's|DEFAULT_STORAGE_CLASS|'$DEFAULT_STORAGE_CLASS'|' \
         |oc apply -f -
         watch oc get po -n netobserv
     ```
@@ -115,16 +136,51 @@
 
 ## Test
  - Check Network Observability by Open Administrator -> Observe -> Network Traffic
-   
-   Overview
-   - Add filtering by namespace name i.e. monitor for namespace ui and api
+ - Overview
+     - Add filtering by namespace name i.e. monitor for namespace ui and api
      
-     ![](images/network-observability-overview.png)
+       ![](images/network-observability-overview.png)
 
-     Flow Rate
+- Flow Rate
 
-     ![](images/network-observability-overall-flow-rate.png)
+    ![](images/network-observability-overall-flow-rate.png)
 
-   Topology
+- Topology
 
-  ![](images/network-observability-network-topology.png)
+    ![](images/network-observability-network-topology.png)
+
+- Raw Data from backend pod request to external system i.e. httpbin.org
+  
+  ```json
+  {
+      "AgentIP": "192.168.12.2",
+      "Bytes": 72,
+      "DstAddr": "3.95.102.170",
+      "DstMac": "F2:A3:8F:EF:54:0E",
+      "DstPort": 443,
+      "Duplicate": false,
+      "Etype": 2048,
+      "Flags": 16,
+      "FlowDirection": "0",
+      "IfDirection": 0,
+      "Interface": "ovn-k8s-mp0",
+      "K8S_ClusterName": "bd7d6a47-bfe9-4eec-a381-0239eee1afdc",
+      "Packets": 1,
+      "Proto": 6,
+      "SrcAddr": "10.134.0.30",
+      "SrcK8S_HostIP": "10.10.10.21",
+      "SrcK8S_HostName": "worker-cluster-r88vr-2",
+      "SrcK8S_Name": "backend-v1-867995c57f-jplzw",
+      "SrcK8S_Namespace": "api",
+      "SrcK8S_OwnerName": "backend-v1",
+      "SrcK8S_OwnerType": "Deployment",
+      "SrcK8S_Type": "Pod",
+      "SrcMac": "0A:58:0A:86:00:01",
+      "SrcPort": 51498,
+      "TimeFlowEndMs": 1703561169348,
+      "TimeFlowStartMs": 1703561169348,
+      "TimeReceived": 1703561170,
+      "app": "netobserv-flowcollector"
+    }
+  ```
+  
