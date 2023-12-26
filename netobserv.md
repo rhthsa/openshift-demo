@@ -148,7 +148,10 @@
 - Topology
 
     ![](images/network-observability-network-topology.png)
-
+- Network Traffic Pod
+     
+    ![](images/network-traffic-pod.png)
+     
 - Raw Data from backend pod request to external system i.e. httpbin.org
   
   ```json
