@@ -671,31 +671,55 @@ crd/clusterloggings.logging.openshift.io
 oc get csv -n openshift-logging
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                     DISPLAY                     VERSION   REPLACES   PHASE
-cluster-logging.v5.8.0   Red Hat OpenShift Logging   5.8.0                Succeeded
-loki-operator.v5.8.0     Loki Operator               5.8.0                Succeeded
+<pre><code class="lang-bash">NAME                                    DISPLAY                     VERSION   REPLACES                                PHASE
+cluster-logging.v5.8.1                  Red Hat OpenShift Logging   5.8.1     cluster-logging.v5.8.0                  Succeeded
+loki-operator.v5.8.1                    Loki Operator               5.8.1     loki-operator.v5.8.0                    Succeeded
 </code></pre>
 </li>
 <li><p>Create Logging Instance</p>
 <ul>
 <li><p>Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region</p>
 <ul>
-<li><p>For demo purpose, If you have existing S3 bucket used by OpenShift Image Registry</p>
-<pre><code class="lang-bash">  S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
-  AWS_REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
-  AWS_ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
-  AWS_SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+<li><p>In case of using ODF</p>
+<ul>
+<li>Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims</li>
+<li>Create ObjectBucketClaim<ul>
+<li>Claim Name: <em>loki</em></li>
+<li>StorageClass: <em>openshift-storage.nooba.io</em></li>
+<li>BucketClass: <em>nooba-default-bucket-class</em></li>
+</ul>
+</li>
+<li><p>Retrieve configuration into environment variables</p>
+<pre><code class="lang-bash">S3_BUCKET=$(oc get ObjectBucketClaim loki -n openshift-storage -o jsonpath=&apos;{.spec.bucketName}&apos;)
+REGION=&quot;&apos;&apos;&quot;
+ACCESS_KEY_ID=$(oc get secret loki -n openshift-storage -o jsonpath=&apos;{.data.AWS_ACCESS_KEY_ID}&apos;|base64 -d)
+SECRET_ACCESS_KEY=$(oc get secret loki -n openshift-storage -o jsonpath=&apos;{.data.AWS_SECRET_ACCESS_KEY}&apos;|base64 -d)
+ENDPOINT=&quot;https://s3.openshift-storage.svc:443&quot;
+DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+</code></pre>
+</li>
+</ul>
+</li>
+<li><p>If you have existing S3 bucket used by OpenShift Image Registry</p>
+<pre><code class="lang-bash">    S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
+    REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
+    ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+    SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+    ENDPOINT=$(echo &quot;https://s3.$REGION.amazonaws.com&quot;)
+    DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
 </code></pre>
 </li>
 </ul>
 </li>
 <li><p>Create <a href="manifests/logging-loki-instance.yaml">Logging and Loki Instances</a></p>
 <pre><code class="lang-bash">cat manifests/logging-loki-instance.yaml \
-|sed &apos;s/S3_BUCKET/&apos;$S3_BUCKET&apos;/&apos; \
-|sed &apos;s/AWS_REGION/&apos;$AWS_REGION&apos;/&apos; \
-|sed &apos;s/AWS_ACCESS_KEY_ID/&apos;$AWS_ACCESS_KEY_ID&apos;/&apos; \
-|sed &apos;s|AWS_SECRET_ACCESS_KEY|&apos;$AWS_SECRET_ACCESS_KEY&apos;|&apos; \
-|oc create -f -
+    |sed &apos;s/S3_BUCKET/&apos;$S3_BUCKET&apos;/&apos; \
+    |sed &apos;s/REGION/&apos;$REGION&apos;/&apos; \
+    |sed &apos;s|ACCESS_KEY_ID|&apos;$ACCESS_KEY_ID&apos;|&apos; \
+    |sed &apos;s|SECRET_ACCESS_KEY|&apos;$SECRET_ACCESS_KEY&apos;|&apos; \
+    |sed &apos;s|ENDPOINT|&apos;$ENDPOINT&apos;|&apos;\
+    |sed &apos;s|DEFAULT_STORAGE_CLASS|&apos;$DEFAULT_STORAGE_CLASS&apos;|&apos; \
+    |oc apply -f -
 watch oc get po -n openshift-logging
 </code></pre>
 <p>Output</p>
@@ -704,27 +728,29 @@ lokistack.loki.grafana.com/logging-loki created
 clusterlogging.logging.openshift.io/instance created
 
 NAME                                           READY   STATUS    RESTARTS   AGE
-cluster-logging-operator-5484948dbb-mlcsr      1/1     Running   0          6m58s
-collector-2rs2p                                1/1     Running   0          3m39s
-collector-gkzw5                                1/1     Running   0          3m38s
-collector-pftdl                                1/1     Running   0          3m38s
-collector-xnmvz                                1/1     Running   0          3m38s
-logging-loki-compactor-0                       1/1     Running   0          3m56s
-logging-loki-distributor-85fc55b7d5-7jwxp      1/1     Running   0          3m56s
-logging-loki-distributor-85fc55b7d5-l5l2k      1/1     Running   0          3m56s
-logging-loki-gateway-74f69b964b-lg9vv          2/2     Running   0          3m56s
-logging-loki-gateway-74f69b964b-mz6tr          2/2     Running   0          3m56s
-logging-loki-index-gateway-0                   1/1     Running   0          3m56s
-logging-loki-index-gateway-1                   1/1     Running   0          3m24s
-logging-loki-ingester-0                        1/1     Running   0          3m56s
-logging-loki-ingester-1                        1/1     Running   0          2m38s
-logging-loki-querier-5bd8bf6699-26cwp          1/1     Running   0          3m56s
-logging-loki-querier-5bd8bf6699-2hd88          1/1     Running   0          3m56s
-logging-loki-query-frontend-864dd4cf86-wc96f   1/1     Running   0          3m56s
-logging-loki-query-frontend-864dd4cf86-zfp6b   1/1     Running   0          3m56s
-logging-loki-ruler-0                           1/1     Running   0          3m56s
-logging-loki-ruler-1                           1/1     Running   0          3m56s
-logging-view-plugin-549c6c5-mb5zq              1/1     Running   0          4m1s
+cluster-logging-operator-67d4f44f5c-6pn5l      1/1     Running   0          7m18s
+collector-8zfb7                                1/1     Running   0          75s
+collector-gpn8c                                1/1     Running   0          76s
+collector-j5gx7                                1/1     Running   0          74s
+collector-ktssl                                1/1     Running   0          75s
+collector-kw9wv                                1/1     Running   0          74s
+collector-q4lsr                                1/1     Running   0          73s
+logging-loki-compactor-0                       1/1     Running   0          89s
+logging-loki-distributor-75d9b9fc8c-gn8d8      1/1     Running   0          89s
+logging-loki-distributor-75d9b9fc8c-qxttl      1/1     Running   0          89s
+logging-loki-gateway-946cf94d7-ttddj           2/2     Running   0          88s
+logging-loki-gateway-946cf94d7-vbx74           2/2     Running   0          88s
+logging-loki-index-gateway-0                   1/1     Running   0          89s
+logging-loki-index-gateway-1                   1/1     Running   0          61s
+logging-loki-ingester-0                        1/1     Running   0          89s
+logging-loki-ingester-1                        0/1     Pending   0          25s
+logging-loki-querier-5888b4fdf7-cvdst          1/1     Running   0          89s
+logging-loki-querier-5888b4fdf7-wx577          1/1     Running   0          89s
+logging-loki-query-frontend-66c7ffd5d4-4vpgm   1/1     Running   0          89s
+logging-loki-query-frontend-66c7ffd5d4-flbpv   1/1     Running   0          89s
+logging-loki-ruler-0                           1/1     Running   0          88s
+logging-loki-ruler-1                           1/1     Running   0          88s
+logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
 </code></pre>
 </li>
 </ul>
@@ -876,7 +902,7 @@ curl -v https://$FRONTEND_URL
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2023-12-26T04:03:51.404Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-12-26T04:04:26.528Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2023-12-26T04:58:10.776Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2023-12-26T04:58:48.305Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
