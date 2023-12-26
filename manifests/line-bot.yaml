@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: line-bot
+  labels:
+    app.kubernetes.io/component: line-bot
+    app.kubernetes.io/instance: line-bot
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: Alert-System
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '11'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: line-bot
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: line-bot
+        version: v1
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: line-bot
+        image: quay.io/voravitl/line-bot:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: 200Mi
+          limits:
+            cpu: "0.2"
+            memory: 400Mi
+        env:
+          - name: APP_LINE_TOKEN
+            value: YOUR_TOKEN
+          - name: QUARKUS_LOG_CATEGORY__COM_VORAVIZ__LEVEL
+            value: INFO
+          - name: APP_ALERT_ANNOTATIONS
+            value: description,summary,message
+        ports:
+        - containerPort: 8080
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: line-bot
+  labels:
+    app: line-bot
+spec:
+  ports:
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: line-bot
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: line-bot
+spec:
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: line-bot
+    weight: 100
+  wildcardPolicy: None
