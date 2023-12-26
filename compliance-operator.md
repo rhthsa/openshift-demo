@@ -353,7 +353,7 @@
 
  ### CIS
    
-    - Create [pods](manifests/cis-report.yaml) to mount to CIS reports PVC
+  - Create [pods](manifests/cis-report.yaml) to mount to CIS reports PVC
      
       ```bash
       oc create -f manifests/cis-report.yaml -n openshift-compliance
@@ -368,7 +368,7 @@
       cis-report          1/1     Running   0          55s
       cis-worker-report   1/1     Running   0          55s
       ```
-
+      
       ![](images/compliance-cis-report-generator-pods.png)
 
     - Generate CIS reports with *oscap*
@@ -402,7 +402,7 @@
       ```
 ### PCI-DSS
    
-    - Create [pods](manifests/cis-report.yaml) to mount to PCI-DSS reports PVC
+  - Create [pods](manifests/cis-report.yaml) to mount to PCI-DSS reports PVC
      
       ```bash
       oc create -f manifests/pci-dss-report.yaml -n openshift-compliance
