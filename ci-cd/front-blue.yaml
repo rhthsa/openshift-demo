@@ -1,0 +1,98 @@
+apiVersion: v1
+items:
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: front-blue
+      app.kubernetes.io/component: front-blue
+      app.kubernetes.io/instance: front-blue
+      app.kubernetes.io/name: dotnet
+      app.kubernetes.io/part-of: front-blue
+      app.openshift.io/runtime: dotnet
+    name: front-blue
+  spec:
+    replicas: 3
+    selector:
+      deploymentconfig: front-blue
+    strategy:
+      resources: {}
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          deploymentconfig: front-blue
+      spec:
+        containers:
+        - env:
+          - name: ITERATION_COUNT
+            value: '1000'        
+          - name: BACKEND_URL
+            value: http://back:8080/api/values/back
+          - name: ASPNETCORE_URLS
+            value: http://*:8080   
+          image: image-registry.openshift-image-registry.svc:5000/test/front-blue:latest
+          name: front-blue
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 8443
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 50m
+              memory: 512Mi
+            requests:
+              cpu: 25m
+              memory: 256Mi              
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - front-blue
+        from:
+          kind: ImageStreamTag
+          name: front-blue:latest
+          namespace: test
+      type: ImageChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: front-blue
+      app.kubernetes.io/component: front-blue
+      app.kubernetes.io/instance: front-blue
+    name: front-blue
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: 8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    selector:
+      deploymentconfig: front-blue
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
