@@ -670,6 +670,7 @@
 <ul>
 <li><p><a href="manifests/netobserv-operator.yaml">Command Line</a></p>
 <pre><code class="lang-bash"> oc create -f manifests/netobserv-operator.yaml
+ sleep 60
  oc wait --for condition=established --timeout=180s \
  crd/flowcollectors.flows.netobserv.io
  oc get csv -n openshift-netobserv-operator
@@ -677,7 +678,7 @@
 <p> Output</p>
 <pre><code class="lang-bash"> customresourcedefinition.apiextensions.k8s.io/flowcollectors.flows.netobserv.io condition met
  NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
- network-observability-operator.v1.3.0   Network Observability   1.3.0     network-observability-operator.v1.2.0   Succeeded
+ network-observability-operator.v1.4.2   Network Observability   1.4.2     network-observability-operator.v1.4.1   Succeeded
 </code></pre>
 <p> Enable console plugin</p>
 <pre><code class="lang-bash"> oc patch console.operator cluster  \
@@ -714,27 +715,30 @@ loki-operator.v5.7.2                    Loki Operator           5.7.2     loki-o
 <h4 id="configure-loki-for-network-observability">Configure Loki for Network Observability</h4>
 <ul>
 <li><p>Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region</p>
-<ul>
-<li><p>In case of using ODF</p>
-<ul>
-<li>Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims</li>
-<li>Create ObjectBucketClaim<ul>
-<li>Claim Name: <em>netobserv</em></li>
-<li>StorageClass: <em>openshift-storage.nooba.io</em></li>
-<li>BucketClass: <em>nooba-default-bucket-class</em></li>
-</ul>
-</li>
-<li><p>Retrieve configuration into environment variables</p>
-<pre><code class="lang-bash">S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath=&apos;{.spec.bucketName}&apos;)
-REGION=&quot;&apos;&apos;&quot;
-ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_ACCESS_KEY_ID}&apos;|base64 -d)
-SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_SECRET_ACCESS_KEY}&apos;|base64 -d)
-ENDPOINT=&quot;https://s3.openshift-storage.svc:443&quot;
-DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
-</code></pre>
-</li>
-</ul>
-</li>
+<pre><code>- In case of using ODF
+    - Create Bucket
+      - Admin Console
+        - Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims
+        - Create ObjectBucketClaim
+          - Claim Name: *netobserv*
+          - StorageClass: *openshift-storage.nooba.io*
+          - BucketClass: *nooba-default-bucket-class*
+      - CLI
+
+        ```bash
+        oc create -f manifests/netobserv-odf-bucket.yaml
+        ```
+- Retrieve configuration into environment variables
+
+  ```bash
+  S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath=&apos;{.spec.bucketName}&apos;)
+  REGION=&quot;&apos;&apos;&quot;
+  ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_ACCESS_KEY_ID}&apos;|base64 -d)
+  SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_SECRET_ACCESS_KEY}&apos;|base64 -d)
+  ENDPOINT=&quot;https://s3.openshift-storage.svc:443&quot;
+  DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+``` 
+</code></pre><ul>
 <li><p>If you have existing S3 bucket used by OpenShift Image Registry</p>
 <pre><code class="lang-bash">  S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
   REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
@@ -877,7 +881,7 @@ oc get flowcollector -n netobserv
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Network Observability","level":"1.2.13","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"netobserv.md","mtime":"2024-01-04T03:17:43.149Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-04T03:18:16.021Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Observability","level":"1.2.13","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"netobserv.md","mtime":"2024-01-04T06:29:40.620Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-04T06:30:16.080Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
