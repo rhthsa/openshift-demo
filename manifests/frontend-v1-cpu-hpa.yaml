@@ -1,0 +1,47 @@
+# apiVersion: autoscaling/v1
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: frontend-v1-cpu
+#   namespace: project1
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: frontend-v1
+#   minReplicas: 1
+#   maxReplicas: 3
+#   targetCPUUtilizationPercentage: 80
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: frontend-v1-cpu
+  namespace: project1
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: frontend-v1
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  behavior:
+    scaleDown: 
+      policies: 
+      - type: Pods 
+        value: 1
+        periodSeconds: 60 
+      # - type: Percent
+      #   value: 30 
+      #   periodSeconds: 60
+      selectPolicy: Min 
+      stabilizationWindowSeconds: 300 
+    scaleUp: 
+      policies:
+      - type: Pods
+        value: 5
+        periodSeconds: 70
+      # - type: Percent
+      #   value: 70
+      #   periodSeconds: 80
+      selectPolicy: Max
+      stabilizationWindowSeconds: 0
