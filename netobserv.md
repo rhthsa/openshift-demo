@@ -15,6 +15,7 @@
 
       ```bash
       oc create -f manifests/netobserv-operator.yaml
+      sleep 60
       oc wait --for condition=established --timeout=180s \
       crd/flowcollectors.flows.netobserv.io
       oc get csv -n openshift-netobserv-operator
@@ -25,7 +26,7 @@
       ```bash
       customresourcedefinition.apiextensions.k8s.io/flowcollectors.flows.netobserv.io condition met
       NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
-      network-observability-operator.v1.3.0   Network Observability   1.3.0     network-observability-operator.v1.2.0   Succeeded
+      network-observability-operator.v1.4.2   Network Observability   1.4.2     network-observability-operator.v1.4.1   Succeeded
       ```
 
       Enable console plugin
@@ -64,12 +65,19 @@
 
 #### Configure Loki for Network Observability
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
-      - In case of using ODF
-        - Navigate to Storage -> Object Storage -> Object Bucket Claims
-        - Create ObjectBucketClaim
-          - Claim Name: *netobserv*
-          - StorageClass: *openshift-storage.nooba.io*
-          - BucketClass: *nooba-default-bucket-class*
+        - In case of using ODF
+            - Create Bucket
+              - Admin Console
+                - Navigate to Storage -> Object Storage -> Object Bucket Claims
+                - Create ObjectBucketClaim
+                  - Claim Name: *netobserv*
+                  - StorageClass: *openshift-storage.nooba.io*
+                  - BucketClass: *nooba-default-bucket-class*
+              - CLI
+                
+                ```bash
+                oc create -f manifests/netobserv-odf-bucket.yaml
+                ```
         - Retrieve configuration into environment variables
 
           ```bash
