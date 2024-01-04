@@ -654,6 +654,7 @@
 <li><a href="#logging-with-loki">Logging with Loki</a><ul>
 <li><a href="#install-and-config">Install and Config</a></li>
 <li><a href="#test-with-sample-applications">Test with Sample Applications</a></li>
+<li><a href="#support-for-multi-lines-error-log">Support for multi-lines error log</a></li>
 <li><a href="#logql">LogQL</a></li>
 <li><a href="#alert">Alert</a></li>
 </ul>
@@ -682,11 +683,22 @@ loki-operator.v5.8.1                    Loki Operator               5.8.1     lo
 <ul>
 <li><p>In case of using ODF</p>
 <ul>
+<li><p>Create Bucket</p>
+<ul>
+<li>Admin Console<ul>
 <li>Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims</li>
 <li>Create ObjectBucketClaim<ul>
 <li>Claim Name: <em>loki</em></li>
 <li>StorageClass: <em>openshift-storage.nooba.io</em></li>
 <li>BucketClass: <em>nooba-default-bucket-class</em></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>CLI</p>
+<pre><code class="lang-bash">oc create -f manifests/loki-odf-bucket.yaml
+</code></pre>
+</li>
 </ul>
 </li>
 <li><p>Retrieve configuration into environment variables</p>
@@ -700,7 +712,7 @@ DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.anno
 </li>
 </ul>
 </li>
-<li><p>If you have existing S3 bucket used by OpenShift Image Registry</p>
+<li><p>If you want to test with existing S3 bucket used by OpenShift Image Registry </p>
 <pre><code class="lang-bash">    S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
     REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
     ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
@@ -765,6 +777,7 @@ logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
 </ul>
 <ul>
 <li><p>Or using CLI</p>
+<p>Remark: If you already enable other console plugins then run only the 2nd command</p>
 <pre><code class="lang-bash">oc patch console.operator cluster \
 --type json -p &apos;[{&quot;op&quot;: &quot;add&quot;, &quot;path&quot;: &quot;/spec/plugins&quot;, &quot;value&quot;: []}]&apos;
 oc patch console.operator cluster \
@@ -772,14 +785,15 @@ oc patch console.operator cluster \
 </code></pre>
 </li>
 </ul>
+<!-- - Restart console pod
+
+  ```bash
+  for pod in $(oc get po -l component=ui -n openshift-console --no-headers -o custom-columns='Name:.metadata.name,PHASE:.status.phase' |grep Running|awk '{print $1}')
+  do
+    oc delete po $pod -n openshift-console
+  done
+  ``` -->
 <ul>
-<li><p>Restart console pod</p>
-<pre><code class="lang-bash">for pod in $(oc get po -l component=ui -n openshift-console --no-headers -o custom-columns=&apos;Name:.metadata.name,PHASE:.status.phase&apos; |grep Running|awk &apos;{print $1}&apos;)
-do
-  oc delete po $pod -n openshift-console
-done
-</code></pre>
-</li>
 <li><p>Verify that Logs menu is avaiable under Observe menu</p>
 <p><img src="images/openshift-console-logging-menu.png" alt=""></p>
 </li>
@@ -834,7 +848,44 @@ curl -v https://$FRONTEND_URL
 <pre><code>  Output
 
   ![](images/loki-backend-log-info.png)
-</code></pre><h2 id="logql">LogQL</h2>
+</code></pre><h2 id="support-for-multi-lines-error-log">Support for multi-lines error log</h2>
+<ul>
+<li><p>Configure backend app to return 500</p>
+<pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/500 -n api
+</code></pre>
+</li>
+<li><p>Test app</p>
+<pre><code class="lang-bash">curl -v https://$FRONTEND_URL
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">&lt; HTTP/1.1 500 Internal Server Error
+&lt; x-correlation-id: 94235c71-c810-4894-b6fd-41517464060a
+&lt; x-powered-by: Express
+&lt; content-type: text/html; charset=utf-8
+&lt; content-length: 88
+&lt; etag: W/&quot;58-ybUg4JCk2x6Hmz6hGWKXkVMOmdQ&quot;
+&lt; date: Thu, 04 Jan 2024 03:02:05 GMT
+&lt; keep-alive: timeout=5
+&lt; set-cookie: edf28febca8ee46e0446d33e418fb5c2=fc80b538e2fb152c86546fc1c0328e01; path=/; HttpOnly; Secure; SameSite=None
+&lt;
+* Connection #0 to host frontend-ui.apps.cluster-xxx.io left intact
+Frontend version: v2 =&gt; [Backend: http://backend-v1.api.svc:8080, Response: 500, Body: ]
+</code></pre>
+</li>
+<li><p>Check log</p>
+<p><img src="images/loki-log-multiple-error-lines.png" alt=""></p>
+</li>
+<li><p>Configure log forward with option <a href="manifests/ClusterLogForwarder-detectMultilineErrors.yaml">detectMultilineErrors</a></p>
+<pre><code class="lang-bash">oc create -f manifests/ClusterLogForwarder-detectMultilineErrors.yaml
+</code></pre>
+</li>
+<li><p>Test app again and check log in Loki</p>
+<p><img src="images/loki-log-single-error-line-01.png" alt=""></p>
+<p>detail</p>
+<p><img src="images/loki-log-single-error-line-02.png" alt=""></p>
+</li>
+</ul>
+<h2 id="logql">LogQL</h2>
 <ul>
 <li>Open Developer Console then select Observe-&gt;Log</li>
 <li><p>Click <em>Show Query</em> and input following LogQL to query</p>
@@ -902,7 +953,7 @@ curl -v https://$FRONTEND_URL
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2024-01-04T02:37:46.391Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-04T02:38:21.130Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2024-01-04T03:17:43.141Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-04T03:18:16.021Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
