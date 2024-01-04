@@ -2,6 +2,7 @@
 - [Logging with Loki](#logging-with-loki)
   - [Install and Config](#install-and-config)
   - [Test with Sample Applications](#test-with-sample-applications)
+  - [Support for multi-lines error log](#support-for-multi-lines-error-log)
   - [LogQL](#logql)
   - [Alert](#alert)
 
@@ -29,11 +30,18 @@
 - Create Logging Instance
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
     - In case of using ODF
-        - Navigate to Storage -> Object Storage -> Object Bucket Claims
-        - Create ObjectBucketClaim
-          - Claim Name: *loki*
-          - StorageClass: *openshift-storage.nooba.io*
-          - BucketClass: *nooba-default-bucket-class*
+        - Create Bucket
+          - Admin Console
+            - Navigate to Storage -> Object Storage -> Object Bucket Claims
+            - Create ObjectBucketClaim
+              - Claim Name: *loki*
+              - StorageClass: *openshift-storage.nooba.io*
+              - BucketClass: *nooba-default-bucket-class*
+          - CLI
+            
+            ```bash
+            oc create -f manifests/loki-odf-bucket.yaml
+            ```
         - Retrieve configuration into environment variables
 
           ```bash
@@ -44,7 +52,7 @@
           ENDPOINT="https://s3.openshift-storage.svc:443"
           DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
         ```
-    - If you have existing S3 bucket used by OpenShift Image Registry
+    - If you want to test with existing S3 bucket used by OpenShift Image Registry 
       
       ```bash
           S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
@@ -110,6 +118,8 @@
 
   - Or using CLI
     
+    Remark: If you already enable other console plugins then run only the 2nd command
+
     ```bash
     oc patch console.operator cluster \
     --type json -p '[{"op": "add", "path": "/spec/plugins", "value": []}]'
@@ -117,14 +127,16 @@
     --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
     ```
 
-- Restart console pod
+
+
+<!-- - Restart console pod
     
   ```bash
   for pod in $(oc get po -l component=ui -n openshift-console --no-headers -o custom-columns='Name:.metadata.name,PHASE:.status.phase' |grep Running|awk '{print $1}')
   do
     oc delete po $pod -n openshift-console
   done
-  ```
+  ``` -->
 
 - Verify that Logs menu is avaiable under Observe menu
   
@@ -189,6 +201,52 @@
 
       ![](images/loki-backend-log-info.png)
   
+## Support for multi-lines error log
+- Configure backend app to return 500
+  
+  ```bash
+  oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/500 -n api
+  ```
+- Test app
+  
+  ```bash
+  curl -v https://$FRONTEND_URL
+  ```
+
+  Output
+
+  ```bash
+  < HTTP/1.1 500 Internal Server Error
+  < x-correlation-id: 94235c71-c810-4894-b6fd-41517464060a
+  < x-powered-by: Express
+  < content-type: text/html; charset=utf-8
+  < content-length: 88
+  < etag: W/"58-ybUg4JCk2x6Hmz6hGWKXkVMOmdQ"
+  < date: Thu, 04 Jan 2024 03:02:05 GMT
+  < keep-alive: timeout=5
+  < set-cookie: edf28febca8ee46e0446d33e418fb5c2=fc80b538e2fb152c86546fc1c0328e01; path=/; HttpOnly; Secure; SameSite=None
+  <
+  * Connection #0 to host frontend-ui.apps.cluster-xxx.io left intact
+  Frontend version: v2 => [Backend: http://backend-v1.api.svc:8080, Response: 500, Body: ]
+  ```
+- Check log
+  
+  ![](images/loki-log-multiple-error-lines.png)
+
+- Configure log forward with option [detectMultilineErrors](manifests/ClusterLogForwarder-detectMultilineErrors.yaml)
+
+  ```bash
+  oc create -f manifests/ClusterLogForwarder-detectMultilineErrors.yaml
+  ```
+- Test app again and check log in Loki
+  
+  ![](images/loki-log-single-error-line-01.png)
+
+  detail
+
+  ![](images/loki-log-single-error-line-02.png)
+
+
 ## LogQL
 - Open Developer Console then select Observe->Log
 - Click *Show Query* and input following LogQL to query
