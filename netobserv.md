@@ -50,6 +50,7 @@
     
     ```bash
     oc create -f manifests/loki-operator.yaml
+    sleep 30
     oc wait --for condition=established --timeout=180s \
     crd/lokistacks.loki.grafana.com
     oc get csv
@@ -57,11 +58,11 @@
 
     Output
     
-    ```bash
-    customresourcedefinition.apiextensions.k8s.io/lokistacks.loki.grafana.com condition met
-    NAME                                    DISPLAY                 VERSION   REPLACES                                PHASE
-    loki-operator.v5.7.2                    Loki Operator           5.7.2     loki-operator.v5.7.1                    Succeeded
-    ```
+  ```bash
+  customresourcedefinition.apiextensions.k8s.io/lokistacks.loki.grafana.com condition met
+  NAME                   DISPLAY         VERSION   REPLACES               PHASE
+  loki-operator.v5.8.1   Loki Operator   5.8.1     loki-operator.v5.8.0   Succeeded
+  ```
 
 #### Configure Loki for Network Observability
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
@@ -73,21 +74,23 @@
                   - Claim Name: *netobserv*
                   - StorageClass: *openshift-storage.nooba.io*
                   - BucketClass: *nooba-default-bucket-class*
-              - CLI
+              
+            - Command line with [YAML](manifests/netobserv-odf-bucket.yaml)
                 
-                ```bash
-                oc create -f manifests/netobserv-odf-bucket.yaml
-                ```
+              ```bash
+              oc create -f manifests/netobserv-odf-bucket.yaml
+              ```
+                
         - Retrieve configuration into environment variables
 
           ```bash
-          S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath='{.spec.bucketName}')
-          REGION="''"
-          ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
-          SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
-          ENDPOINT="https://s3.openshift-storage.svc:443"
-          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
-        ``` 
+            S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath='{.spec.bucketName}')
+            REGION="''"
+            ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
+            SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
+            ENDPOINT="https://s3.openshift-storage.svc:443"
+            DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+          ``` 
       - If you have existing S3 bucket used by OpenShift Image Registry
         
         ```bash
@@ -132,15 +135,25 @@
     
    ```bash
    oc create -f manifests/FlowCollector.yaml
-   oc get flowcollector -n netobserv
+   oc get flowcollector -n netobserv -o json
    ```
    
    Output
    ```bash
     flowcollector.flows.netobserv.io/cluster created
     NAME      AGENT   SAMPLING (EBPF)   DEPLOYMENT MODEL   STATUS
-    cluster   EBPF    50                DIRECT             Ready
+    cluster   EBPF    1                DIRECT             Ready
    ```
+
+  Remark: This FlowCollector configuration enabled privileged mode with features PacketDrop, DNSTracking and FlowRTT
+  
+  ```yaml
+        features:
+        - PacketDrop
+        - DNSTracking
+        - FlowRTT
+      privileged: true
+  ```
 
 ## Test
  - Check Network Observability by Open Administrator -> Observe -> Network Traffic
@@ -163,35 +176,6 @@
 - Raw Data from backend pod request to external system i.e. httpbin.org
   
   ```json
-  {
-      "AgentIP": "192.168.12.2",
-      "Bytes": 72,
-      "DstAddr": "3.95.102.170",
-      "DstMac": "F2:A3:8F:EF:54:0E",
-      "DstPort": 443,
-      "Duplicate": false,
-      "Etype": 2048,
-      "Flags": 16,
-      "FlowDirection": "0",
-      "IfDirection": 0,
-      "Interface": "ovn-k8s-mp0",
-      "K8S_ClusterName": "bd7d6a47-bfe9-4eec-a381-0239eee1afdc",
-      "Packets": 1,
-      "Proto": 6,
-      "SrcAddr": "10.134.0.30",
-      "SrcK8S_HostIP": "10.10.10.21",
-      "SrcK8S_HostName": "worker-cluster-r88vr-2",
-      "SrcK8S_Name": "backend-v1-867995c57f-jplzw",
-      "SrcK8S_Namespace": "api",
-      "SrcK8S_OwnerName": "backend-v1",
-      "SrcK8S_OwnerType": "Deployment",
-      "SrcK8S_Type": "Pod",
-      "SrcMac": "0A:58:0A:86:00:01",
-      "SrcPort": 51498,
-      "TimeFlowEndMs": 1703561169348,
-      "TimeFlowStartMs": 1703561169348,
-      "TimeReceived": 1703561170,
-      "app": "netobserv-flowcollector"
-    }
+
   ```
   
