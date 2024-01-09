@@ -135,7 +135,7 @@
     
    ```bash
    oc create -f manifests/FlowCollector.yaml
-   oc get flowcollector -n netobserv -o json
+   oc get flowcollector -n netobserv
    ```
    
    Output
@@ -162,6 +162,10 @@
      
        ![](images/network-observability-overview.png)
 
+ - Config console to show advanced options
+   
+       ![](images/netobserv-panels-option.png)
+       
 - Flow Rate
 
     ![](images/network-observability-overall-flow-rate.png)
@@ -176,6 +180,36 @@
 - Raw Data from backend pod request to external system i.e. httpbin.org
   
   ```json
-
+  {
+  "AgentIP": "192.xx.xx.2",
+  "Bytes": 1335,
+  "DstAddr": "3.xx.xx.95",
+  "DstMac": "0A:xx:xx:xx:xx:01",
+  "DstPort": 443,
+  "Duplicate": false,
+  "Etype": 2048,
+  "Flags": 18,
+  "FlowDirection": "1",
+  "IfDirection": 1,
+  "Interface": "eth0",
+  "K8S_ClusterName": "842e6829-4726-4a05-90b8-9xxxxa",
+  "Packets": 8,
+  "Proto": 6,
+  "SrcAddr": "10.xx.2.24",
+  "SrcK8S_HostIP": "10.xx.10.20",
+  "SrcK8S_HostName": "worker-cluster-qtxtv-1",
+  "SrcK8S_Name": "backend-v1-745bfc554-xgpkc",
+  "SrcK8S_Namespace": "api",
+  "SrcK8S_OwnerName": "backend-v1",
+  "SrcK8S_OwnerType": "Deployment",
+  "SrcK8S_Type": "Pod",
+  "SrcMac": "0A:xx:xx:xx:02:18",
+  "SrcPort": 39970,
+  "TimeFlowEndMs": 1704805842684,
+  "TimeFlowRttNs": 1426096,
+  "TimeFlowStartMs": 1704805842547,
+  "TimeReceived": 1704805843,
+  "app": "netobserv-flowcollector"
+  }
   ```
   
