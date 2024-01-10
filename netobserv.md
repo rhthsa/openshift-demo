@@ -94,27 +94,27 @@
 
   - If you have existing S3 bucket used by OpenShift Image Registry
         
-        ```bash
-          S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
-          REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
-          ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
-          SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
-          ENDPOINT=$(echo "https://s3.$REGION.amazonaws.com")
-          DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
-         ```
+    ```bash
+    S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
+    REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.region}' -n openshift-image-registry)
+    ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+    SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath='{.data.credentials}' -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F'=' '{print $2}'|sed 's/^[ ]*//')
+    ENDPOINT=$(echo "https://s3.$REGION.amazonaws.com")
+    DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+    ```
 
   - Create [Loki Instance](manifests/netobserv-loki-s3.yaml)
   
     ```bash
-        cat manifests/netobserv-loki-s3.yaml \
-        |sed 's/S3_BUCKET/'$S3_BUCKET'/' \
-        |sed 's/REGION/'$REGION'/' \
-        |sed 's|ACCESS_KEY_ID|'$ACCESS_KEY_ID'|' \
-        |sed 's|SECRET_ACCESS_KEY|'$SECRET_ACCESS_KEY'|' \
-        |sed 's|ENDPOINT|'$ENDPOINT'|'\
-        |sed 's|DEFAULT_STORAGE_CLASS|'$DEFAULT_STORAGE_CLASS'|' \
-        |oc apply -f -
-        watch oc get po -n netobserv
+    cat manifests/netobserv-loki-s3.yaml \
+      |sed 's/S3_BUCKET/'$S3_BUCKET'/' \
+      |sed 's/REGION/'$REGION'/' \
+      |sed 's|ACCESS_KEY_ID|'$ACCESS_KEY_ID'|' \
+      |sed 's|SECRET_ACCESS_KEY|'$SECRET_ACCESS_KEY'|' \
+      |sed 's|ENDPOINT|'$ENDPOINT'|'\
+      |sed 's|DEFAULT_STORAGE_CLASS|'$DEFAULT_STORAGE_CLASS'|' \
+      |oc apply -f -
+    watch oc get po -n netobserv
     ```
 
     Output
@@ -160,13 +160,13 @@
 ## Test
  - Check Network Observability by Open Administrator -> Observe -> Network Traffic
  - Overview
-     - Add filtering by namespace name i.e. monitor for namespace ui and api
+    - Add filtering by namespace name i.e. monitor for namespace ui and api
      
-       ![](images/network-observability-overview.png)
+    ![](images/network-observability-overview.png)
 
  - Config console to show advanced options
    
-       ![](images/netobserv-panels-option.png)
+    ![](images/netobserv-panels-option.png)
 
 - Flow Rate
 
