@@ -66,7 +66,7 @@
 
 #### Configure Loki for Network Observability
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
-        - In case of using ODF
+      - In case of using ODF
             - Create Bucket
               - Admin Console
                 - Navigate to Storage -> Object Storage -> Object Bucket Claims
@@ -74,24 +74,25 @@
                   - Claim Name: *netobserv*
                   - StorageClass: *openshift-storage.nooba.io*
                   - BucketClass: *nooba-default-bucket-class*
-              
-            - Command line with [YAML](manifests/netobserv-odf-bucket.yaml)
+                        
+      - Command line with [netobserv-odf-bucket.yaml](manifests/netobserv-odf-bucket.yaml)
                 
-              ```bash
-              oc create -f manifests/netobserv-odf-bucket.yaml
-              ```
-                
-        - Retrieve configuration into environment variables
-
           ```bash
-            S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath='{.spec.bucketName}')
-            REGION="''"
-            ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
-            SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
-            ENDPOINT="https://s3.openshift-storage.svc:443"
-            DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
-          ``` 
-      - If you have existing S3 bucket used by OpenShift Image Registry
+          oc create -f manifests/netobserv-odf-bucket.yaml
+          ```
+                
+  - Retrieve configuration into environment variables
+
+    ```bash
+    S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath='{.spec.bucketName}')
+    REGION="''"
+    ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_ACCESS_KEY_ID}'|base64 -d)
+    SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}'|base64 -d)
+    ENDPOINT="https://s3.openshift-storage.svc:443"
+    DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}')
+    ``` 
+
+  - If you have existing S3 bucket used by OpenShift Image Registry
         
         ```bash
           S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath='{.spec.storage.s3.bucket}' -n openshift-image-registry)
@@ -139,6 +140,7 @@
    ```
    
    Output
+
    ```bash
     flowcollector.flows.netobserv.io/cluster created
     NAME      AGENT   SAMPLING (EBPF)   DEPLOYMENT MODEL   STATUS
@@ -165,7 +167,7 @@
  - Config console to show advanced options
    
        ![](images/netobserv-panels-option.png)
-       
+
 - Flow Rate
 
     ![](images/network-observability-overall-flow-rate.png)
