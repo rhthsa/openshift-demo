@@ -716,53 +716,50 @@ loki-operator.v5.8.1   Loki Operator   5.8.1     loki-operator.v5.8.0   Succeede
 <h4 id="configure-loki-for-network-observability">Configure Loki for Network Observability</h4>
 <ul>
 <li><p>Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region</p>
-<pre><code>- In case of using ODF
-    - Create Bucket
-      - Admin Console
-        - Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims
-        - Create ObjectBucketClaim
-          - Claim Name: *netobserv*
-          - StorageClass: *openshift-storage.nooba.io*
-          - BucketClass: *nooba-default-bucket-class*
-
-    - Command line with [YAML](manifests/netobserv-odf-bucket.yaml)
-
-      ```bash
-      oc create -f manifests/netobserv-odf-bucket.yaml
-      ```
-
-- Retrieve configuration into environment variables
-
-  ```bash
-    S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath=&apos;{.spec.bucketName}&apos;)
-    REGION=&quot;&apos;&apos;&quot;
-    ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_ACCESS_KEY_ID}&apos;|base64 -d)
-    SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_SECRET_ACCESS_KEY}&apos;|base64 -d)
-    ENDPOINT=&quot;https://s3.openshift-storage.svc:443&quot;
-    DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
-  ``` 
-</code></pre><ul>
-<li><p>If you have existing S3 bucket used by OpenShift Image Registry</p>
-<pre><code class="lang-bash">  S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
-  REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
-  ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
-  SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
-  ENDPOINT=$(echo &quot;https://s3.$REGION.amazonaws.com&quot;)
-  DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+<ul>
+<li><p>In case of using ODF</p>
+<pre><code>- Create Bucket
+  - Admin Console
+    - Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims
+    - Create ObjectBucketClaim
+      - Claim Name: *netobserv*
+      - StorageClass: *openshift-storage.nooba.io*
+      - BucketClass: *nooba-default-bucket-class*
+</code></pre></li>
+<li><p>Command line with <a href="manifests/netobserv-odf-bucket.yaml">netobserv-odf-bucket.yaml</a></p>
+<pre><code class="lang-bash">  oc create -f manifests/netobserv-odf-bucket.yaml
 </code></pre>
 </li>
 </ul>
 </li>
+<li><p>Retrieve configuration into environment variables</p>
+<pre><code class="lang-bash">S3_BUCKET=$(oc get ObjectBucketClaim netobserv -n openshift-storage -o jsonpath=&apos;{.spec.bucketName}&apos;)
+REGION=&quot;&apos;&apos;&quot;
+ACCESS_KEY_ID=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_ACCESS_KEY_ID}&apos;|base64 -d)
+SECRET_ACCESS_KEY=$(oc get secret netobserv -n openshift-storage -o jsonpath=&apos;{.data.AWS_SECRET_ACCESS_KEY}&apos;|base64 -d)
+ENDPOINT=&quot;https://s3.openshift-storage.svc:443&quot;
+DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+</code></pre>
+</li>
+<li><p>If you have existing S3 bucket used by OpenShift Image Registry</p>
+<pre><code class="lang-bash">S3_BUCKET=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.bucket}&apos; -n openshift-image-registry)
+REGION=$(oc get configs.imageregistry.operator.openshift.io/cluster -o jsonpath=&apos;{.spec.storage.s3.region}&apos; -n openshift-image-registry)
+ACCESS_KEY_ID=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_access_key_id|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+SECRET_ACCESS_KEY=$(oc get secret image-registry-private-configuration -o jsonpath=&apos;{.data.credentials}&apos; -n openshift-image-registry|base64 -d|grep aws_secret_access_key|awk -F&apos;=&apos; &apos;{print $2}&apos;|sed &apos;s/^[ ]*//&apos;)
+ENDPOINT=$(echo &quot;https://s3.$REGION.amazonaws.com&quot;)
+DEFAULT_STORAGE_CLASS=$(oc get sc -A -o jsonpath=&apos;{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class==&quot;true&quot;)].metadata.name}&apos;)
+</code></pre>
+</li>
 <li><p>Create <a href="manifests/netobserv-loki-s3.yaml">Loki Instance</a></p>
-<pre><code class="lang-bash">    cat manifests/netobserv-loki-s3.yaml \
-    |sed &apos;s/S3_BUCKET/&apos;$S3_BUCKET&apos;/&apos; \
-    |sed &apos;s/REGION/&apos;$REGION&apos;/&apos; \
-    |sed &apos;s|ACCESS_KEY_ID|&apos;$ACCESS_KEY_ID&apos;|&apos; \
-    |sed &apos;s|SECRET_ACCESS_KEY|&apos;$SECRET_ACCESS_KEY&apos;|&apos; \
-    |sed &apos;s|ENDPOINT|&apos;$ENDPOINT&apos;|&apos;\
-    |sed &apos;s|DEFAULT_STORAGE_CLASS|&apos;$DEFAULT_STORAGE_CLASS&apos;|&apos; \
-    |oc apply -f -
-    watch oc get po -n netobserv
+<pre><code class="lang-bash">cat manifests/netobserv-loki-s3.yaml \
+  |sed &apos;s/S3_BUCKET/&apos;$S3_BUCKET&apos;/&apos; \
+  |sed &apos;s/REGION/&apos;$REGION&apos;/&apos; \
+  |sed &apos;s|ACCESS_KEY_ID|&apos;$ACCESS_KEY_ID&apos;|&apos; \
+  |sed &apos;s|SECRET_ACCESS_KEY|&apos;$SECRET_ACCESS_KEY&apos;|&apos; \
+  |sed &apos;s|ENDPOINT|&apos;$ENDPOINT&apos;|&apos;\
+  |sed &apos;s|DEFAULT_STORAGE_CLASS|&apos;$DEFAULT_STORAGE_CLASS&apos;|&apos; \
+  |oc apply -f -
+watch oc get po -n netobserv
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                                   READY   STATUS              RESTARTS   AGE
@@ -808,8 +805,8 @@ oc get flowcollector -n netobserv
 </ul>
 </li>
 <li><p>Config console to show advanced options</p>
-<pre><code>![](images/netobserv-panels-option.png)
-</code></pre></li>
+<p> <img src="images/netobserv-panels-option.png" alt=""></p>
+</li>
 </ul>
 <ul>
 <li><p>Flow Rate</p>
@@ -895,7 +892,7 @@ oc get flowcollector -n netobserv
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Network Observability","level":"1.2.13","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"netobserv.md","mtime":"2024-01-09T13:31:24.123Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-09T13:32:01.991Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Observability","level":"1.2.13","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Compliance","level":"1.2.12","depth":2,"path":"compliance-operator.md","ref":"compliance-operator.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"netobserv.md","mtime":"2024-01-29T01:49:54.593Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-01-29T01:50:32.122Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
