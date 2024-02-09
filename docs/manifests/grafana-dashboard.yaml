@@ -3,7 +3,7 @@ kind: GrafanaDashboard
 metadata:
   labels:
     app: grafana
-  name: backend-dashboard
+  name: quarkus-dashboard
 spec:
   instanceSelector:
     matchLabels:
