@@ -1,0 +1,26 @@
+apiVersion: grafana.integreatly.org/v1beta1
+kind: Grafana
+metadata:
+  name: grafana
+  labels: 
+    app: grafana
+spec:
+  ingress:
+    enabled: true
+  config:
+    security:
+      admin_user: admin
+      admin_password: openshift
+    auth:
+      disable_signout_menu: "false"
+    auth.anonymous:
+      enabled: "false"
+    log:
+      level: warn
+      mode: console
+  dashboardLabelSelector:
+    - matchExpressions:
+        - key: app
+          operator: In
+          values:
+            - grafana
