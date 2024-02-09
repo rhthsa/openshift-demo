@@ -1,7 +1,9 @@
-apiVersion: integreatly.org/v1alpha1
+apiVersion: grafana.integreatly.org/v1beta1
 kind: Grafana
 metadata:
   name: grafana
+  labels: 
+    app: grafana
 spec:
   ingress:
     enabled: true
@@ -10,9 +12,9 @@ spec:
       admin_user: admin
       admin_password: openshift
     auth:
-      disable_signout_menu: false
+      disable_signout_menu: "false"
     auth.anonymous:
-      enabled: false
+      enabled: "false"
     log:
       level: warn
       mode: console

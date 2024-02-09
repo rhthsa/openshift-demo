@@ -40,9 +40,9 @@
   pod/prometheus-user-workload-1 condition met
   pod/thanos-ruler-user-workload-0 condition met
   pod/thanos-ruler-user-workload-1 condition met
-  NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-  prometheus-k8s-db-prometheus-k8s-0   Bound    pvc-bf534cd7-d8cf-4ab1-a685-14ce1c415720   50Gi       RWO            gp3-csi        18s
-  prometheus-k8s-db-prometheus-k8s-1   Bound    pvc-caa6d564-c1ef-4edb-97d6-7de3a0191022   50Gi       RWO            gp3-csi        18s
+  NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                           AGE
+  prometheus-k8s-db-prometheus-k8s-0   Bound    pvc-c1513ebb-6fcf-4136-b3a2-41a7a3afd83b   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   21s
+  prometheus-k8s-db-prometheus-k8s-1   Bound    pvc-f9f9d7b1-3303-41ed-9549-43fab596cebe   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   21s
   ```
 
 - Verify monitoring stack
@@ -55,12 +55,13 @@
   
   ```bash
   NAME                                   READY   STATUS    RESTARTS   AGE
-  prometheus-operator-5fc7d894dc-9nlhc   2/2     Running   0          9m3s
-  prometheus-user-workload-0             4/4     Running   1          5m45s
-  prometheus-user-workload-1             4/4     Running   1          6m1s
-  thanos-ruler-user-workload-0           3/3     Running   5          8m55s
-  thanos-ruler-user-workload-1           3/3     Running   0          11s
+  prometheus-operator-787b6f6d75-lrgjg   2/2     Running   0          70s
+  prometheus-user-workload-0             6/6     Running   0          63s
+  prometheus-user-workload-1             6/6     Running   0          63s
+  thanos-ruler-user-workload-0           4/4     Running   0          62s
+  thanos-ruler-user-workload-1           4/4     Running   0          62s
   ```
+
 - CPU and Memory used by User Workload Monitoring
   
   Overall resouces consumed by user workload monitoring
@@ -118,14 +119,14 @@
       Sample output
 
       ```bash
-      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'profiled nmethods'"} 1.22912768E8
-      jvm_memory_max_bytes{area="heap",id="PS Old Gen"} 1.048576E8
-      jvm_memory_max_bytes{area="heap",id="PS Survivor Space"} 1048576.0
-      jvm_memory_max_bytes{area="heap",id="PS Eden Space"} 4.718592E7
-      jvm_memory_max_bytes{area="nonheap",id="Metaspace"} -1.0
-      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'non-nmethods'"} 5828608.0
-      jvm_memory_max_bytes{area="nonheap",id="Compressed Class Space"} 1.073741824E9
-      jvm_memory_max_bytes{area="nonheap",id="CodeHeap 'non-profiled nmethods'"} 1.22916864E8
+      jvm_memory_used_bytes{area="heap",id="Tenured Gen"} 1.1301808E7
+      jvm_memory_used_bytes{area="nonheap",id="CodeHeap 'profiled nmethods'"} 5261952.0
+      jvm_memory_used_bytes{area="heap",id="Eden Space"} 2506768.0
+      jvm_memory_used_bytes{area="nonheap",id="Metaspace"} 3.3255E7
+      jvm_memory_used_bytes{area="nonheap",id="CodeHeap 'non-nmethods'"} 1389824.0
+      jvm_memory_used_bytes{area="heap",id="Survivor Space"} 524288.0
+      jvm_memory_used_bytes{area="nonheap",id="Compressed Class Space"} 4096808.0
+      jvm_memory_used_bytes{area="nonheap",id="CodeHeap 'non-profiled nmethods'"} 1120640.0
       ...
       ```
 
@@ -143,12 +144,11 @@
   
     ```bash
     # HELP http_server_requests_seconds
-    # TYPE http_server_requests_seconds summary
-    http_server_requests_seconds_count{method="GET",outcome="SUCCESS",status="200",uri="root",} 1.0
-    http_server_requests_seconds_sum{method="GET",outcome="SUCCESS",status="200",uri="root",} 2.64251063
-    # HELP http_server_requests_seconds_max
+    http_server_requests_seconds_count{method="GET",outcome="SUCCESS",status="200",uri="root"} 2.0
+    http_server_requests_seconds_sum{method="GET",outcome="SUCCESS",status="200",uri="root"} 3.769968656
     # TYPE http_server_requests_seconds_max gauge
-    http_server_requests_seconds_max{method="GET",outcome="SUCCESS",status="200",uri="root",} 2.64251063
+    # HELP http_server_requests_seconds_max
+    http_server_requests_seconds_max{method="GET",outcome="SUCCESS",status="200",uri="root"} 3.486753482
     ```
 
     
@@ -282,18 +282,15 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   ```
   
 - Install Grafana Operator to project application-monitor
-  - Install Grafana Operator from OperatorHub
-
-  ![](images/grafana-operator-01.png)
-
   - Install to application-monitor project
   
-  ![](images/grafana-operator-02.png)
+  ![](images/grafana-operator-01.png)
   
 - Create [Grafana instance](manifests/grafana.yaml)
   
   ```bash
   oc create -f manifests/grafana.yaml -n application-monitor
+  oc create route edge grafana --service=grafana-service --port=3000 -n application-monitor
   watch -d oc get pods -n application-monitor
   ```
   
@@ -309,21 +306,13 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 
   ```bash
   oc adm policy add-cluster-role-to-user cluster-monitoring-view \
-  -z grafana-serviceaccount -n application-monitor
+  -z grafana-sa -n application-monitor
   ```
 
 - Create [Grafana DataSource](manifests/grafana-datasource.yaml) with serviceaccount grafana-serviceaccount's token and connect to thanos-querier
   
-  - For oc version 4.10
-  
   ```bash
-  TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount -n application-monitor)
-  cat manifests/grafana-datasource.yaml|sed 's/Bearer .*/Bearer '"$TOKEN""'"'/'|oc apply -n application-monitor -f -
-  ``` 
-  - For oc version 4.11 and higher
-  
-  ```bash
-  TOKEN=$(oc create token grafana-serviceaccount -n application-monitor)
+  TOKEN=$(oc create token grafana-sa -n application-monitor)
   cat manifests/grafana-datasource.yaml|sed 's/Bearer .*/Bearer '"$TOKEN""'"'/'|oc apply -n application-monitor -f -
   ```  
 
