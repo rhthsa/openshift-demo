@@ -1,5 +1,5 @@
 FROM registry.access.redhat.com/ubi8/ubi
-ENV SIEGE=siege-4.1.5
+ENV SIEGE=siege-4.1.6
 RUN yum -y --setopt=tsflags=nodocs install --disableplugin=subscription-manager \
     skopeo podman buildah curl nmap openssl-devel gcc make bind-utils time \
     && yum -y  update --setopt=install_weak_deps=0 --nodocs \
