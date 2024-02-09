@@ -312,7 +312,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 - Create [Grafana DataSource](manifests/grafana-datasource.yaml) with serviceaccount grafana-serviceaccount's token and connect to thanos-querier
   
   ```bash
-  TOKEN=$(oc create token grafana-sa -n application-monitor)
+  TOKEN=$(oc create token grafana-sa --duration=4294967296s -n application-monitor)
   cat manifests/grafana-datasource.yaml|sed 's/Bearer .*/Bearer '"$TOKEN""'"'/'|oc apply -n application-monitor -f -
   ```  
 
