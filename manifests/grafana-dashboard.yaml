@@ -32,11 +32,11 @@ spec:
           }
         ]
       },
-      "description": "Backend Application Metrics",
+      "description": "Quarkus Micrometer Metrics",
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 2,
+      "id": 5,
       "links": [],
       "liveNow": false,
       "panels": [
@@ -160,7 +160,7 @@ spec:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "rate(http_server_requests_seconds_count{method=\"GET\",namespace=\"$namespace\",service=\"$service\"}[5m])",
+              "expr": "rate(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\"}[5m])",
               "instant": false,
               "interval": "",
               "legendFormat": "",
@@ -257,7 +257,7 @@ spec:
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(quantile_over_time(0.95, com_example_quarkus_BackendResource_timeBackend_seconds_max{namespace=\"$namespace\",service=\"$service\"}[5m]))",
+              "expr": "avg(quantile_over_time(0.95, http_server_requests_seconds_max{namespace=\"$namespace\",service=\"$service\"}[5m]))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
@@ -320,10 +320,12 @@ spec:
                 "type": "prometheus",
                 "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": " avg(com_example_quarkus_BackendResource_timeBackend_seconds_max)",
+              "expr": " avg(http_server_requests_seconds_max)",
               "interval": "",
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -551,6 +553,10 @@ spec:
               "text": "project1",
               "value": "project1"
             },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            },
             "definition": "label_values(namespace)",
             "hide": 0,
             "includeAll": false,
@@ -573,6 +579,10 @@ spec:
               "selected": false,
               "text": "backend",
               "value": "backend"
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
             },
             "definition": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\"}, service)",
             "hide": 0,
@@ -622,9 +632,9 @@ spec:
         ]
       },
       "timezone": "GMT+7",
-      "title": "Backend App",
+      "title": "Quarkus App",
       "uid": "8-N9ccCZz",
-      "version": 9,
+      "version": 4,
       "weekStart": ""
     }
   name: backend-dashboard.json
