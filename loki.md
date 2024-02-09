@@ -22,9 +22,9 @@
   Output
 
   ```bash
-  NAME                                    DISPLAY                     VERSION   REPLACES                                PHASE
-  cluster-logging.v5.8.1                  Red Hat OpenShift Logging   5.8.1     cluster-logging.v5.8.0                  Succeeded
-  loki-operator.v5.8.1                    Loki Operator               5.8.1     loki-operator.v5.8.0                    Succeeded
+  NAME                     DISPLAY                     VERSION   REPLACES                 PHASE
+  cluster-logging.v5.8.3   Red Hat OpenShift Logging   5.8.3     cluster-logging.v5.8.2   Succeeded
+  loki-operator.v5.8.3     Loki Operator               5.8.3     loki-operator.v5.8.2     Succeeded
   ```
 
 - Create Logging Instance
@@ -42,6 +42,7 @@
             ```bash
             oc create -f manifests/loki-odf-bucket.yaml
             ```
+            
         - Retrieve configuration into environment variables
 
           ```bash
