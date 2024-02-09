@@ -14,24 +14,37 @@ spec:
         "list": [
           {
             "builtIn": 1,
-            "datasource": "-- Grafana --",
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
             "enable": true,
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
             "name": "Annotations & Alerts",
+            "target": {
+              "limit": 100,
+              "matchAny": false,
+              "tags": [],
+              "type": "dashboard"
+            },
             "type": "dashboard"
           }
         ]
       },
       "description": "Backend Application Metrics",
       "editable": true,
-      "gnetId": null,
+      "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 6,
+      "id": 2,
       "links": [],
+      "liveNow": false,
       "panels": [
         {
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+          },
           "description": "Current TPS",
           "fieldConfig": {
             "defaults": {
@@ -77,13 +90,19 @@ spec:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(http_server_requests_seconds_count{method=\"GET\",uri=\"root\"}[5m]))",
+              "expr": "sum(rate(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\"}[5m]))",
               "interval": "",
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
@@ -95,10 +114,9 @@ spec:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
           },
           "fill": 3,
           "fillGradient": 0,
@@ -126,7 +144,7 @@ spec:
             "alertThreshold": false
           },
           "percentage": false,
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -136,8 +154,13 @@ spec:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "rate(http_server_requests_seconds_count{method=\"GET\",uri=\"root\"}[5m])",
+              "expr": "rate(http_server_requests_seconds_count{method=\"GET\",namespace=\"$namespace\",service=\"$service\"}[5m])",
               "instant": false,
               "interval": "",
               "legendFormat": "",
@@ -145,9 +168,7 @@ spec:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Request/sec",
           "tooltip": {
             "shared": true,
@@ -156,37 +177,31 @@ spec:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+          },
           "description": "",
           "fieldConfig": {
             "defaults": {
@@ -233,20 +248,25 @@ spec:
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(quantile_over_time(0.95, com_example_quarkus_BackendResource_timeBackend_seconds_max[5m]))",
+              "expr": "avg(quantile_over_time(0.95, com_example_quarkus_BackendResource_timeBackend_seconds_max{namespace=\"$namespace\",service=\"$service\"}[5m]))",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
           "timeFrom": "5m",
-          "timeShift": null,
           "title": "Max Response Time",
           "type": "stat"
         },
@@ -255,12 +275,11 @@ spec:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
-          "description": "Average max response time",
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
           },
+          "description": "Average max response time",
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
@@ -287,7 +306,7 @@ spec:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -297,6 +316,10 @@ spec:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
               "exemplar": true,
               "expr": " avg(com_example_quarkus_BackendResource_timeBackend_seconds_max)",
               "interval": "",
@@ -305,9 +328,7 @@ spec:
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "Average Response Time",
           "tooltip": {
             "shared": true,
@@ -316,33 +337,24 @@ spec:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
@@ -350,10 +362,9 @@ spec:
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
           },
           "fill": 3,
           "fillGradient": 0,
@@ -381,7 +392,7 @@ spec:
             "alertThreshold": false
           },
           "percentage": false,
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -391,17 +402,21 @@ spec:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "system_cpu_usage",
+              "expr": "system_cpu_usage{namespace=\"$namespace\",service=\"$service\"}",
               "interval": "",
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
           "thresholds": [],
-          "timeFrom": null,
           "timeRegions": [],
-          "timeShift": null,
           "title": "CPU Utilization",
           "tooltip": {
             "shared": true,
@@ -410,45 +425,34 @@ spec:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         },
         {
           "aliasColors": {},
           "bars": true,
-          "cacheTimeout": null,
           "dashLength": 10,
           "dashes": false,
-          "datasource": null,
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
+          "datasource": {
+            "type": "prometheus",
+            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
           },
           "fill": 1,
           "fillGradient": 0,
@@ -477,7 +481,7 @@ spec:
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.5.16",
+          "pluginVersion": "9.1.6",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -487,19 +491,24 @@ spec:
           "steppedLine": false,
           "targets": [
             {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+              },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum by (pod) (jvm_memory_used_bytes)/1048576",
+              "expr": "sum by (pod) (jvm_memory_used_bytes{namespace=\"$namespace\",service=\"$service\"})/1048576",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 1,
               "legendFormat": "",
+              "range": true,
               "refId": "A"
             }
           ],
           "thresholds": [],
           "timeFrom": "5m",
           "timeRegions": [],
-          "timeShift": null,
           "title": "Heap Size",
           "tooltip": {
             "shared": true,
@@ -508,43 +517,81 @@ spec:
           },
           "type": "graph",
           "xaxis": {
-            "buckets": null,
             "mode": "time",
-            "name": null,
             "show": true,
             "values": []
           },
           "yaxes": [
             {
-              "decimals": null,
               "format": "short",
               "label": "MB",
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             },
             {
               "format": "short",
-              "label": null,
               "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ],
           "yaxis": {
-            "align": false,
-            "alignLevel": null
+            "align": false
           }
         }
       ],
       "refresh": "10s",
-      "schemaVersion": 27,
+      "schemaVersion": 37,
       "style": "dark",
       "tags": [],
       "templating": {
-        "list": []
+        "list": [
+          {
+            "current": {
+              "selected": false,
+              "text": "project1",
+              "value": "project1"
+            },
+            "definition": "label_values(namespace)",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Namespace",
+            "multi": false,
+            "name": "namespace",
+            "options": [],
+            "query": {
+              "query": "label_values(namespace)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": false,
+              "text": "backend",
+              "value": "backend"
+            },
+            "definition": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\"}, service)",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Service",
+            "multi": false,
+            "name": "service",
+            "options": [],
+            "query": {
+              "query": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\"}, service)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          }
+        ]
       },
       "time": {
         "from": "now-5m",
@@ -577,6 +624,7 @@ spec:
       "timezone": "GMT+7",
       "title": "Backend App",
       "uid": "8-N9ccCZz",
-      "version": 1
+      "version": 9,
+      "weekStart": ""
     }
   name: backend-dashboard.json
