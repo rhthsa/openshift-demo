@@ -1,0 +1,164 @@
+apiVersion: v1
+items:
+- apiVersion: image.openshift.io/v1
+  generation: 0
+  image:
+    dockerImageLayers: null
+    dockerImageMetadata: null
+    metadata:
+      creationTimestamp: null
+  kind: ImageStreamTag
+  lookupPolicy:
+    local: false
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      openshift.io/imported-from: back:latest
+    creationTimestamp: null
+    labels:
+      app: back
+      app.kubernetes.io/component: back
+      app.kubernetes.io/instance: back
+    name: back:latest
+  tag:
+    annotations: null
+    from:
+      kind: DockerImage
+      name: back:latest
+    generation: null
+    importPolicy: {}
+    name: latest
+    referencePolicy:
+      type: ""
+- apiVersion: build.openshift.io/v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: back
+      app.kubernetes.io/component: back
+      app.kubernetes.io/instance: back
+    name: back
+  spec:
+    nodeSelector: null
+    output:
+      to:
+        kind: ImageStreamTag
+        name: back:latest
+    postCommit: {}
+    resources: {}
+    source:
+      contextDir: TestDemoApplication.Back
+      git:
+        uri: https://chatapazar0583@dev.azure.com/xxx/TestDemoApplication.Front/_git/TestDemoApplication.Back
+      sourceSecret:
+        name: azure-repo
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: ImageStreamTag
+          name: dotnet:2.1-ubi8
+          namespace: openshift
+      type: Source
+    triggers:
+    - github:
+        secret: zLBK3OwWM_dZI50su7Fw
+      type: GitHub
+    - generic:
+        secret: KgWIBAJ7k_8ugkP_N1pX
+      type: Generic
+    - type: ConfigChange
+    - imageChange: {}
+      type: ImageChange
+  status:
+    lastVersion: 0
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: back
+      app.kubernetes.io/component: back
+      app.kubernetes.io/instance: back
+      app.kubernetes.io/name: dotnet
+      app.kubernetes.io/part-of: back
+      app.openshift.io/runtime: dotnet
+      app.openshift.io/runtime-version: 2.1-ubi8
+    name: back
+  spec:
+    replicas: 3
+    selector:
+      deploymentconfig: back
+    strategy:
+      resources: {}
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          deploymentconfig: back
+      spec:
+        containers:
+        - image: back:latest
+          name: back
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi          
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - back
+        from:
+          kind: ImageStreamTag
+          name: back:latest
+      type: ImageChange
+  status:
+    availableReplicas: 0
+    latestVersion: 0
+    observedGeneration: 0
+    replicas: 0
+    unavailableReplicas: 0
+    updatedReplicas: 0
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    creationTimestamp: null
+    labels:
+      app: back
+      app.kubernetes.io/component: back
+      app.kubernetes.io/instance: back
+      app.kubernetes.io/name: dotnet
+      app.kubernetes.io/part-of: back
+      app.openshift.io/runtime: dotnet
+      app.openshift.io/runtime-version: 2.1-ubi8      
+    name: back
+  spec:
+    ports:
+    - name: 8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      deploymentconfig: back
+  status:
+    loadBalancer: {}
+kind: List
+metadata: {}
