@@ -1,7 +1,7 @@
-# User Workload Metrics
+# User Workload Monitoring
 <!-- TOC -->
 
-- [User Workload Metrics](#user-workload-metrics)
+- [User Workload Monitoring](#user-workload-monitoring)
   - [Prerequisites](#prerequisites)
   - [Service Monitoring](#service-monitoring)
   - [K6](#k6)
