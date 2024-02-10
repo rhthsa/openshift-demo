@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Kustomize · OpenShift Demo</title>
+        <title>OpenTracing · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="application-metrics.html" />
+    <link rel="next" href="build-with-oc.html" />
     
     
-    <link rel="prev" href="health.html" />
+    <link rel="prev" href="application-metrics.html" />
     
 
     </head>
@@ -489,7 +489,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.5.9" data-path="kustomize.html">
+        <li class="chapter " data-level="1.5.9" data-path="kustomize.html">
             
                 <a href="kustomize.html">
             
@@ -515,7 +515,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.5.11" data-path="otel-and-tempo.html">
+        <li class="chapter active" data-level="1.5.11" data-path="otel-and-tempo.html">
             
                 <a href="otel-and-tempo.html">
             
@@ -673,7 +673,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Kustomize</a>
+        <a href="." >OpenTracing</a>
     </h1>
 </div>
 
@@ -688,54 +688,8 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="kustomize">Kustomize</h1>
-<h2 id="todo-applicaiton">Todo Applicaiton</h2>
-<p>Sample todo applicaition</p>
-<ul>
-<li>Quarkus Native</li>
-<li>PostgreSQL Datababase</li>
-</ul>
-<pre><code>&#x251C;&#x2500;&#x2500; base
-&#x2502;   &#x251C;&#x2500;&#x2500; kustomization.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; namespace.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; service-monitor.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; todo-db.yaml
-&#x2502;   &#x2514;&#x2500;&#x2500; todo.yaml
-&#x2514;&#x2500;&#x2500; overlays
-    &#x2514;&#x2500;&#x2500; dev
-        &#x251C;&#x2500;&#x2500; kustomization.yaml
-        &#x2514;&#x2500;&#x2500; todo.yaml
-</code></pre><ul>
-<li>Create Todo Application with overlays <em>dev</em></li>
-</ul>
-<pre><code class="lang-bash">oc apply -k manifests/todo-kustomize/overlays/dev
-</code></pre>
-<h2 id="frontendbackend-applicaiton">Frontend/Backend Applicaiton</h2>
-<p>Sample Frontend/Backend applicaition</p>
-<pre><code>.
-&#x251C;&#x2500;&#x2500; base
-&#x2502;   &#x251C;&#x2500;&#x2500; backend-service.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; demo-rolebinding.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; frontend-service.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; kustomization.yaml
-&#x2502;   &#x251C;&#x2500;&#x2500; namespace.yaml
-&#x2502;   &#x2514;&#x2500;&#x2500; route.yaml
-&#x2514;&#x2500;&#x2500; overlays
-    &#x251C;&#x2500;&#x2500; dev
-    &#x2502;   &#x251C;&#x2500;&#x2500; backend.yaml
-    &#x2502;   &#x251C;&#x2500;&#x2500; frontend.yaml
-    &#x2502;   &#x2514;&#x2500;&#x2500; kustomization.yaml
-    &#x2514;&#x2500;&#x2500; prod
-        &#x251C;&#x2500;&#x2500; backend.yaml
-        &#x251C;&#x2500;&#x2500; frontend.yaml
-        &#x2514;&#x2500;&#x2500; kustomization.yaml
-</code></pre><ul>
-<li>Create Todo Application with overlays <em>dev</em></li>
-</ul>
-<pre><code class="lang-bash">oc apply -k manifests/apps-kustomize/overlays/dev
-</code></pre>
+                                <h1 id="opentelemetry-and-tempo">OpenTelemetry and Tempo</h1>
+<p><a href="https://github.com/voraviz/quarkus-todo-app/tree/otel" target="_blank">Tracing with OpenTelemtry and Tempo</a></p>
 
                                 
                                 </section>
@@ -763,12 +717,12 @@
 
             
                 
-                <a href="health.html" class="navigation navigation-prev " aria-label="Previous page: Health Check">
+                <a href="application-metrics.html" class="navigation navigation-prev " aria-label="Previous page: User Workload Monitoring">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="application-metrics.html" class="navigation navigation-next " aria-label="Next page: User Workload Monitoring">
+                <a href="build-with-oc.html" class="navigation navigation-next " aria-label="Next page: Build Container with OC command">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -779,7 +733,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Kustomize","level":"1.5.9","depth":2,"next":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"previous":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"kustomize.md","mtime":"2024-02-10T06:18:02.812Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-10T06:18:38.070Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"OpenTracing","level":"1.5.11","depth":2,"next":{"title":"Build Container with OC command","level":"1.5.12","depth":2,"path":"build-with-oc.md","ref":"build-with-oc.md","articles":[]},"previous":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"path":"application-metrics.md","ref":"application-metrics.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"otel-and-tempo.md","mtime":"2024-02-10T06:18:02.820Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-10T06:18:38.070Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
