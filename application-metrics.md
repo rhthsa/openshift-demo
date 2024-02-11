@@ -474,3 +474,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   - Console overview status
 
     ![](images/console-overview-status.png)
+
+
+
+    sum(increase(http_server_requests_seconds_count{outcome="SUCCESS"}[5m]))/sum(increase(http_server_requests_seconds_count[5m]))*100
