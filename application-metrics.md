@@ -93,20 +93,6 @@
   ```
 
   ![](images/frontend-v1-and-backend-v1-topology.png)
-  
-- Create Service Monitor for backend app
-  
-  ```bash
-  oc create -f manifests/backend-service-monitor.yaml -n project1
-  oc get servicemonitor backend-monitor -n project1
-  ```
-
-  Output
-
-  ```bash
-  NAME              AGE
-  backend-monitor   38s
-  ```
 
 - Call frontend app with curl
 
@@ -283,18 +269,6 @@ View [Dashboard](http://127.0.0.1:5665/)
 ![](images/k6-dashboard.png)
 
 ## Custom Grafana Dashboard
-<!-- https://access.redhat.com/solutions/5335491 -->
-Use **Grafana Operator by Red Hat** to deploy Grafana and configure datasource to Thanos Querier
-
-Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
-
-
-- Create project
-  
-  ```bash
-  oc new-project application-monitor --display-name="App Dashboard" --description="Grafana Dashboard for Application Monitoring"
-  ```
-  
 - Install Grafana Operator to project application-monitor
   
   ![](images/grafana-operator-01.png)
@@ -308,7 +282,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   Verify
 
   ```bash
-  oc get csv
+  oc get csv -n openshift-operators
   ```
 
   Output
@@ -317,6 +291,18 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   NAME                      DISPLAY            VERSION   REPLACES                  PHASE
   grafana-operator.v5.6.2   Grafana Operator   5.6.2     grafana-operator.v5.6.1   Succeeded
   ```
+<!-- https://access.redhat.com/solutions/5335491 -->
+  Use **Grafana Operator by Red Hat** to deploy Grafana and configure datasource to Thanos Querier
+  Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
+
+
+- Create project
+  
+  ```bash
+  oc new-project application-monitor --display-name="App Dashboard" --description="Grafana Dashboard for Application Monitoring"
+  ```
+  
+
   
 - Create [Grafana instance](manifests/grafana.yaml)
   
@@ -356,7 +342,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
 - Login to Grafana Dashboard with following URL
   
   ```bash
-  echo "Grafana URL => https://$(oc get route grafana-route -o jsonpath='{.spec.host}' -n application-monitor)"
+  echo "Grafana URL => https://$(oc get route grafana -o jsonpath='{.spec.host}' -n application-monitor)"
   ```
   
   or use link provided by Developer Console
