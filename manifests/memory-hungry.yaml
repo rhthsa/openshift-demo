@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memory-hungry
+  labels:
+    app.kubernetes.io/component: memory-hungry
+    app.kubernetes.io/instance: memory-hungry
+    app.kubernetes.io/name: memory-hungry
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: quarkus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memory-hungry
+  template:
+    metadata:
+      labels:
+        app: memory-hungry
+        # maistra.io/expose-route: "true"
+    spec:
+      containers:
+      - name: memory-hungry
+        image: quay.io/voravitl/leak:native
+        imagePullPolicy: Always
+        env:
+          - name: APP_DISHSIZE
+            value: "10485760"
+        resources:
+          requests:
+            cpu: "0.05"
+            memory: 60Mi
+          limits:
+            cpu: "0.1"
+            memory: 100Mi
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: true
+        ports:
+        - containerPort: 8080
+      terminationGracePeriodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memory-hungry
+  labels:
+    app: memory-hungry
+spec:
+  ports:
+  - port: 8080
+    name: http
+    targetPort: 8080
+  selector:
+    app: memory-hungry
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: memory-hungry
+spec:
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: memory-hungry
+    weight: 100
+  wildcardPolicy: None
