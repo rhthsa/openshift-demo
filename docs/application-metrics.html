@@ -762,15 +762,6 @@ thanos-ruler-user-workload-1           4/4     Running   0          62s
 </code></pre>
 <p><img src="images/frontend-v1-and-backend-v1-topology.png" alt=""></p>
 </li>
-<li><p>Create Service Monitor for backend app</p>
-<pre><code class="lang-bash">oc create -f manifests/backend-service-monitor.yaml -n project1
-oc get servicemonitor backend-monitor -n project1
-</code></pre>
-<p>Output</p>
-<pre><code class="lang-bash">NAME              AGE
-backend-monitor   38s
-</code></pre>
-</li>
 <li><p>Call frontend app with curl</p>
 <pre><code class="lang-bash">curl https://$(oc get route frontend -o jsonpath=&apos;{.spec.host}&apos; -n project1)
 </code></pre>
@@ -912,27 +903,31 @@ TOOL=$(oc get po -n project1 -l app=network-tools --no-headers  -o custom-column
 <p>View <a href="http://127.0.0.1:5665/" target="_blank">Dashboard</a></p>
 <p><img src="images/k6-dashboard.png" alt=""></p>
 <h2 id="custom-grafana-dashboard">Custom Grafana Dashboard</h2>
-<!-- https://access.redhat.com/solutions/5335491 -->
-<p>Use <strong>Grafana Operator by Red Hat</strong> to deploy Grafana and configure datasource to Thanos Querier</p>
-<p>Remark: <strong>Grafana Operator is Community Edition - not supported by Red Hat</strong></p>
 <ul>
-<li><p>Create project</p>
-<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;App Dashboard&quot; --description=&quot;Grafana Dashboard for Application Monitoring&quot;
-</code></pre>
-</li>
 <li><p>Install Grafana Operator to project application-monitor</p>
 <p><img src="images/grafana-operator-01.png" alt=""></p>
 <p>or using CLI</p>
 <pre><code class="lang-bash">oc create -f manifests/grafana-sub.yaml
 </code></pre>
 <p>Verify</p>
-<pre><code class="lang-bash">oc get csv
+<pre><code class="lang-bash">oc get csv -n openshift-operators
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">NAME                      DISPLAY            VERSION   REPLACES                  PHASE
 grafana-operator.v5.6.2   Grafana Operator   5.6.2     grafana-operator.v5.6.1   Succeeded
 </code></pre>
+<!-- https://access.redhat.com/solutions/5335491 -->
+<p>Use <strong>Grafana Operator by Red Hat</strong> to deploy Grafana and configure datasource to Thanos Querier
+Remark: <strong>Grafana Operator is Community Edition - not supported by Red Hat</strong></p>
 </li>
+</ul>
+<ul>
+<li><p>Create project</p>
+<pre><code class="lang-bash">oc new-project application-monitor --display-name=&quot;App Dashboard&quot; --description=&quot;Grafana Dashboard for Application Monitoring&quot;
+</code></pre>
+</li>
+</ul>
+<ul>
 <li><p>Create <a href="manifests/grafana.yaml">Grafana instance</a></p>
 <pre><code class="lang-bash">oc create -f manifests/grafana.yaml -n application-monitor
 oc create route edge grafana --service=grafana-service --port=3000 -n application-monitor
@@ -958,7 +953,7 @@ cat manifests/grafana-datasource.yaml|sed &apos;s/Bearer .*/Bearer &apos;&quot;$
 </code></pre>
 </li>
 <li><p>Login to Grafana Dashboard with following URL</p>
-<pre><code class="lang-bash">echo &quot;Grafana URL =&gt; https://$(oc get route grafana-route -o jsonpath=&apos;{.spec.host}&apos; -n application-monitor)&quot;
+<pre><code class="lang-bash">echo &quot;Grafana URL =&gt; https://$(oc get route grafana -o jsonpath=&apos;{.spec.host}&apos; -n application-monitor)&quot;
 </code></pre>
 <p>or use link provided by Developer Console</p>
 <p><img src="images/custom-grafana-route.png" alt=""></p>
@@ -1110,7 +1105,7 @@ oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"OpenTracing","level":"1.5.11","depth":2,"path":"otel-and-tempo.md","ref":"otel-and-tempo.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2024-02-11T04:18:30.434Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-11T04:19:06.995Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"OpenTracing","level":"1.5.11","depth":2,"path":"otel-and-tempo.md","ref":"otel-and-tempo.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2024-02-11T04:51:06.236Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-11T04:51:43.497Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
