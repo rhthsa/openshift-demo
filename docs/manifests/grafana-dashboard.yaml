@@ -36,10 +36,78 @@ spec:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 7,
+      "id": 2,
       "links": [],
       "liveNow": false,
       "panels": [
+        {
+          "datasource": {
+            "type": "prometheus"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 4,
+            "x": 0,
+            "y": 0
+          },
+          "id": 18,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.1.6",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus"
+              },
+              "editorMode": "code",
+              "expr": "100-(sum(increase(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\",pod=~\"$pod\",outcome=\"SUCCESS\"}[1m]))/sum(increase(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\",pod=~\"$pod\"}[1m]))*100)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Error Rate [5m]",
+          "type": "stat"
+        },
         {
           "datasource": {
             "type": "prometheus"
@@ -68,9 +136,9 @@ spec:
             "overrides": []
           },
           "gridPos": {
-            "h": 7,
+            "h": 8,
             "w": 5,
-            "x": 0,
+            "x": 4,
             "y": 0
           },
           "id": 14,
@@ -118,9 +186,9 @@ spec:
           "fill": 3,
           "fillGradient": 0,
           "gridPos": {
-            "h": 7,
-            "w": 19,
-            "x": 5,
+            "h": 8,
+            "w": 15,
+            "x": 9,
             "y": 0
           },
           "hiddenSeries": false,
@@ -222,9 +290,9 @@ spec:
           },
           "gridPos": {
             "h": 7,
-            "w": 5,
+            "w": 4,
             "x": 0,
-            "y": 7
+            "y": 8
           },
           "id": 4,
           "links": [],
@@ -277,9 +345,9 @@ spec:
           "fillGradient": 0,
           "gridPos": {
             "h": 7,
-            "w": 19,
-            "x": 5,
-            "y": 7
+            "w": 20,
+            "x": 4,
+            "y": 8
           },
           "hiddenSeries": false,
           "id": 16,
@@ -362,10 +430,10 @@ spec:
           "fill": 3,
           "fillGradient": 0,
           "gridPos": {
-            "h": 8,
+            "h": 9,
             "w": 12,
             "x": 0,
-            "y": 14
+            "y": 15
           },
           "hiddenSeries": false,
           "id": 10,
@@ -448,10 +516,10 @@ spec:
           "fill": 1,
           "fillGradient": 0,
           "gridPos": {
-            "h": 8,
+            "h": 9,
             "w": 12,
             "x": 12,
-            "y": 14
+            "y": 15
           },
           "hiddenSeries": false,
           "id": 6,
@@ -594,6 +662,9 @@ spec:
               "text": "All",
               "value": "$__all"
             },
+            "datasource": {
+              "type": "prometheus"
+            },
             "definition": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\",service=\"$service\"}, pod)",
             "hide": 0,
             "includeAll": true,
@@ -644,7 +715,7 @@ spec:
       "timezone": "GMT+7",
       "title": "Quarkus App",
       "uid": "8-N9ccCZz",
-      "version": 4,
+      "version": 5,
       "weekStart": ""
     }
   name: backend-dashboard.json

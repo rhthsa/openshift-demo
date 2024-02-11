@@ -25,14 +25,81 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 7,
+  "id": 2,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.1.6",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "100-(sum(increase(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\",pod=~\"$pod\",outcome=\"SUCCESS\"}[1m]))/sum(increase(http_server_requests_seconds_count{namespace=\"$namespace\",service=\"$service\",pod=~\"$pod\"}[1m]))*100)",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate [5m]",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus"
       },
       "description": "Current TPS",
       "fieldConfig": {
@@ -58,9 +125,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 5,
-        "x": 0,
+        "x": 4,
         "y": 0
       },
       "id": 14,
@@ -83,8 +150,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -104,15 +170,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
       },
       "fill": 3,
       "fillGradient": 0,
       "gridPos": {
-        "h": 7,
-        "w": 19,
-        "x": 5,
+        "h": 8,
+        "w": 15,
+        "x": 9,
         "y": 0
       },
       "hiddenSeries": false,
@@ -144,8 +209,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -188,8 +252,7 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
       },
       "description": "",
       "fieldConfig": {
@@ -216,9 +279,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 5,
+        "w": 4,
         "x": 0,
-        "y": 7
+        "y": 8
       },
       "id": 4,
       "links": [],
@@ -241,8 +304,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -265,17 +327,16 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
       },
       "description": "Average max response time",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 19,
-        "x": 5,
-        "y": 7
+        "w": 20,
+        "x": 4,
+        "y": 8
       },
       "hiddenSeries": false,
       "id": 16,
@@ -306,8 +367,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -354,16 +414,15 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
       },
       "fill": 3,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 10,
@@ -394,8 +453,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -442,16 +500,15 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": {
-        "type": "prometheus",
-        "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+        "type": "prometheus"
       },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 6,
@@ -483,8 +540,7 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+            "type": "prometheus"
           },
           "editorMode": "code",
           "exemplar": true,
@@ -543,8 +599,7 @@
           "value": "project1"
         },
         "datasource": {
-          "type": "prometheus",
-          "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+          "type": "prometheus"
         },
         "definition": "label_values(namespace)",
         "hide": 0,
@@ -570,8 +625,7 @@
           "value": "backend"
         },
         "datasource": {
-          "type": "prometheus",
-          "uid": "fe67e7fb-cfbc-4b8c-a527-502384a5ae2e"
+          "type": "prometheus"
         },
         "definition": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\"}, service)",
         "hide": 0,
@@ -596,6 +650,9 @@
           "selected": false,
           "text": "All",
           "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus"
         },
         "definition": "label_values(jvm_memory_used_bytes{namespace=\"$namespace\",service=\"$service\"}, pod)",
         "hide": 0,
@@ -647,6 +704,6 @@
   "timezone": "GMT+7",
   "title": "Quarkus App",
   "uid": "8-N9ccCZz",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
