@@ -2,6 +2,8 @@ apiVersion: grafana.integreatly.org/v1beta1
 kind: GrafanaDatasource
 metadata:
   name: grafana-datasource
+  labels:
+    app: grafana
 spec:
   datasource:
     access: proxy
