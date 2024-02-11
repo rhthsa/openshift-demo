@@ -86,7 +86,7 @@
   
 ## Service Monitoring
 
-- Deploy application with custom metrics
+- Deploy [frontend/backend app](manifests/frontend-v1-and-backend-v1-JVM.yaml) with custom metrics
 
   ```bash
   oc create -f manifests/frontend-v1-and-backend-v1-JVM.yaml -n project1
@@ -94,17 +94,31 @@
 
   ![](images/frontend-v1-and-backend-v1-topology.png)
   
-  - Call frontend app with curl
+- Create Service Monitor for backend app
+  
+  ```bash
+  oc create -f manifests/backend-service-monitor.yaml -n project1
+  oc get servicemonitor backend-monitor -n project1
+  ```
 
-    ```bash
-    curl https://$(oc get route frontend -o jsonpath='{.spec.host}' -n project1)
-    ``` 
+  Output
 
-    Output
+  ```bash
+  NAME              AGE
+  backend-monitor   38s
+  ```
 
-    ```bash
-    Frontend version: v1 => [Backend: http://backend:8080, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-5587465b8d-9kvsc, Status:200, Message: Hello, World]
-    ``` 
+- Call frontend app with curl
+
+  ```bash
+  curl https://$(oc get route frontend -o jsonpath='{.spec.host}' -n project1)
+  ``` 
+
+  Output
+
+  ```bash
+  Frontend version: v1 => [Backend: http://backend:8080, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-5587465b8d-9kvsc, Status:200, Message: Hello, World]
+  ``` 
   - Check for backend's metrics
     
     - Check JVM heap size
@@ -282,9 +296,27 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   ```
   
 - Install Grafana Operator to project application-monitor
-  - Install to application-monitor project
   
   ![](images/grafana-operator-01.png)
+
+  or using CLI
+
+  ```bash
+  oc create -f manifests/grafana-sub.yaml
+  ```
+
+  Verify
+
+  ```bash
+  oc get csv
+  ```
+
+  Output
+
+  ```bash
+  NAME                      DISPLAY            VERSION   REPLACES                  PHASE
+  grafana-operator.v5.6.2   Grafana Operator   5.6.2     grafana-operator.v5.6.1   Succeeded
+  ```
   
 - Create [Grafana instance](manifests/grafana.yaml)
   
@@ -298,8 +330,7 @@ Remark: **Grafana Operator is Community Edition - not supported by Red Hat**
   
   ```bash
   NAME                                 READY   STATUS    RESTARTS   AGE
-  grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
-  grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
+  grafana-deployment-96d5f5954-5hml7   1/1     Running   0          14s
   ```
   
 - Add cluster role `cluster-monitoring-view` to Grafana ServiceAccount
