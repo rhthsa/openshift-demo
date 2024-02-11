@@ -757,18 +757,27 @@ thanos-ruler-user-workload-1           4/4     Running   0          62s
 </ul>
 <h2 id="service-monitoring">Service Monitoring</h2>
 <ul>
-<li><p>Deploy application with custom metrics</p>
+<li><p>Deploy <a href="manifests/frontend-v1-and-backend-v1-JVM.yaml">frontend/backend app</a> with custom metrics</p>
 <pre><code class="lang-bash">oc create -f manifests/frontend-v1-and-backend-v1-JVM.yaml -n project1
 </code></pre>
 <p><img src="images/frontend-v1-and-backend-v1-topology.png" alt=""></p>
-<ul>
+</li>
+<li><p>Create Service Monitor for backend app</p>
+<pre><code class="lang-bash">oc create -f manifests/backend-service-monitor.yaml -n project1
+oc get servicemonitor backend-monitor -n project1
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME              AGE
+backend-monitor   38s
+</code></pre>
+</li>
 <li><p>Call frontend app with curl</p>
 <pre><code class="lang-bash">curl https://$(oc get route frontend -o jsonpath=&apos;{.spec.host}&apos; -n project1)
 </code></pre>
 <p>Output</p>
 <pre><code class="lang-bash">Frontend version: v1 =&gt; [Backend: http://backend:8080, Response: 200, Body: Backend version:v1, Response:200, Host:backend-v1-5587465b8d-9kvsc, Status:200, Message: Hello, World]
 </code></pre>
-</li>
+<ul>
 <li><p>Check for backend&apos;s metrics</p>
 <ul>
 <li><p>Check JVM heap size</p>
@@ -912,10 +921,17 @@ TOOL=$(oc get po -n project1 -l app=network-tools --no-headers  -o custom-column
 </code></pre>
 </li>
 <li><p>Install Grafana Operator to project application-monitor</p>
-<ul>
-<li>Install to application-monitor project</li>
-</ul>
 <p><img src="images/grafana-operator-01.png" alt=""></p>
+<p>or using CLI</p>
+<pre><code class="lang-bash">oc create -f manifests/grafana-sub.yaml
+</code></pre>
+<p>Verify</p>
+<pre><code class="lang-bash">oc get csv
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                      DISPLAY            VERSION   REPLACES                  PHASE
+grafana-operator.v5.6.2   Grafana Operator   5.6.2     grafana-operator.v5.6.1   Succeeded
+</code></pre>
 </li>
 <li><p>Create <a href="manifests/grafana.yaml">Grafana instance</a></p>
 <pre><code class="lang-bash">oc create -f manifests/grafana.yaml -n application-monitor
@@ -924,8 +940,7 @@ watch -d oc get pods -n application-monitor
 </code></pre>
 <p>Sample Output</p>
 <pre><code class="lang-bash">NAME                                 READY   STATUS    RESTARTS   AGE
-grafana-deployment-cd4764497-jcwtx   1/1     Running   0          52s
-grafana-operator-7d585d8fb4-nks8s    1/1     Running   0          4m55s
+grafana-deployment-96d5f5954-5hml7   1/1     Running   0          14s
 </code></pre>
 </li>
 <li><p>Add cluster role <code>cluster-monitoring-view</code> to Grafana ServiceAccount</p>
@@ -1094,7 +1109,7 @@ oc adm policy add-role-to-user  monitoring-rules-edit user1 -n project1
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"OpenTracing","level":"1.5.11","depth":2,"path":"otel-and-tempo.md","ref":"otel-and-tempo.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2024-02-10T06:18:02.640Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-10T06:18:38.070Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"User Workload Monitoring","level":"1.5.10","depth":2,"next":{"title":"OpenTracing","level":"1.5.11","depth":2,"path":"otel-and-tempo.md","ref":"otel-and-tempo.md","articles":[]},"previous":{"title":"Kustomize","level":"1.5.9","depth":2,"path":"kustomize.md","ref":"kustomize.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"application-metrics.md","mtime":"2024-02-11T03:18:59.891Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-02-11T03:19:35.434Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
