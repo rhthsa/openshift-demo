@@ -1,0 +1,74 @@
+apiVersion: flows.netobserv.io/v1beta1 
+kind: FlowCollector
+metadata:
+  name: cluster
+spec:
+  namespace: netobserv
+  deploymentModel: DIRECT
+  agent:
+    ebpf:
+      logLevel: info
+      cacheMaxFlows: 100000
+      resources:
+        limits:
+          memory: 800Mi
+        requests:
+          cpu: 100m
+          memory: 50Mi
+      sampling: 1 # FlowRTT
+      imagePullPolicy: IfNotPresent
+      excludeInterfaces:
+        - lo
+      cacheActiveTimeout: 5s
+      interfaces: []
+      features:
+        - PacketDrop
+        - DNSTracking
+        - FlowRTT
+      privileged: true # DNSTracking, PacketDrop
+  processor:
+    logLevel: info
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+      limits:
+        memory: 800Mi
+    conversationEndTimeout: 10s
+    logTypes: FLOWS                            
+    conversationHeartbeatInterval: 30s
+  loki:                                       
+    url: 'https://loki-gateway-http.netobserv.svc:8080/api/logs/v1/network'
+    statusUrl: 'https://loki-query-frontend-http.netobserv.svc:3100/'
+    authToken: FORWARD
+    tls:
+      enable: true
+      caCert:
+        type: configmap
+        name: loki-gateway-ca-bundle
+        certFile: service-ca.crt
+  consolePlugin:
+    register: true
+    logLevel: info
+    portNaming:
+      enable: true
+      portNames:
+        "3100": loki
+    quickFilters:                             
+    - name: Applications
+      filter:
+        src_namespace!: 'openshift-,netobserv'
+        dst_namespace!: 'openshift-,netobserv'
+      default: true
+    - name: Infrastructure
+      filter:
+        src_namespace: 'openshift-,netobserv'
+        dst_namespace: 'openshift-,netobserv'
+    - name: Pods network
+      filter:
+        src_kind: 'Pod'
+        dst_kind: 'Pod'
+      default: true
+    - name: Services network
+      filter:
+        dst_kind: 'Service'
