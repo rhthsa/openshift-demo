@@ -29,7 +29,7 @@
   * [Health Check](health.md)
   * [Kustomize](kustomize.md)
   * [User Workload Monitoring](application-metrics.md)
-  * [OpenTracing](otel-and-tempo.md)
+  * [OpenTelemetry with Tempo](otel-and-tempo.md)
   * [Build Container with OC command](build-with-oc.md)
   * [Build Container with OpenShift DO (odo)](build-with-odo.md)
   * [CI/CD with Jenkins](ci-cd-with-jenkins.md)

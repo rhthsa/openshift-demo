@@ -59,7 +59,7 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
     - Monitor Custom Metrics
     - Custom Grafana Dashboard
     - Custom Alert
-  - [OpenTracing](otel-and-tempo.md)
+  - [OpenTelemetry with Temop](otel-and-tempo.md)
   - [Build Container with OC command](build-with-oc.md)
   - [Build Container with OpenShift DO (odo)](build-with-odo.md)
   - [CI/CD with Jenkins](ci-cd-with-jenkins.md)
