@@ -1,0 +1,94 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: pod-stuck
+  namespace: openshift-monitoring
+  # If the label is not present, the alerting rule is deployed to Thanos Ruler
+  # labels:
+  #  openshift.io/prometheus-rule-evaluation-scope: leaf-prometheus
+spec:
+  groups:
+  - name: PodStuck
+    rules:
+    - alert: PodStuckContainerCreating
+      annotations:
+        summary: Pod stuck at ContainerCreating in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ContainerCreating
+      expr: kube_pod_container_status_waiting_reason{reason="ContainerCreating"}  == 1
+      for: 3m
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: PodStuckImagePullBackOff
+      annotations:
+        summary: Cannot pull images in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ImagePullBackOff
+      expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} == 1
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
+    # - alert: PodStuckErrImagePull
+    #   annotations:
+    #     summary: Cannot pull images in project {{ $labels.namespace }}
+    #     message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #     description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at ErrImagePull
+    #   expr: kube_pod_container_status_waiting_reason{reason="ErrImagePull"} == 2
+    #   for: 2m
+    #   labels:
+    #     severity: critical
+    #     receiver: 'line'
+    - alert: PodStuckCrashLoopBackOff
+      annotations:
+        summary: CrashLoopBackOff in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CrashLoopBackOff
+      expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1 
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: PodStuckCreateContainerError
+      annotations:
+        summary: Pod cannot created in project {{ $labels.namespace }}
+        message: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CreateContainerError
+        description: Pod  {{ $labels.pod }}  in project {{ $labels.namespace }} project stuck at CreateContainerError
+      expr: kube_pod_container_status_waiting_reason{reason="CreateContainerError"} == 1 
+      for: 2m
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: FailedEvictedPods
+      annotations:
+        summary: Failed Evicted pod:{{ $labels.pod }} namespace:{{ $labels.namespace }}
+        message: Failed Evicted pod:{{ $labels.pod }} namespace:{{ $labels.namespace }}
+        description: Failed Evicted pod:{{ $labels.pod }} namespace:{{ $labels.namespace }}
+      expr: sum by(namespace, pod) (kube_pod_status_phase{phase="Failed"} > 0 and on(namespace, pod) kube_pod_status_reason{reason="Evicted"} > 0) > 0   
+      for: 3m 
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: OOMKilled
+      annotations:
+        summary: Container {{ $labels.container }} of pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        message: Container {{ $labels.container }} of pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        description: Container {{ $labels.container }} of pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+      expr:  kube_pod_container_status_last_terminated_reason{reason="OOMKilled"}==1   
+      for: 1m 
+      labels:
+        severity: critical
+        receiver: 'line'
+    - alert: ContainerOutOfMemory
+      annotations:
+        summary: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        message: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        description: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory 
+      expr:  container_oom_events_total == 0
+      for: 1m 
+      labels:
+        severity: critical
+        receiver: 'line'
+
+
