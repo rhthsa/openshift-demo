@@ -80,5 +80,15 @@ spec:
       labels:
         severity: critical
         receiver: 'line'
+    - alert: ContainerOutOfMemory
+      annotations:
+        summary: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        message: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory
+        description: Pod {{ $labels.pod }} in project {{ $labels.namespace }} is out of memory 
+      expr:  container_oom_events_total == 0
+      for: 1m 
+      labels:
+        severity: critical
+        receiver: 'line'
 
 
