@@ -423,7 +423,7 @@ We will demontrate Alerts from Prometheus and AlertManager by using Platform and
         expr: kubelet_volume_stats_available_bytes{job="kubelet",metrics_path="/metrics"} / kubelet_volume_stats_capacity_bytes{job="kubelet",metrics_path="/metrics"} < 0.20
       for: 5m
       labels:
-        secerity: critical
+        severity: critical
       annotations:
         message: The PersistentVolume claimed is under 20 percent free.
   EOF
