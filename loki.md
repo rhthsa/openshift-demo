@@ -22,22 +22,24 @@
   Output
 
   ```bash
-  NAME                     DISPLAY                     VERSION   REPLACES                 PHASE
-  cluster-logging.v5.8.3   Red Hat OpenShift Logging   5.8.3     cluster-logging.v5.8.2   Succeeded
-  loki-operator.v5.8.3     Loki Operator               5.8.3     loki-operator.v5.8.2     Succeeded
+  NAME                            DISPLAY                     VERSION   REPLACES                             PHASE
+  cluster-logging.v5.9.0          Red Hat OpenShift Logging   5.9.0                                          Succeeded
+  loki-operator.v5.9.0            Loki Operator               5.9.0                                          Succeeded
   ```
 
 - Create Logging Instance
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
     - In case of using ODF
         - Create Bucket
+          
           - Admin Console
             - Navigate to Storage -> Object Storage -> Object Bucket Claims
             - Create ObjectBucketClaim
               - Claim Name: *loki*
               - StorageClass: *openshift-storage.nooba.io*
               - BucketClass: *nooba-default-bucket-class*
-          - CLI
+          
+          - CLI with [YAML](manifests/loki-odf-bucket.yaml)
             
             ```bash
             oc create -f manifests/loki-odf-bucket.yaml
@@ -110,8 +112,25 @@
     logging-loki-ruler-1                           1/1     Running   0          88s
     logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
     ```
+- PVC storage (RWO) used by Loki
+
+  ```bash
+  NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                           AGE
+  storage-logging-loki-compactor-0       Bound    pvc-a405a61d-2361-44a6-9b9a-a79a5a3a4d48   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  storage-logging-loki-index-gateway-0   Bound    pvc-688a34a3-562a-4e27-aa09-4d81baca5c5b   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  storage-logging-loki-index-gateway-1   Bound    pvc-5ede4b00-ad62-4505-bd69-1931f79e52b2   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m19s
+  storage-logging-loki-ingester-0        Bound    pvc-065cc5de-e506-45ca-925f-c1f3ba61803e   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  storage-logging-loki-ingester-1        Bound    pvc-a21adf64-b93c-47fc-a454-20b0e9af220b   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   2m48s
+  storage-logging-loki-ruler-0           Bound    pvc-fa925ae5-34dd-4497-90b5-37d5ec99b925   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  storage-logging-loki-ruler-1           Bound    pvc-fb19290d-eaf2-4684-8721-3bc8aa4066f9   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  wal-logging-loki-ingester-0            Bound    pvc-fed10b0d-19a5-49be-ae90-c1b2f5ed6108   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  wal-logging-loki-ingester-1            Bound    pvc-89c5591b-8fb0-4229-84c3-9d0a28c721c5   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   2m48s
+  wal-logging-loki-ruler-0               Bound    pvc-b431cae4-de01-4202-9ed3-97710e549722   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  wal-logging-loki-ruler-1               Bound    pvc-50b62352-0e38-4109-98b5-db17df013030   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  ```
 
 - Enable Console Plugin Operator
+  
   - Navigate to Administrator->Operators->Installed Opertors->Red Hat OpenShift Logging then Enable Console Plugin on the right menu
   
     ![](images/enable-logging-console-plugin.png)
@@ -127,8 +146,6 @@
     oc patch console.operator cluster \
     --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
     ```
-
-
 
 <!-- - Restart console pod
          
@@ -270,16 +287,33 @@
 
 ## Alert
 
+- Label namespace api to match condition for LokiStack to monitor for alert
+  
+  ```bash
+  oc label ns api openshift.io/cluster-monitoring=true
+  ```
+
+- [Optional] Add roles to user to manage alert (CRUD)
+  
+  ```bash
+  oc adm policy add-role-to-user alertingrules.loki.grafana.com-v1-admin -n api user1
+  ```
+
+- Create [Alert Rule](manifests/loki-backend-alert.yaml)
+  
+  ```bash
+  oc apply -f manifests/loki-backend-alert.yaml
+  ```
+
 - Configure backend app to return 500
   
   ```bash
   oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/500 -n api
   ```
-- Create Alert Rule
+- Call frontend
+- Check for alert
   
-  ```bash
-  oc apply -f manifests/loki-backend-alert.yaml
-  ```
+  ![](images/loki-backend-alert.png)
 
 
 <!-- delete ingester then queier -->
