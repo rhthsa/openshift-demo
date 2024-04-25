@@ -1,0 +1,22 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  generation: 2
+  labels:
+    app: sso
+  name: jteller
+spec:
+  realmSelector:
+    matchLabels:
+      app: sso
+  user:
+    credentials:
+    - type: password
+      value: P@ssw0rd
+    email: user@example.com
+    enabled: true
+    firstName: Jack
+    lastName: Teller
+    username: jteller
+    groups:
+      - group1    
