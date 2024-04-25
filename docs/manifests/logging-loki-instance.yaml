@@ -24,14 +24,18 @@ spec:
     namespaceSelector:
       matchLabels:
         openshift.io/cluster-monitoring: "true" # Only consider rules in namespaces matching these labels
-  size: 1x.extra-small
+  size: 1x.extra-small #1x.small
   storage:
     schemas:
-    - version: v12
-      effectiveDate: "2022-06-01"
+    # - version: v12
+    #   effectiveDate: "2022-06-01"
+    - version: v11
+      effectiveDate: "2020-10-11"    
     secret:
       name: logging-loki-s3
       type: s3
+    tls:
+      caName: openshift-service-ca.crt # only for ODF
   storageClassName: DEFAULT_STORAGE_CLASS
   tenants:
     mode: openshift-logging

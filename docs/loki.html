@@ -711,9 +711,9 @@ crd/clusterloggings.logging.openshift.io
 oc get csv -n openshift-logging
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                     DISPLAY                     VERSION   REPLACES                 PHASE
-cluster-logging.v5.8.3   Red Hat OpenShift Logging   5.8.3     cluster-logging.v5.8.2   Succeeded
-loki-operator.v5.8.3     Loki Operator               5.8.3     loki-operator.v5.8.2     Succeeded
+<pre><code class="lang-bash">NAME                            DISPLAY                     VERSION   REPLACES                             PHASE
+cluster-logging.v5.9.0          Red Hat OpenShift Logging   5.9.0                                          Succeeded
+loki-operator.v5.9.0            Loki Operator               5.9.0                                          Succeeded
 </code></pre>
 </li>
 <li><p>Create Logging Instance</p>
@@ -724,7 +724,8 @@ loki-operator.v5.8.3     Loki Operator               5.8.3     loki-operator.v5.
 <ul>
 <li><p>Create Bucket</p>
 <ul>
-<li>Admin Console<ul>
+<li><p>Admin Console</p>
+<ul>
 <li>Navigate to Storage -&gt; Object Storage -&gt; Object Bucket Claims</li>
 <li>Create ObjectBucketClaim<ul>
 <li>Claim Name: <em>loki</em></li>
@@ -734,7 +735,7 @@ loki-operator.v5.8.3     Loki Operator               5.8.3     loki-operator.v5.
 </li>
 </ul>
 </li>
-<li><p>CLI</p>
+<li><p>CLI with <a href="manifests/loki-odf-bucket.yaml">YAML</a></p>
 <pre><code class="lang-bash">oc create -f manifests/loki-odf-bucket.yaml
 </code></pre>
 </li>
@@ -805,6 +806,21 @@ logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
 </code></pre>
 </li>
 </ul>
+</li>
+<li><p>PVC storage (RWO) used by Loki</p>
+<pre><code class="lang-bash">NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                           AGE
+storage-logging-loki-compactor-0       Bound    pvc-a405a61d-2361-44a6-9b9a-a79a5a3a4d48   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+storage-logging-loki-index-gateway-0   Bound    pvc-688a34a3-562a-4e27-aa09-4d81baca5c5b   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+storage-logging-loki-index-gateway-1   Bound    pvc-5ede4b00-ad62-4505-bd69-1931f79e52b2   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m19s
+storage-logging-loki-ingester-0        Bound    pvc-065cc5de-e506-45ca-925f-c1f3ba61803e   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+storage-logging-loki-ingester-1        Bound    pvc-a21adf64-b93c-47fc-a454-20b0e9af220b   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   2m48s
+storage-logging-loki-ruler-0           Bound    pvc-fa925ae5-34dd-4497-90b5-37d5ec99b925   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+storage-logging-loki-ruler-1           Bound    pvc-fb19290d-eaf2-4684-8721-3bc8aa4066f9   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+wal-logging-loki-ingester-0            Bound    pvc-fed10b0d-19a5-49be-ae90-c1b2f5ed6108   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+wal-logging-loki-ingester-1            Bound    pvc-89c5591b-8fb0-4229-84c3-9d0a28c721c5   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   2m48s
+wal-logging-loki-ruler-0               Bound    pvc-b431cae4-de01-4202-9ed3-97710e549722   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+wal-logging-loki-ruler-1               Bound    pvc-50b62352-0e38-4109-98b5-db17df013030   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+</code></pre>
 </li>
 <li><p>Enable Console Plugin Operator</p>
 <ul>
@@ -943,13 +959,25 @@ Frontend version: v2 =&gt; [Backend: http://backend-v1.api.svc:8080, Response: 5
 </ul>
 <h2 id="alert">Alert</h2>
 <ul>
+<li><p>Label namespace api to match condition for LokiStack to monitor for alert</p>
+<pre><code class="lang-bash">oc label ns api openshift.io/cluster-monitoring=true
+</code></pre>
+</li>
+<li><p>[Optional] Add roles to user to manage alert (CRUD)</p>
+<pre><code class="lang-bash">oc adm policy add-role-to-user alertingrules.loki.grafana.com-v1-admin -n api user1
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/loki-backend-alert.yaml">Alert Rule</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/loki-backend-alert.yaml
+</code></pre>
+</li>
 <li><p>Configure backend app to return 500</p>
 <pre><code class="lang-bash">oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/500 -n api
 </code></pre>
 </li>
-<li><p>Create Alert Rule</p>
-<pre><code class="lang-bash">oc apply -f manifests/loki-backend-alert.yaml
-</code></pre>
+<li>Call frontend</li>
+<li><p>Check for alert</p>
+<p><img src="images/loki-backend-alert.png" alt=""></p>
 </li>
 </ul>
 <!-- delete ingester then queier -->
@@ -995,7 +1023,7 @@ Frontend version: v2 =&gt; [Backend: http://backend-v1.api.svc:8080, Response: 5
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2024-03-04T07:39:26.733Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-03-04T07:40:01.675Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Loki","level":"1.2.5","depth":2,"next":{"title":"OpenShift Networking","level":"1.2.6","depth":2,"path":"infrastructure-networking.md","ref":"infrastructure-networking.md","articles":[]},"previous":{"title":"OpenShift Cluster Logging","level":"1.2.4","depth":2,"path":"infrastructure-cluster-logging.md","ref":"infrastructure-cluster-logging.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"loki.md","mtime":"2024-04-25T07:22:51.620Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-04-25T07:23:26.511Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
