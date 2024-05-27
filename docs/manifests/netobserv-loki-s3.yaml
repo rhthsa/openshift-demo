@@ -29,8 +29,8 @@ spec:
     secret:
       name:  loki-s3
       type: s3
-    tls:
-      caName: openshift-service-ca.crt # only for ODF
+    # tls:
+    #   caName: openshift-service-ca.crt # only for ODF
   storageClassName: DEFAULT_STORAGE_CLASS
   tenants:
     mode:  openshift-network
