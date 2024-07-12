@@ -20,8 +20,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: todo-db-init-data
   namespace: todo
-  annotations:
-    volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+  # annotations:
+  #   volume.beta.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
   labels:
     app: todo-db
 spec:
@@ -56,7 +56,7 @@ data:
   get-data.sh: |-
     #!/bin/bash
 
-    curl https://raw.githubusercontent.com/voraviz/quarkus-todo-app/master/todo/etc/init-db.sql --output /docker-entrypoint-initdb.d/1-init-tables.sql
+    curl https://raw.githubusercontent.com/voraviz/quarkus-todo-app/main/etc/init-db.sql --output /docker-entrypoint-initdb.d/1-init-tables.sql
 ---
 apiVersion: apps/v1
 kind: Deployment
