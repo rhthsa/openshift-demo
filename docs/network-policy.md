@@ -26,7 +26,7 @@ oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 - Label namespace database for using in network policy
 
 ```bash
-oc label ns app type=app name=app
+oc label ns app tier=app name=app
 ```
 - Enable network policy audit log on namespace database. Audit log is located at */var/og/ovn/acl-audit-log.log* on node that pod run  
 
