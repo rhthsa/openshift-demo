@@ -3,6 +3,6 @@ kind: NetworkPolicy
 metadata:
   name: deny-all
 spec:
-  podSelector: {}
+  podSelector: {} # Empty bracket means select all pods
   policyTypes:
-    - Ingress
+    - Ingress # Ingress: [] means nothing
