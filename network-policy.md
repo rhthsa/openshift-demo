@@ -4,6 +4,7 @@
   - [Create Network Policy](#create-network-policy)
     - [Namespace Database](#namespace-database)
   - [Audit Log](#audit-log)
+  - [Audit Log Configuration](#audit-log-configuration)
 
 ## Deploy sample app
 - Deploy PostgreSQL to namespace database and deploy application todo to namespace app
@@ -194,7 +195,24 @@ Check pod's log and you will find connnection failed
   Remark
   *name="NP:database:allow-from-todo:Ingress:0"* indicates that network policy *allow-from-todo* allow incoming traffic
   
+## Audit Log Configuration
 
+Log size, number of retained log files, rate limit and syslog server can be configured. Following [YAML](manifests/network-policy-config.yaml) show default configuration
+
+```yaml
+apiVersion: operator.openshift.io/v1
+kind: Network
+metadata:
+  name: cluster
+spec:
+  defaultNetwork:
+    ovnKubernetesConfig:
+      policyAuditConfig:
+        destination: "null" # libc -> journald / udp:<host>:<port> -> external syslog server
+        maxFileSize: 50
+        rateLimit: 20 # messages per sec
+        syslogFacility: local0  # kern - RFC5424
+```
   
 
 
