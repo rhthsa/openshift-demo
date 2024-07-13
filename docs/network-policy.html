@@ -708,6 +708,7 @@
 </ul>
 </li>
 <li><a href="#audit-log">Audit Log</a></li>
+<li><a href="#audit-log-configuration">Audit Log Configuration</a></li>
 </ul>
 </li>
 </ul>
@@ -880,6 +881,21 @@ todo-db-85dff77b8b-gxrrh   1/1     Running   0          45m   10.132.0.30   clus
 <em>name=&quot;NP:database:allow-from-todo:Ingress:0&quot;</em> indicates that network policy <em>allow-from-todo</em> allow incoming traffic</p>
 </li>
 </ul>
+<h2 id="audit-log-configuration">Audit Log Configuration</h2>
+<p>Log size, number of retained log files, rate limit and syslog server can be configured. Following <a href="manifests/network-policy-config.yaml">YAML</a> show default configuration</p>
+<pre><code class="lang-yaml">apiVersion: operator.openshift.io/v1
+kind: Network
+metadata:
+  name: cluster
+spec:
+  defaultNetwork:
+    ovnKubernetesConfig:
+      policyAuditConfig:
+        destination: &quot;null&quot; # libc -&gt; journald / udp:&lt;host&gt;:&lt;port&gt; -&gt; external syslog server
+        maxFileSize: 50
+        rateLimit: 20 # messages per sec
+        syslogFacility: local0  # kern - RFC5424
+</code></pre>
 
                                 
                                 </section>
@@ -919,7 +935,7 @@ todo-db-85dff77b8b-gxrrh   1/1     Running   0          45m   10.132.0.30   clus
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Network Policy","level":"1.2.14","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"network-policy.md","mtime":"2024-07-13T10:23:25.230Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-13T10:23:59.095Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Policy","level":"1.2.14","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"network-policy.md","mtime":"2024-07-13T10:35:29.917Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-13T10:36:02.593Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
