@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: backend-pdb
+spec:
+  maxUnavailable: 40%
+  selector:
+    matchLabels:
+      app: backend
