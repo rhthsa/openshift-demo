@@ -2,6 +2,7 @@
 - [Network Policy](#network-policy)
   - [Deploy sample app](#deploy-sample-app)
   - [Create Network Policy](#create-network-policy)
+    - [Namespace Database](#namespace-database)
   - [Audit Log](#audit-log)
 
 ## Deploy sample app
@@ -24,6 +25,7 @@ oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 ```
 
 ## Create Network Policy
+### Namespace Database
 - Label namespace database for using in network policy
 
 ```bash
