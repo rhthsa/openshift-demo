@@ -20,10 +20,8 @@ Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
   - AlertRules and Alert Receiver
 - [OpenShift Cluster Logging](infrastructure-cluster-logging.md)
 - [Loki](loki.md)
-- [OpenShift Networking](infrastructure-networking.md)
-  - OpenShift Network Policies Based SDN
-  - Egress IPs
-  - Network Access Logs
+- OpenShift Networking
+  - [Network Policy](network-policy.md)
 - [OpenShift state backup with etcd snapshot](infrastructure-backup-etcd.md)
 - [Pod Taint and Toleration](infrastructure-taint-and-toleration.md)
 - [Assign pod to node](assign-pod-to-node.md)

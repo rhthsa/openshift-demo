@@ -13,6 +13,7 @@
   * [Custom Alert](custom-alert.md)
   * [Compliance](compliance-operator.md)
   * [Network Observability](netobserv.md)
+  * [Network Policy](network-policy.md)
 * Multi-cluster Management with Advanced Cluster Management (RHACM)
   * [Application Manageement](acm-application-management.md)
   * [Cost saving with hibernating OpenShift](acm-hibernate.md)
