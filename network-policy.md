@@ -34,11 +34,12 @@ oc label ns app tier=api name=app
 oc label ns database tier=database name=database
 ```
 
-- Enable network policy audit log on namespace database. Audit log is located at */var/log/ovn/acl-audit-log.log* on node that pod run  
+- Enable network policy audit log on namespace database with severity info for both allow and deny.
 
 ```bash
 oc annotate ns database k8s.ovn.org/acl-logging='{"deny": "info","allow": "info"}'
 ```
+Remark: Audit log is located at */var/log/ovn/acl-audit-log.log* 
 
 - Create policy to [deny all](manifests/network-policy-deny-all.yaml) incoming traffic to namespace database
 
