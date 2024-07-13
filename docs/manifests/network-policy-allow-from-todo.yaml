@@ -1,19 +1,22 @@
-kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
   name: allow-from-todo
-  namespace: database
-  podSelector: {}
+spec:
+  podSelector:
+    matchLabels:
+      app: todo-db
+  policyTypes:
+    - Ingress
   ingress:
-    - ports:
-        - protocol: TCP
-          port: 5432
-      from:
+    - from:
         - podSelector:
             matchLabels:
               app: todo
           namespaceSelector:
             matchLabels:
               name: app
-  policyTypes:
-    - Ingress
+              tier: api
+      ports:
+        - protocol: TCP
+          port: 5432
