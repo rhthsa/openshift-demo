@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>CI/CD with Jenkins · OpenShift Demo</title>
+        <title>Network Policy · OpenShift Demo</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -61,10 +61,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="ci-cd.html" />
     
-    
-    <link rel="prev" href="build-with-odo.html" />
+    <link rel="prev" href="netobserv.html" />
     
 
     </head>
@@ -289,7 +287,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2.14" data-path="network-policy.html">
+        <li class="chapter active" data-level="1.2.14" data-path="network-policy.html">
             
                 <a href="network-policy.html">
             
@@ -567,7 +565,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.5.14" data-path="ci-cd-with-jenkins.html">
+        <li class="chapter " data-level="1.5.14" data-path="ci-cd-with-jenkins.html">
             
                 <a href="ci-cd-with-jenkins.html">
             
@@ -686,7 +684,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >CI/CD with Jenkins</a>
+        <a href="." >Network Policy</a>
     </h1>
 </div>
 
@@ -701,262 +699,187 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="cicd-with-jenkins">CI/CD with Jenkins</h1>
-<!-- TOC -->
+                                <h1 id="network-policy">Network Policy</h1>
 <ul>
-<li><a href="#cicd-with-jenkins">CI/CD with Jenkins</a><ul>
-<li><a href="#overall-solution">Overall Solution</a><ul>
-<li><a href="#build-and-deploy-to-development-environment">Build and Deploy to Development Environment</a></li>
-<li><a href="#deploy-staging-environment">Deploy Staging Environment</a></li>
-<li><a href="#deploy-uat-environment">Deploy UAT Environment</a></li>
-<li><a href="#deploy-production-environment">Deploy Production Environment</a></li>
+<li><a href="#network-policy">Network Policy</a><ul>
+<li><a href="#deploy-sample-app">Deploy sample app</a></li>
+<li><a href="#create-network-policy">Create Network Policy</a><ul>
+<li><a href="#namespace-database">Namespace Database</a></li>
 </ul>
 </li>
-<li><a href="#setup">Setup</a><ul>
-<li><a href="#projects">Projects</a></li>
-<li><a href="#jenkins-sonarqube-and-nexus">Jenkins, SonarQube and Nexus</a></li>
+<li><a href="#audit-log">Audit Log</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<!-- /TOC -->
-<h2 id="overall-solution">Overall Solution</h2>
-<p>Jenkins pipelines to demonstrate CI/CD process to build Quarkus application from source code to container image with version control by tag name and deploy application to Development, Staging, UAT and blue/green deployment to Production environment.</p>
-<p>Remark:</p>
-<p><a href="https://gitlab.com/ocp-demo/backend_quarkus" target="_blank"><em>Source code of Quarkus and Jenkins</em></a></p>
-<h3 id="build-and-deploy-to-development-environment">Build and Deploy to Development Environment</h3>
+<h2 id="deploy-sample-app">Deploy sample app</h2>
 <ul>
-<li>Build fast-jar Quarkus application</li>
-<li>Pull dependencies from Nexus</li>
-<li>Run unit test with JUnit and code quality with SonarQube</li>
-<li>Push container image to Nexus or internal registry</li>
-<li><p>Create service, route and deploymentconfig in dev project</p>
-<p><img src="images/build-pipeline.png" alt=""></p>
-</li>
+<li>Deploy PostgreSQL to namespace database and deploy application todo to namespace app</li>
 </ul>
-<h3 id="deploy-staging-environment">Deploy Staging Environment</h3>
+<pre><code class="lang-bash">oc new-project database
+cat manifests/todo-kustomize/base/todo-db.yaml|sed -r &apos;s/(.*)(namespace:)(.+)/\1\2 database/&apos; | \
+oc create -f -
+oc wait --for condition=ready pod -l app=todo-db --timeout=300s -n database
+oc new-project app
+oc get secret todo-db -n database -o yaml|sed -r &apos;s/(.*)(namespace:)(.+)/\1\2 app/&apos;|\
+oc create -f -
+cat manifests/todo-kustomize/base/todo.yaml|sed -r &apos;s/(.*)(namespace:)(.+)/\1\2 app/&apos;| \
+oc create -f -
+oc -n app set env deploy/todo quarkus.http.access-log.enabled=true
+oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
+oc -n app set env deploy/todo quarkus.datasource.jdbc.url=jdbc:postgresql://todo-db.database.svc.cluster.local/todo
+oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
+</code></pre>
+<h2 id="create-network-policy">Create Network Policy</h2>
+<h3 id="namespace-database">Namespace Database</h3>
 <ul>
-<li>Select version to deploy to stage project</li>
-<li>Tag container image with <em>version-DDMMYYYY-round</em></li>
-<li><p>Tear down and deploy application to stage project</p>
-<p><img src="images/release-pipeline.png" alt=""></p>
-</li>
+<li>Label namespace database for using in network policy</li>
 </ul>
-<h3 id="deploy-uat-environment">Deploy UAT Environment</h3>
+<pre><code class="lang-bash">oc label ns app tier=api name=app
+oc label ns database tier=database name=database
+</code></pre>
 <ul>
-<li>Select version to deploy to uat project. Only images with tag <em>version-DDMMYYYY-round</em> will be avaiable in list to deploy</li>
-<li>Tear down and deploy application to uat project</li>
+<li>Enable network policy audit log on namespace database. Audit log is located at <em>/var/log/ovn/acl-audit-log.log</em> on node that pod run  </li>
 </ul>
-<h3 id="deploy-production-environment">Deploy Production Environment</h3>
+<pre><code class="lang-bash">oc annotate ns database k8s.ovn.org/acl-logging=&apos;{&quot;deny&quot;: &quot;info&quot;,&quot;allow&quot;: &quot;info&quot;}&apos;
+</code></pre>
 <ul>
-<li>Select version to deploy to prod project. Only images with tag <em>version-DDMMYYYY-round</em> will be avaiable in list to deploy</li>
-<li>Create deploymentconfig and service for blue and green version</li>
-<li>Create route</li>
-<li><p>Select version to deploy and scale down previous version</p>
-<p><img src="images/blue-green-pipeline.png" alt=""></p>
-</li>
+<li>Create policy to <a href="manifests/network-policy-deny-all.yaml">deny all</a> incoming traffic to namespace database</li>
 </ul>
-<h2 id="setup">Setup</h2>
-<h3 id="projects">Projects</h3>
+<pre><code class="lang-bash">oc create -f manifests/network-policy-deny-all.yaml -n database
+</code></pre>
 <ul>
-<li><p>Create 4 projects ci-cd, dev, stage, uat and prod</p>
-<pre><code class="lang-bash">CI_CD=ci-cd
-DEV=dev
-STAGE=stage
-UAT=uat
-PROD=prod
-oc new-project $DEV  --display-name=&quot;Development Environment&quot;
-oc new-project $STAGE  --display-name=&quot;Staging Environment&quot;
-oc new-project $UAT --display-name=&quot;User Acceptance Test Environment&quot;
-oc new-project $PROD --display-name=&quot;Production Environment&quot;
-oc new-project $CI_CD  --display-name=&quot;CI/CD Tools&quot;
+<li>Delete todo pod because network policy will not applied for already establised connection</li>
+</ul>
+<pre><code class="lang-bash">oc delete po --all -n app
+</code></pre>
+<ul>
+<li>Check status of application todo and its log.</li>
+</ul>
+<pre><code class="lang-bash">NAME                    READY   STATUS    RESTARTS   AGE
+todo-8686ddf468-pfnbh   0/1     Running   0          21m
+</code></pre>
+<p>Check pod&apos;s log and you will find connnection failed</p>
+<pre><code class="lang-bash">2024-07-12 07:39:01,015 INFO  [io.sma.health] (vert.x-eventloop-thread-1) SRHCK01001: Reporting health down status: {&quot;status&quot;:&quot;DOWN&quot;,&quot;checks&quot;:[{&quot;name&quot;:&quot;Database connections health check&quot;,&quot;status&quot;:&quot;DOWN&quot;,&quot;data&quot;:{&quot;&lt;default&gt;&quot;:&quot;Unable to execute the validation check for the default DataSource: Acquisition timeout while waiting for new connection&quot;}}]}
+2024-07-12 07:43:30,127 WARN  [io.agr.pool] (agroal-11) Datasource &apos;&lt;default&gt;&apos;: The connection attempt failed.
+2024-07-12 07:43:30,127 WARN  [io.agr.pool] (agroal-11) Datasource &apos;&lt;default&gt;&apos;: Closing connection in incorrect state VALIDATION
+</code></pre>
+<ul>
+<li><p>Create policy to allow traffic from same namespace</p>
+<ul>
+<li><p>Use CLI with <a href="manifests/network-policy-allow-from-same-namespace.yaml">YAML file</a></p>
+<pre><code class="lang-bash">oc create -f manifests/network-policy-allow-from-same-namespace.yaml -n database
 </code></pre>
 </li>
-<li><p>Allow jenkins service account to managed dev, stage, uat and prod</p>
-<pre><code class="lang-bash">oc policy add-role-to-user edit system:serviceaccount:${CI_CD}:jenkins -n ${DEV}
-oc policy add-role-to-user edit system:serviceaccount:${CI_CD}:jenkins -n ${STAGE}
-oc policy add-role-to-user edit system:serviceaccount:${CI_CD}:jenkins -n ${UAT}
-oc policy add-role-to-user edit system:serviceaccount:${CI_CD}:jenkins -n ${PROD}
-</code></pre>
-</li>
-<li><p>Allow dev, stage, uat and prod to pull image from ci-cd project (in case use internal image registry instead of Nexus)</p>
-<pre><code class="lang-bash">oc policy add-role-to-group system:image-puller system:serviceaccounts:${DEV} -n ${CI_CD}
-oc policy add-role-to-group system:image-puller system:serviceaccounts:${STAGE} -n ${CI_CD}
-oc policy add-role-to-group system:image-puller system:serviceaccounts:${UAT} -n ${CI_CD}
-oc policy add-role-to-group system:image-puller system:serviceaccounts:${PROD} -n ${CI_CD}
-</code></pre>
-<p>Remark: You can use bash script <a href="bin/setup_projects.sh">setup_projects.sh</a> for all above steps.</p>
+<li><p>Use Administrator Console</p>
+<ul>
+<li>Navigate to Networking -&gt; Network Policies and Select Create Create NetworkPolicy</li>
+<li><p>Select Ingress Policy with allow from same namespace and there is no need to config pod selector because we want to this rule to apply to all pods</p>
+<p><img src="images/network-policy-allow-all-from-same-namespace.png" alt=""></p>
 </li>
 </ul>
-<h3 id="jenkins-sonarqube-and-nexus">Jenkins, SonarQube and Nexus</h3>
+</li>
+</ul>
+</li>
+</ul>
 <ul>
-<li><p>Setup</p>
+<li><p>Create policy for allow ingress traffic to PostgreSQL pod in namespace database</p>
+<p>Applied to pod in namespace database with label</p>
+<p>   | Label | Value |
+   |-----------|-------|
+   | app| todo-db |</p>
+<p>Allow namespace with label</p>
+<p>   | Label | Value |
+   |-----------|-------|
+   | name | app |
+   | tier| api |</p>
+<p>Allow only pod in above namespace with label</p>
+<p>   | Label | Value |
+   |-----------|-------|
+   | app | todo |</p>
+</li>
+</ul>
 <ul>
-<li><p>Run <em>bash scripts</em> to setup Jenkins, SonarQube and Nexus</p>
-<pre><code class="lang-bash">cd bin
-./setup_nexus.sh
-./setup_jenkins.sh
-./setup_sonar.sh
+<li>Use CLI with <a href="manifests/network-policy-allow-from-todo.yaml">YAML file</a><pre><code class="lang-bash">oc create -f manifests/network-policy-allow-from-todo.yaml -n database
 </code></pre>
-<p>Sample output</p>
-<p><img src="images/create-nexus.gif" alt=""></p>
-<p>Check Developer Console</p>
-<p><img src="images/ci-cd-dev-console.png" alt=""></p>
 </li>
-<li><p>Login to Nexus with user <em>admin</em> with password from the 1st line <em>nexus_password.txt</em>. You can change password to whatever you want</p>
-</li>
-<li><p>Check for Nexus&apos;s repositories</p>
-<p><img src="images/nexus-repositories.png" alt=""></p>
-</li>
-<li><p>Jenkins will use user and password stored in secret <em>nexus-credential</em></p>
+<li><p>Use Administrator Console</p>
 <ul>
-<li><p>Check for nexus-credential</p>
-<pre><code class="lang-bash">oc describe secret/nexus-credential -n ci-cd
-</code></pre>
-<p>Sample output</p>
-<pre><code class="lang-bash">Name:         nexus-credential
-Namespace:    ci-cd
-Labels:       &lt;none&gt;
-Annotations:  &lt;none&gt;
+<li>Navigate to Networking -&gt; Network Policies and Select Create Create NetworkPolicy</li>
+<li><p>Config pod selector for database namespace</p>
+<p>Remark: Click <em>affected pod</em> to previews which pods will be affected by this rule</p>
+<p><img src="images/network-policy-ingress-rule-1.png" alt=""></p>
+</li>
+<li><p>Config allow ingress traffic from namespace app</p>
+</li>
+</ul>
+</li>
+</ul>
+<pre><code>  ![](images/network-policy-ingress-rule-2.png)
 
-Type:  Opaque
+  - Config allow port
 
-Data
-====
-password:  48 bytes
-username:  8 bytes
+  ![](images/network-policy-ingress-rule-3.png)
+</code></pre><ul>
+<li><p>Check all network policies applied to namespace database</p>
+<p><img src="images/network-policy-namespace-database.png" alt=""></p>
+</li>
+<li><p>Check application todo log again.</p>
+</li>
+</ul>
+<pre><code class="lang-bash">2024-07-12 08:20:56,016 INFO [io.qua.htt.access-log] (vert.x-eventloop-thread-1) 10.132.0.2 - - [12/Jul/2024:08:20:56 +0000] &quot;GET /q/health/ready HTTP/1.1&quot; 200 220 &quot;-&quot; &quot;kube-probe/1.27&quot;
 </code></pre>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<!-- ### Jenkins Slave
-- Create custom jenkins slave which contains maven 3.6, skopeo and nexus-cli by run [setup_maven36_slave.sh](bin/setup_maven36_slave.sh)
-
-  ```bash
-  oc project ci-cd
-  ./setup_maven36_slave.sh
-  ```
-- Check imagestream in project ci-cd
-
-  ```bash
-  oc get is/maven36-with-tools
-  ``` -->
-<h3 id="jenkins-pipelines">Jenkins Pipelines</h3>
+<h2 id="audit-log">Audit Log</h2>
 <ul>
-<li><p>Create pipelines</p>
-<pre><code class="lang-bash">oc apply -f manifests/backend-build-pipeline.yaml -n ci-cd
-oc apply -f manifests/backend-release-pipeline.yaml -n ci-cd
-oc apply -f manifests/backend-release-uat-pipeline.yaml -n ci-cd
-oc apply -f manifests/backend-release-prod-pipeline.yaml -n ci-cd
+<li><p>Check todo and todo-db pod IP addresses</p>
+<p>todo</p>
+<pre><code class="lang-bash">NAME                    READY   STATUS    RESTARTS   AGE   IP            NODE                      NOMINATED NODE   READINESS GATES
+todo-8686ddf468-pfnbh   1/1     Running   0          44m   10.132.0.33   cluster2-42cfa8e0-5zhxq   &lt;none&gt;           &lt;none&gt;
+</code></pre>
+<p>todo-db</p>
+<pre><code class="lang-bash">NAME                       READY   STATUS    RESTARTS   AGE   IP            NODE                      NOMINATED NODE   READINESS GATES
+todo-db-85dff77b8b-gxrrh   1/1     Running   0          45m   10.132.0.30   cluster2-42cfa8e0-5zhxq   &lt;none&gt;           &lt;none&gt;
 </code></pre>
 </li>
-<li><p>Control pipeline to use internal registry or Nexus by pipeline&apos;s parameter <strong>USE_INTERNAL_REGISTRY</strong></p>
-<pre><code class="lang-yaml">env:
-  - name: DEV_PROJECT
-    value: dev
-  - name: CICD_PROJECT
-    value: ci-cd
-  - name: BACKEND_URL
-    value: https://httpbin.org/status/200
-  - name: NEXUS_SVC
-    value: http://nexus.ci-cd.svc.cluster.local:8081
-  - name: NEXUS_REGISTRY_SVC
-    value: nexus-registry.ci-cd.svc.cluster.local:5000
-  - name: NEXUS_REGISTRY
-    value: nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com
-  - name: SONARQUBE_SVC
-    value: http://sonarqube:9000
-  - name: NEXUS_SECRET
-    value: nexus-credential
-  - name: USE_INTERNAL_REGISTRY
-    value: &quot;false&quot;
-</code></pre>
-<h3 id="jenkins-remote-api">Jenkins Remote API</h3>
-</li>
-<li><p>Create token</p>
-<p><img src="images/jenkins-token.png" alt=""></p>
-<p>Check for jenkins&apos;s user ID</p>
-<p><img src="images/jenkins-user-id.png" alt=""></p>
-</li>
-<li><p>Configure pipeline Trigger builds</p>
-<p><img src="images/jenkins-remote-api.png" alt=""></p>
-</li>
-<li><p>Test </p>
-</li>
-</ul>
-<pre><code class="lang-bash">USERID=opentlc-mgr-admin-edit-view
-TOKEN=117d9459d809be344f1823cbc1248fba09
-JENKINS_URL=https://jenkins-ci-cd.apps.cluster-1516.1516.example.opentlc.com
-curl -X POST -L -v --user $USERID:$TOKEN &quot;$JENKINS_URL/job/ci-cd/job/ci-cd-backend-build-pipeline/buildWithParameters?token=jira&amp;NEXUS_REGISTRY_SVC=nexus-registry.ci-cd.svc.cluster.local:5000&amp;NEXUS_REGISTRY=nexus-registry-ci-cd.apps.cluster-a987.a987.example.opentlc.com&quot;
-</code></pre>
-<h2 id="checkpoints">Checkpoints</h2>
+<li><p>Check audit log on node which todb-db run by using command <em>oc debug/<node></node></em> or with Administrator Console (Compute-&gt;Nodes). With both method you need to run comand <em>chroot /host</em> and log is located at <em>/var/log/ovn/acl-audit-log.log</em></p>
 <ul>
-<li><p>Maven build in pipeline pull dependencies from nexus</p>
-<ul>
-<li><p>Code snippets </p>
-<pre><code class="lang-javascript">environment {
-  mvnCmd = &quot;mvn -s ./nexus_settings.xml &quot;
-  ...
-  ...
-}
-...
-script {
-  sh &quot;${mvnCmd} -Dquarkus.package.type=fast-jar -Dinternal.repo.username=${nexusUser} -Dinternal.repo.password=${nexusPassword} -DskipTests=true clean package&quot;
-}
+<li>Deny</li>
+</ul>
+<pre><code class="lang-bash">2024-07-12T08:00:50.098Z|00040|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=psh|ack
+2024-07-12T08:00:50.098Z|00041|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
 </code></pre>
-</li>
-<li><p>Nexus&apos;s repository</p>
-<p><img src="images/nexus-maven-all-public.png" alt=""></p>
+<p>Details:</p>
+<p>| Parameter | Value |
+|-----------|-------|
+|Timestamp  |2024-07-12T08:00:50.098Z|
+|Serial (Running number)|  00040     |
+|ACL Name       |   NP:database:Ingress    |
+|Allow or Drop  |   verdict=drop   |
+|Direction| to-lport (incoming to pod) or from-lport (outgoing from pod)|
+|Details in OpenFlow format|tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack|</p>
 </li>
 </ul>
-</li>
-<li><p>SonarQube code quality checking</p>
+<p>  Details:
+  | Parameter | Value |
+  |-----------|-------|
+  |Source MAC |dl_src=0a:58:0a:84:00:01|
+  |Destination MAC|  dl_dst=0a:58:0a:84:00|
+  |Source IP|  nw_src=10.132.0.33|
+  |Destination IP| nw_dst=10.132.0.30|
+  |DSCP bits|nw_tos=0|
+  |ECN bits|nw_ecn=0|
+  |TTL|nw_ttl=63|
+  |Source Port|tp_src=40504|
+  |Destination Port|tp_dst=5432|
+  |TCP Flags|tcp_flags=ack|</p>
 <ul>
-<li><p>Code snippets </p>
-<pre><code class="lang-javascript">script {
-  sh &quot;${mvnCmd} sonar:sonar -Dinternal.repo.username=${nexusUser} -Dinternal.repo.password=${nexusPassword} -Dsonar.host.url=${env.SONARQUBE_SVC} -Dsonar.projectName=${imageName}-${devTag} -Dsonar.projectVersion=${devTag}&quot;
-}
+<li><p>Allow</p>
+<pre><code class="lang-bash">2024-07-12T07:56:50.098Z|00017|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:allow-from-todo:Ingress:0&quot;, verdict=allow, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
+2024-07-12T07:56:50.098Z|00018|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:allow-from-todo:Ingress:0&quot;, verdict=allow, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=57262,tp_dst=5432,tcp_flags=psh|ack
 </code></pre>
-</li>
-<li><p>Scan result</p>
-<p><img src="images/sonarqube-result.png" alt=""></p>
-</li>
-</ul>
-</li>
-<li><p>Container images is built and pushed to Nexus</p>
-<ul>
-<li><p>Code snippets </p>
-<pre><code class="lang-javascript">openshift.withCluster() {
-  openshift.withProject(env.CICD_PROJECT) {
-     openshift.newBuild(
-           &quot;--name=${imageName}&quot;,
-           &quot;--to=${nexus_url}/${imageName}:latest&quot;,
-           &quot;--to-docker=true&quot;,
-           &quot;--push-secret=nexus-registry&quot;,
-           &quot;--strategy=docker&quot;,
-           &quot;--binary=true&quot;
-         )
-  }
-}
-</code></pre>
-</li>
-<li><p>Nexus image registry</p>
-<p><img src="images/nexus-docker.png" alt=""></p>
+<p>Remark
+<em>name=&quot;NP:database:allow-from-todo:Ingress:0&quot;</em> indicates that network policy <em>allow-from-todo</em> allow incoming traffic</p>
 </li>
 </ul>
-</li>
-<li><p>Application is deployed with label <em>version</em> and  <em>tag</em></p>
-<p>  <img src="images/backend-stage-env.png" alt=""></p>
-</li>
-</ul>
-<!-- ## Possible improvement
-- Change from deploymentconfig to deployment
-- Change from OpenShift's template to kustomize
-- Validate SonarQube result -->
 
                                 
                                 </section>
@@ -984,14 +907,10 @@ script {
 
             
                 
-                <a href="build-with-odo.html" class="navigation navigation-prev " aria-label="Previous page: Build Container with OpenShift DO (odo)">
+                <a href="netobserv.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Network Observability">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="ci-cd.html" class="navigation navigation-next " aria-label="Next page: CI/CD with Azure DevOps">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -1000,7 +919,7 @@ script {
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CI/CD with Jenkins","level":"1.5.14","depth":2,"next":{"title":"CI/CD with Azure DevOps","level":"1.5.15","depth":2,"path":"ci-cd.md","ref":"ci-cd.md","articles":[]},"previous":{"title":"Build Container with OpenShift DO (odo)","level":"1.5.13","depth":2,"path":"build-with-odo.md","ref":"build-with-odo.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd-with-jenkins.md","mtime":"2024-07-13T10:23:25.046Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-13T10:23:59.095Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Policy","level":"1.2.14","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"network-policy.md","mtime":"2024-07-13T10:23:25.230Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-13T10:23:59.095Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
