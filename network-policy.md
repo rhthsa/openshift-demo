@@ -30,8 +30,8 @@ oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 - Label namespace database for using in network policy
 
 ```bash
-oc label ns app tier=api name=app
-oc label ns database tier=database name=database
+oc label ns app tier=api
+oc label ns database tier=database
 ```
 
 - Enable network policy audit log on namespace database with severity info for both allow and deny.

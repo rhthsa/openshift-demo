@@ -15,7 +15,7 @@ spec:
               app: todo
           namespaceSelector:
             matchLabels:
-              name: app
+              kubernetes.io/metadata.name: app
               tier: api
       ports:
         - protocol: TCP
