@@ -64,8 +64,8 @@
     namespace/rhacs-operator created
     operatorgroup.operators.coreos.com/rhacs-operator-bqbtj created
     subscription.operators.coreos.com/rhacs-operator created
-    NAME                    DISPLAY                                    VERSION   REPLACES                PHASE
-    rhacs-operator.v4.2.2   Advanced Cluster Security for Kubernetes   4.2.2     rhacs-operator.v4.2.1   Succeeded
+    NAME                     DISPLAY                                    VERSION        REPLACES                   PHASE
+    rhacs-operator.v4.5.0    Advanced Cluster Security for Kubernetes   4.5.0          rhacs-operator.v4.4.0       Succeeded
     ```
   
   Remark: It should be better if you choose *Manual* for *Update Approval* instead of *Automatic* for production environment
@@ -76,13 +76,13 @@
     - For OSX
       
       ```bash
-      curl -O https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl
+      curl https://mirror.openshift.com/pub/rhacs/assets/latest/bin/Darwin/roxctl  -o roxctl
       ```
     
     - Or use roxctl from container
 
     ```bash
-    podman run docker://quay.io/stackrox-io/roxctl <parameter here>
+    podman run docker://quay.io/stackrox-io/roxctl <parameter>
     ```
 
 <!-- - Create namespace for central server and scanner.
@@ -187,7 +187,7 @@
 
 #### Access Central
 
-- URL and password to access ACS Console
+- URL and password to access ACS Console with user *admin*
   
   ```bash
   ROX_URL=https://$(oc get route central -n stackrox -o jsonpath='{.spec.host}')
@@ -196,7 +196,7 @@
   ```
 
 ### Single Sign-On with OpenShift
-- Navigate to Platform Configuration -> Access Control then click *Create auth Provider* and select *OpenShift Auth*
+- Navigate to *Platform Configuration* -> *Access Control* then click *Create auth Provider* and select *OpenShift Auth*
 
     ![](images/acs-add-auth-provider.png)
 
@@ -223,7 +223,13 @@
     ![](images/acs-init-bundle.png)
 
   - Input cluster name
+    
+    ![](images/acs-init-bundle-1.png)
+
   - download *Kubernetes Secrets file* for installation with *Operator* or *Helm values file* for installation with *roxctl*
+
+    
+    ![](images/acs-init-bundle-2.png)
 
 - Create namespace for *Secured Cluster Services*
   
@@ -234,7 +240,7 @@
 - Create secret from previously downloaded *Kubernetes Secrets file*
   
   ```bash
-  oc create -f cluster1-cluster-init-secrets.yaml -n stackrox-secured-cluster
+  oc create -f cluster1-Operator-secrets-cluster-init-bundle.yaml -n stackrox-secured-cluster
   ```
 
   Output
@@ -265,25 +271,30 @@
       
       ```bash
       oc get securedcluster/cluster1  -n stackrox-secured-cluster -o jsonpath='{.status.conditions[0]}'
+      echo "\n"
       oc get pods -n stackrox-secured-cluster
       ```
 
       Output
 
       ```bash
-      {"lastTransitionTime":"2023-11-07T06:13:02Z","message":"StackRox Secured Cluster Services 4.2.2 has been installed.\n\n\n\nThank you for using StackRox!\n","reason":"InstallSuccessful","status":"True","type":"Deployed"}
-      NAME                                 READY   STATUS    RESTARTS        AGE
-      admission-control-64487c7986-ff6j9   1/1     Running   0               10m
-      admission-control-64487c7986-t25ng   1/1     Running   0               10m
-      admission-control-64487c7986-wjl7w   1/1     Running   0               10m
-      collector-dpjfk                      3/3     Running   0               10m
-      collector-mj778                      3/3     Running   0               10m
-      collector-n8cch                      3/3     Running   0               10m
-      collector-z49pb                      3/3     Running   0               10m
-      scanner-7f75dd5879-m6cfm             1/1     Running   0               10m
-      scanner-7f75dd5879-vpkcj             1/1     Running   0               10m
-      scanner-db-6c555b4b7d-x49hl          1/1     Running   0               10m
-      sensor-65c777cf9f-c8zvx              1/1     Running   0               10m
+      {"lastTransitionTime":"2024-07-28T15:50:59Z","message":"StackRox Secured Cluster Services 4.5.0 has been installed.\n\n\n\nThank you for using StackRox!\n","reason":"InstallSuccessful","status":"True","type":"Deployed"}
+
+      NAME                                 READY   STATUS    RESTARTS   AGE
+      admission-control-7c68c4f7b4-kgblg   1/1     Running   0          62s
+      admission-control-7c68c4f7b4-phdj8   1/1     Running   0          62s
+      admission-control-7c68c4f7b4-tfj2g   1/1     Running   0          61s
+      collector-hcvnc                      3/3     Running   0          61s
+      collector-jkg44                      3/3     Running   0          62s
+      collector-t225q                      3/3     Running   0          61s
+      collector-vxpmv                      3/3     Running   0          62s
+      collector-wcwxv                      3/3     Running   0          62s
+      collector-wt5vb                      3/3     Running   0          61s
+      scanner-7bbc488778-2hvkp             1/1     Running   0          62s
+      scanner-7bbc488778-l8vf2             1/1     Running   0          62s
+      scanner-7bbc488778-xzjr2             1/1     Running   0          62s
+      scanner-db-97dbbf44-2j6vw            1/1     Running   0          62s
+      sensor-7c49b87f4f-8jx2t              1/1     Running   0          62s
       ```
 
       Remark
@@ -457,6 +468,7 @@
     ![](images/acs-console-managed-clusters-helm.png)
 
 
+<!-- ### Integrate with OpenShift Image Registry -->
 
 ### Integration with Nexus
 #### Setup Nexus
@@ -512,7 +524,6 @@
 
   ![](images/nexus-docker-repository.png)
 
-
 #### Config ACS 
 - Login to ACS Central
 - Platform Configuration -> Integrations -> Sonatype Nexus -> New Integration
@@ -526,6 +537,7 @@
   ![](images/acs-config-nexus.png)
 
   - Input User, Password and Nexus Registry address then click Test and Save
+
 
 ## Container Image with Vulnerabilities
 
