@@ -3,6 +3,7 @@
   - [Deploy sample app](#deploy-sample-app)
   - [Create Network Policy](#create-network-policy)
     - [Namespace Database](#namespace-database)
+    - [Namespace app](#namespace-app)
   - [Audit Log](#audit-log)
   - [Audit Log Configuration](#audit-log-configuration)
 
@@ -19,14 +20,13 @@ oc get secret todo-db -n database -o yaml|sed -r 's/(.*)(namespace:)(.+)/\1\2 ap
 oc create -f -
 cat manifests/todo-kustomize/base/todo.yaml|sed -r 's/(.*)(namespace:)(.+)/\1\2 app/'| \
 oc create -f -
-oc -n app set env deploy/todo quarkus.http.access-log.enabled=true
-oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 oc -n app set env deploy/todo quarkus.datasource.jdbc.url=jdbc:postgresql://todo-db.database.svc.cluster.local/todo
+oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
+oc -n app set env deploy/todo quarkus.http.access-log.enabled=true
 oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 ```
 
 ## Create Network Policy
-### Namespace Database
 - Label namespace database for using in network policy
 
 ```bash
@@ -34,12 +34,18 @@ oc label ns app tier=api
 oc label ns database tier=database
 ```
 
-- Enable network policy audit log on namespace database with severity info for both allow and deny.
+- Enable network policy audit log on namespace database with severity info for allow and warn for deny.
 
 ```bash
-oc annotate ns database k8s.ovn.org/acl-logging='{"deny": "info","allow": "info"}'
+oc annotate ns database k8s.ovn.org/acl-logging='{"deny": "warning","allow": "info"}'
+oc annotate ns app k8s.ovn.org/acl-logging='{"deny": "warning","allow": "info"}'
 ```
-Remark: Audit log is located at */var/log/ovn/acl-audit-log.log* 
+Remark: 
+- Severity including alert, warning, notice, info and debug.
+- Audit log is located at */var/log/ovn/acl-audit-log.log* 
+
+### Namespace Database
+
 
 - Create policy to [deny all](manifests/network-policy-deny-all.yaml) incoming traffic to namespace database
 
@@ -134,6 +140,17 @@ Check pod's log and you will find connnection failed
 ```bash
 2024-07-12 08:20:56,016 INFO [io.qua.htt.access-log] (vert.x-eventloop-thread-1) 10.132.0.2 - - [12/Jul/2024:08:20:56 +0000] "GET /q/health/ready HTTP/1.1" 200 220 "-" "kube-probe/1.27"
 ```
+### Namespace app
+- Create policy to [deny all](manifests/network-policy-deny-all.yaml) incoming traffic to namespace app
+
+```bash
+oc create -f manifests/network-policy-deny-all.yaml -n app
+```
+- Create policy to [allow](manifests/network-policy-allow-ingress.yaml) incoming traffic to namespace app from ingress
+
+```bash
+oc create -f manifests/network-policy-allow-ingress.yaml -n app
+```
 
 ## Audit Log
 - Check todo and todo-db pod IP addresses
@@ -156,8 +173,8 @@ Check pod's log and you will find connnection failed
   - Deny
   
   ```bash
-  2024-07-12T08:00:50.098Z|00040|acl_log(ovn_pinctrl0)|INFO|name="NP:database:Ingress", verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=psh|ack
-  2024-07-12T08:00:50.098Z|00041|acl_log(ovn_pinctrl0)|INFO|name="NP:database:Ingress", verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
+  2024-07-12T08:00:50.098Z|00040|acl_log(ovn_pinctrl0)|INFO|name="NP:database:Ingress", verdict=drop, severity=warning, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=psh|ack
+  2024-07-12T08:00:50.098Z|00041|acl_log(ovn_pinctrl0)|INFO|name="NP:database:Ingress", verdict=drop, severity=warning, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
   ```
 
   Details:
