@@ -705,6 +705,7 @@
 <li><a href="#deploy-sample-app">Deploy sample app</a></li>
 <li><a href="#create-network-policy">Create Network Policy</a><ul>
 <li><a href="#namespace-database">Namespace Database</a></li>
+<li><a href="#namespace-app">Namespace app</a></li>
 </ul>
 </li>
 <li><a href="#audit-log">Audit Log</a></li>
@@ -725,13 +726,12 @@ oc get secret todo-db -n database -o yaml|sed -r &apos;s/(.*)(namespace:)(.+)/\1
 oc create -f -
 cat manifests/todo-kustomize/base/todo.yaml|sed -r &apos;s/(.*)(namespace:)(.+)/\1\2 app/&apos;| \
 oc create -f -
-oc -n app set env deploy/todo quarkus.http.access-log.enabled=true
-oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 oc -n app set env deploy/todo quarkus.datasource.jdbc.url=jdbc:postgresql://todo-db.database.svc.cluster.local/todo
+oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
+oc -n app set env deploy/todo quarkus.http.access-log.enabled=true
 oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 </code></pre>
 <h2 id="create-network-policy">Create Network Policy</h2>
-<h3 id="namespace-database">Namespace Database</h3>
 <ul>
 <li>Label namespace database for using in network policy</li>
 </ul>
@@ -739,11 +739,17 @@ oc wait --for condition=ready pod -l app=todo --timeout=300s -n app
 oc label ns database tier=database
 </code></pre>
 <ul>
-<li>Enable network policy audit log on namespace database with severity info for both allow and deny.</li>
+<li>Enable network policy audit log on namespace database with severity info for allow and warn for deny.</li>
 </ul>
-<pre><code class="lang-bash">oc annotate ns database k8s.ovn.org/acl-logging=&apos;{&quot;deny&quot;: &quot;info&quot;,&quot;allow&quot;: &quot;info&quot;}&apos;
+<pre><code class="lang-bash">oc annotate ns database k8s.ovn.org/acl-logging=&apos;{&quot;deny&quot;: &quot;warning&quot;,&quot;allow&quot;: &quot;info&quot;}&apos;
+oc annotate ns app k8s.ovn.org/acl-logging=&apos;{&quot;deny&quot;: &quot;warning&quot;,&quot;allow&quot;: &quot;info&quot;}&apos;
 </code></pre>
-<p>Remark: Audit log is located at <em>/var/log/ovn/acl-audit-log.log</em> </p>
+<p>Remark: </p>
+<ul>
+<li>Severity including alert, warning, notice, info and debug.</li>
+<li>Audit log is located at <em>/var/log/ovn/acl-audit-log.log</em> </li>
+</ul>
+<h3 id="namespace-database">Namespace Database</h3>
 <ul>
 <li>Create policy to <a href="manifests/network-policy-deny-all.yaml">deny all</a> incoming traffic to namespace database</li>
 </ul>
@@ -830,6 +836,17 @@ todo-8686ddf468-pfnbh   0/1     Running   0          21m
 </ul>
 <pre><code class="lang-bash">2024-07-12 08:20:56,016 INFO [io.qua.htt.access-log] (vert.x-eventloop-thread-1) 10.132.0.2 - - [12/Jul/2024:08:20:56 +0000] &quot;GET /q/health/ready HTTP/1.1&quot; 200 220 &quot;-&quot; &quot;kube-probe/1.27&quot;
 </code></pre>
+<h3 id="namespace-app">Namespace app</h3>
+<ul>
+<li>Create policy to <a href="manifests/network-policy-deny-all.yaml">deny all</a> incoming traffic to namespace app</li>
+</ul>
+<pre><code class="lang-bash">oc create -f manifests/network-policy-deny-all.yaml -n app
+</code></pre>
+<ul>
+<li>Create policy to <a href="manifests/network-policy-allow-ingress.yaml">allow</a> incoming traffic to namespace app from ingress</li>
+</ul>
+<pre><code class="lang-bash">oc create -f manifests/network-policy-allow-ingress.yaml -n app
+</code></pre>
 <h2 id="audit-log">Audit Log</h2>
 <ul>
 <li><p>Check todo and todo-db pod IP addresses</p>
@@ -846,8 +863,8 @@ todo-db-85dff77b8b-gxrrh   1/1     Running   0          45m   10.132.0.30   clus
 <ul>
 <li>Deny</li>
 </ul>
-<pre><code class="lang-bash">2024-07-12T08:00:50.098Z|00040|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=psh|ack
-2024-07-12T08:00:50.098Z|00041|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=info, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
+<pre><code class="lang-bash">2024-07-12T08:00:50.098Z|00040|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=warning, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=psh|ack
+2024-07-12T08:00:50.098Z|00041|acl_log(ovn_pinctrl0)|INFO|name=&quot;NP:database:Ingress&quot;, verdict=drop, severity=warning, direction=to-lport: tcp,vlan_tci=0x0000,dl_src=0a:58:0a:84:00:01,dl_dst=0a:58:0a:84:00:1e,nw_src=10.132.0.33,nw_dst=10.132.0.30,nw_tos=0,nw_ecn=0,nw_ttl=63,nw_frag=no,tp_src=40504,tp_dst=5432,tcp_flags=ack
 </code></pre>
 <p>Details:</p>
 <p>| Parameter | Value |
@@ -936,7 +953,7 @@ spec:
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Network Policy","level":"1.2.14","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"network-policy.md","mtime":"2024-07-29T03:28:22.576Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-29T03:28:56.628Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Network Policy","level":"1.2.14","depth":2,"next":{"title":"Multi-cluster Management with Advanced Cluster Management (RHACM)","level":"1.3","depth":1,"ref":"","articles":[{"title":"Application Manageement","level":"1.3.1","depth":2,"path":"acm-application-management.md","ref":"acm-application-management.md","articles":[]},{"title":"Cost saving with hibernating OpenShift","level":"1.3.2","depth":2,"path":"acm-hibernate.md","ref":"acm-hibernate.md","articles":[]}]},"previous":{"title":"Network Observability","level":"1.2.13","depth":2,"path":"netobserv.md","ref":"netobserv.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"network-policy.md","mtime":"2024-07-31T07:12:13.783Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2024-07-31T07:12:49.353Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
