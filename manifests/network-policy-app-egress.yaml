@@ -1,0 +1,18 @@
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: app-egress
+spec:
+  podSelector: {} # All pods
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 52.207.37.75/0  # httpbin.org
+        - ipBlock:
+            cidr: 35.173.225.247/0 # httpbin.org
+        - podSelector: {}
+          namespaceSelector:
+            matchLabels:
+              name: database # Namespace database
+  policyTypes:
+    - Egress

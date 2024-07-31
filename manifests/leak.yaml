@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leak
+  labels:
+    app.kubernetes.io/component: leak
+    app.kubernetes.io/instance: leak
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: leak-app
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '3.0.3.Final'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leak
+  template:
+    metadata:
+      labels:
+        app: leak
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: backend
+        image: quay.io/voravitl/leak:v1
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: 100Mi
+          limits:
+            cpu: "0.2"
+            memory: 200Mi
+        env:
+          - name: APP_DISHSIZE
+            value: "10485760"
+        ports:
+        - containerPort: 8080
+        securityContext:
+          seccompProfile: #"RuntimeDefault" or "Localhost"
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop: ["ALL"]
+          readOnlyRootFilesystem: false
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+      terminationGracePeriodSeconds: 10
+
