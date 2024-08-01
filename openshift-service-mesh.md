@@ -59,21 +59,20 @@ Sample application
   sleep 10
   oc wait --for condition=established --timeout=180s \
   crd/servicemeshcontrolplanes.maistra.io \
-  crd/kialis.kiali.io \
-  crd/jaegers.jaegertracing.io
-  oc get csv
+  crd/kialis.kiali.io
+  oc get csv -n openshift-operators
   ```
 
   Output
 
   ```bash
   customresourcedefinition.apiextensions.k8s.io/servicemeshcontrolplanes.maistra.io condition met
+  subscription.operators.coreos.com/jaeger-product created
   customresourcedefinition.apiextensions.k8s.io/kialis.kiali.io condition met
-  customresourcedefinition.apiextensions.k8s.io/jaegers.jaegertracing.io condition met
-  NAME                               DISPLAY                                                 VERSION    REPLACES                           PHASE
-  jaeger-operator.v1.38.0-2          Red Hat OpenShift distributed tracing platform          1.38.0-2   jaeger-operator.v1.36.0-2          Succeeded
-  kiali-operator.v1.57.3             Kiali Operator                                          1.57.3     kiali-operator.v1.48.3             Succeeded
-  servicemeshoperator.v2.3.0         Red Hat OpenShift Service Mesh                          2.3.0-0    servicemeshoperator.v2.2.3         Succeeded
+  NAME                         DISPLAY                          VERSION   REPLACES                     PHASE
+  jaeger-operator.v1.53.0-3    Red Hat OpenShift distributed tracing platform   1.53.0-3   jaeger-operator.v1.51.0-1    Succeeded
+  kiali-operator.v1.73.4       Kiali Operator                   1.73.4    kiali-operator.v1.65.11      Succeeded
+  servicemeshoperator.v2.5.0   Red Hat OpenShift Service Mesh   2.5.0-0   servicemeshoperator.v2.4.5   Succeeded
   ```
  o
 - Create control plane by create [ServiceMeshControlPlane](manifests/smcp.yaml) CRD
