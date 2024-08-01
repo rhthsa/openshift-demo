@@ -97,7 +97,7 @@ metadata:
     app.kubernetes.io/name: java
     app.kubernetes.io/part-of: App-X
     app.openshift.io/runtime: quarkus
-    app.openshift.io/runtime-version: '2.16.1.Final'
+    app.openshift.io/runtime-version: '3.10'
 spec:
   replicas: 3
   selector:
