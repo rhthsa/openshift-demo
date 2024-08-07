@@ -6,7 +6,8 @@ kind: ServiceMeshControlPlane
 metadata:
   name: basic
 spec:
-  version: v2.3  # Change this to match your OSSM Version
+  mode: MultiTenant
+  version: v2.5  # Change this to match your OSSM Version
   tracing:
     sampling: 10000 # scaled integer, 0-100% in 0.01% increments, i.e. 1=.001%, 100=1%, 10000=100%
     type: Jaeger

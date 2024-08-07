@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: memory-hungry
-        image: quay.io/voravitl/leak:native
+        image: quay.io/voravitl/leak:v1
         imagePullPolicy: Always
         env:
           - name: APP_DISHSIZE
@@ -29,10 +29,10 @@ spec:
         resources:
           requests:
             cpu: "0.05"
-            memory: 60Mi
+            memory: 150Mi
           limits:
             cpu: "0.1"
-            memory: 100Mi
+            memory: 200Mi
         securityContext:
           seccompProfile: #"RuntimeDefault" or "Localhost"
             type: RuntimeDefault
@@ -40,7 +40,7 @@ spec:
           runAsNonRoot: true
           capabilities:
             drop: ["ALL"]
-          readOnlyRootFilesystem: true
+          readOnlyRootFilesystem: false
         ports:
         - containerPort: 8080
       terminationGracePeriodSeconds: 10
