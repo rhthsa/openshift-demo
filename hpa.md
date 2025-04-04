@@ -13,12 +13,13 @@
 <!-- /TOC -->
 ## CPU
 - Deploy frontend app (if you still not deploy it yet)
+  
   ```bash
   oc new-project project1
   oc apply -f manifests/backend-v1.yaml -n project1
   oc apply -f manifests/backend-service.yaml -n project1
   oc apply -f manifests/backend-route.yaml -n project1
-  oc set env deployment backend-v1 -n project1 APP_BACKEND=https://mockbin.org/status/200
+  oc set env deployment backend-v1 -n project1 APP_BACKEND=https://httpbin.org/status/200
   oc wait --for=condition=ready --timeout=60s pod -l app=backend
   BACKEND_URL=http://$(oc get route backend -n project1 -o jsonpath='{.spec.host}')
   curl -v -k $BACKEND_URL
@@ -287,7 +288,7 @@ If you don't have siege, run k6 as pod on OpenShift -->
         metadata:
           metricName: http_server_requests_seconds_count
           namespace: project1
-          query: rate(http_server_requests_seconds_count{method="GET",uri="root",outcome="SUCCESS"}[1m])
+          query: sum(rate(http_server_requests_seconds_count{method="GET", uri="root", outcome="SUCCESS"}[1m])) by (pod)
           serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
           threshold: "15"
           authModes: "bearer"
