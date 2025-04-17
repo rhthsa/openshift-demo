@@ -710,7 +710,7 @@
 <li><a href="#custom-metrics-autoscaler">Custom Metrics Autoscaler</a><ul>
 <li><a href="#configure-user-workload-monitoring">Configure User Workload Monitoring</a></li>
 <li><a href="#install-operator">Install Operator</a></li>
-<li><a href="#create-sacledobject">Create SacledObject</a></li>
+<li><a href="#sacledobject">SacledObject</a></li>
 <li><a href="#test">Test</a></li>
 </ul>
 </li>
@@ -890,7 +890,9 @@ leak-memory   Deployment/leak   127311872/100Mi   1         3         2         
 <ul>
 <li>Enable <a href="application-metrics.html">user workload monitoring</a></li>
 <li><p>Create <a href="manifests/backend-monitor.yaml">Service Monitoring</a> to monitor backend service</p>
-<pre><code class="lang-bash">oc apply -f manifests/backend-service-monitor.yaml -n project1
+<pre><code class="lang-bash">PROJECT=project1
+oc new-project $PROJECT
+oc apply -f manifests/backend-service-monitor.yaml -n $PROJECT
 </code></pre>
 </li>
 <li><p>Remove HPA by CPU and run K6 with 10 threads</p>
@@ -922,28 +924,46 @@ leak-memory   Deployment/leak   127311872/100Mi   1         3         2         
 oc get po -n openshift-keda
 </code></pre>
 <p>Output</p>
-<pre><code class="lang-bash">NAME                                    DISPLAY                     VERSION      REPLACES   PHASE
-custom-metrics-autoscaler.v2.10.1-253   Custom Metrics Autoscaler   2.10.1-253              Succeeded
-NAME                                                 READY   STATUS    RESTARTS   AGE
-custom-metrics-autoscaler-operator-9c9c7c4cb-26l28   1/1     Running   0          10m
+<pre><code class="lang-bash">NAME                                    DISPLAY                          VERSION     REPLACES                                PHASE
+custom-metrics-autoscaler.v2.15.1-4     Custom Metrics Autoscaler        2.15.1-4    custom-metrics-autoscaler.v2.14.1-467   Succeeded
+NAME                                                  READY   STATUS    RESTARTS   AGE
+custom-metrics-autoscaler-operator-7cd9b44885-wq44x   1/1     Running   0          40s
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/keda-controller.yaml">KedaController</a></p>
+<pre><code class="lang-bash">oc apply -f manifests/keda-controller.yaml
+</code></pre>
+<p>Verify</p>
+<pre><code class="lang-bash">oc get po -l app=keda-operator -n openshift-keda
+</code></pre>
+<p>Output</p>
+<pre><code class="lang-bash">NAME                             READY   STATUS    RESTARTS   AGE
+keda-operator-5cc8fdbc7f-m7ldj   1/1     Running   0          113s
 </code></pre>
 </li>
 </ul>
-<h3 id="create-sacledobject">Create SacledObject</h3>
+<h3 id="sacledobject">SacledObject</h3>
 <ul>
 <li><p>Create Service Account </p>
-<pre><code class="lang-bash">oc create serviceaccount thanos -n project1
+<pre><code class="lang-bash">oc create serviceaccount thanos -n $PROJECT
+</code></pre>
+</li>
+<li><p>Create <a href="manifests/sa-thanos-secret.yaml">Secert</a> for serviceaccount thanos</p>
+<pre><code class="lang-bash">oc create -f manifests/sa-thanos-secret.yaml -n $PROJECT
 </code></pre>
 </li>
 <li><p>Create <a href="manifests/cma-trigger-authentication.yaml">TriggerAuthentication</a> and assign cluster role to query thanos</p>
-<pre><code class="lang-bash">TOKEN=$(oc describe serviceaccount thanos -n project1|grep Token|awk -F&apos;:&apos; &apos;{print $2}&apos;|awk &apos;$1=$1&apos;)
-cat manifests/cma-trigger-authentication.yaml|sed &apos;s/TOKEN/&apos;$TOKEN&apos;/&apos;|sed &apos;s/PROJECT/project1/&apos; | oc create -f -
-oc adm policy add-cluster-role-to-user cluster-monitoring-view -z thanos -n project1
+<!-- TOKEN=$(oc create -n project1 token thanos --duration=$((365*24))h) -->
+<pre><code class="lang-bash">cat manifests/cma-trigger-authentication.yaml|sed &apos;s/PROJECT/&apos;$PROJECT&apos;/&apos; | oc create -f -
+oc adm policy add-cluster-role-to-user cluster-monitoring-view -z thanos -n $PROJECT
 </code></pre>
 </li>
 <li><p>Create <a href="manifests/backend-scaled-object.yaml">ScaledObject</a> to scale backend pod by conncurrent request.</p>
-<pre><code class="lang-bash">oc apply -f manifests/backend-scaled-object.yaml -n project1
-oc get scaledobject/backend -o yaml -n project1 | grep -A4 &quot; conditions:&quot;
+<pre><code class="lang-bash">cat manifests/backend-scaled-object.yaml|sed &apos;s/PROJECT/&apos;$PROJECT&apos;/&apos; | oc create -f -
+oc get scaledobject/backend -o yaml -n $PROJECT | grep -A4 &quot; conditions:&quot;
+oc get scaledobject/backend -n $PROJECT
+oc get hpa -n $PROJECT
+oc get po -l app=backend -n $PROJECT
 </code></pre>
 <p>Number of replicas and triggers configuration</p>
 <pre><code class="lang-yaml">triggers:
@@ -955,7 +975,7 @@ oc get scaledobject/backend -o yaml -n project1 | grep -A4 &quot; conditions:&qu
         namespace: project1
         query: sum(rate(http_server_requests_seconds_count{method=&quot;GET&quot;, uri=&quot;root&quot;, outcome=&quot;SUCCESS&quot;}[1m])) by (pod)
         serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
-        threshold: &quot;15&quot;
+        threshold: &quot;10&quot;
         authModes: &quot;bearer&quot;
 </code></pre>
 <p>Output</p>
@@ -966,21 +986,34 @@ oc get scaledobject/backend -o yaml -n project1 | grep -A4 &quot; conditions:&qu
    status: &quot;True&quot;
    type: Ready
 </code></pre>
+<p>ScaledObject Status</p>
+<pre><code class="lang-bash">NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   PAUSED    AGE
+backend   apps/v1.Deployment   backend-v1        1     15    prometheus   keda-trigger-auth-prometheus   True    False    Unknown    Unknown   2s
+</code></pre>
+<p>HPA is created</p>
+<pre><code class="lang-bash">NAME               REFERENCE               TARGETS      MINPODS   MAXPODS   REPLICAS   AGE
+keda-hpa-backend   Deployment/backend-v1   0/10 (avg)   2         15        2          54s
+</code></pre>
+<p>Check pod</p>
+<pre><code class="lang-bash">NAME                          READY   STATUS    RESTARTS   AGE
+backend-v1-687db7677c-4mn6t   1/1     Running   0          112s
+backend-v1-687db7677c-qbkjb   1/1     Running   0          13h
+</code></pre>
 </li>
 </ul>
 <h3 id="test">Test</h3>
 <ul>
 <li><p>Run Load Test with K6</p>
-<pre><code class="lang-bash">  URL=http://$(oc get route backend -n project1 -o jsonpath=&apos;{.spec.host}&apos;)
-  oc run load-test -n project1 -i \
-  --image=loadimpact/k6 --rm=true --restart=Never \
-  --  run -  &lt; manifests/load-test-k6.js \
-  -e URL=$URL -e THREADS=20 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+<pre><code class="lang-bash">URL=http://backend:8080
+oc run load-test -n project1 -i \
+--image=loadimpact/k6 --rm=true --restart=Never \
+--  run -  &lt; manifests/load-test-k6.js \
+-e URL=$URL -e THREADS=200 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
 </code></pre>
 </li>
 <li><p>Check that ScaledObject is active</p>
-<pre><code class="lang-bash">NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   AGE
-backend   apps/v1.Deployment   backend-v1        1     5     prometheus   keda-trigger-auth-prometheus   True    True     False      77m
+<pre><code class="lang-bash">NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   PAUSED    AGE
+backend   apps/v1.Deployment   backend-v1        1     15    prometheus   keda-trigger-auth-prometheus   True    True     False      Unknown   2m
 </code></pre>
 </li>
 <li><p>Check that backend is scaled out</p>
@@ -1038,7 +1071,7 @@ backend-v1-c448b55d9-5v9gm   1/1     Running   0          129m
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2025-04-04T05:58:46.393Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2025-04-04T05:59:22.047Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Horizontal Pod Autoscaler","level":"1.5.7","depth":2,"next":{"title":"Health Check","level":"1.5.8","depth":2,"path":"health.md","ref":"health.md","articles":[]},"previous":{"title":"OpenShift Route","level":"1.5.6","depth":2,"path":"openshift-route.md","ref":"openshift-route.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"hpa.md","mtime":"2025-04-17T03:11:22.703Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2025-04-17T03:11:57.293Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

@@ -1,4 +1,3 @@
---- 
 apiVersion: keda.sh/v1alpha1
 kind: KedaController
 metadata:
@@ -9,34 +8,44 @@ spec:
     logEncoder: console
     logLevel: info
   metricsServer:
-    logLevel: '0'
+    auditConfig:
+      lifetime:
+        maxAge: '2'
+        maxBackup: '1'
+        maxSize: '50'
+      logFormat: json
+    logLevel: '4'
   operator:
     logEncoder: console
     logLevel: info
   watchNamespace: ''
-# ---
+  serviceAccount: {}
+
 # kind: KedaController
 # apiVersion: keda.sh/v1alpha1
 # metadata:
 #   name: keda
 #   namespace: openshift-keda
 # spec:
-#   watchNamespace: ''  # Empty is all namespaces
+#   watchNamespace: '' 
 #   operator:
-#     logLevel: info
+#     logLevel: info #info = 0 / debug = 4
 #     logEncoder: console 
+#     caConfigMaps: 
+#     - thanos-cert
+#     # - kafka-cert
 #   metricsServer:
-#     logLevel: '0' 
-#     auditConfig: 
-#       logFormat: "json"
-#       logOutputVolumeClaim: "persistentVolumeClaimName"
-#       policy:
-#         rules:
-#         - level: Metadata
-#         omitStages: ["RequestReceived"]
-#         omitManagedFields: false
-#       lifetime:
-#         maxAge: "1"
-#         maxBackup: "1"
-#         maxSize: "50"
+#     logLevel: '0' # info = 0 / debug = 4
+#     # auditConfig: 
+#     #   logFormat: "console" # json,console
+#     #   # logOutputVolumeClaim: "persistentVolumeClaimName"
+#     #   policy:
+#     #     rules:
+#     #     - level: Metadata
+#     #     omitStages: ["RequestReceived"]
+#     #     omitManagedFields: false
+#     #   lifetime:
+#     #     maxAge: "2"
+#     #     maxBackup: "1"
+#     #     maxSize: "50"
 #   serviceAccount: {}
