@@ -7,7 +7,7 @@
   - [Custom Metrics Autoscaler](#custom-metrics-autoscaler)
     - [Configure User Workload Monitoring](#configure-user-workload-monitoring)
     - [Install Operator](#install-operator)
-    - [Create SacledObject](#create-sacledobject)
+    - [SacledObject](#sacledobject)
     - [Test](#test)
 
 <!-- /TOC -->
@@ -213,7 +213,9 @@ If you don't have siege, run k6 as pod on OpenShift -->
 - Create [Service Monitoring](manifests/backend-monitor.yaml) to monitor backend service
   
   ```bash
-  oc apply -f manifests/backend-service-monitor.yaml -n project1
+  PROJECT=project1
+  oc new-project $PROJECT
+  oc apply -f manifests/backend-service-monitor.yaml -n $PROJECT
   ```
 
 - Remove HPA by CPU and run K6 with 10 threads
@@ -250,32 +252,61 @@ If you don't have siege, run k6 as pod on OpenShift -->
   Output
 
   ```bash
-  NAME                                    DISPLAY                     VERSION      REPLACES   PHASE
-  custom-metrics-autoscaler.v2.10.1-253   Custom Metrics Autoscaler   2.10.1-253              Succeeded
-  NAME                                                 READY   STATUS    RESTARTS   AGE
-  custom-metrics-autoscaler-operator-9c9c7c4cb-26l28   1/1     Running   0          10m
+  NAME                                    DISPLAY                          VERSION     REPLACES                                PHASE
+  custom-metrics-autoscaler.v2.15.1-4     Custom Metrics Autoscaler        2.15.1-4    custom-metrics-autoscaler.v2.14.1-467   Succeeded
+  NAME                                                  READY   STATUS    RESTARTS   AGE
+  custom-metrics-autoscaler-operator-7cd9b44885-wq44x   1/1     Running   0          40s
+  ```
+- Create [KedaController](manifests/keda-controller.yaml)
+  
+  ```bash
+  oc apply -f manifests/keda-controller.yaml
+  ``` 
+
+  Verify
+
+  ```bash
+  oc get po -l app=keda-operator -n openshift-keda
   ```
 
-### Create SacledObject
+  Output
+
+  ```bash
+  NAME                             READY   STATUS    RESTARTS   AGE
+  keda-operator-5cc8fdbc7f-m7ldj   1/1     Running   0          113s
+  ```
+
+### SacledObject
+
 - Create Service Account 
   
   ```bash
-  oc create serviceaccount thanos -n project1
+  oc create serviceaccount thanos -n $PROJECT
   ```
   
-- Create [TriggerAuthentication](manifests/cma-trigger-authentication.yaml) and assign cluster role to query thanos
+- Create [Secert](manifests/sa-thanos-secret.yaml) for serviceaccount thanos
   
   ```bash
-  TOKEN=$(oc describe serviceaccount thanos -n project1|grep Token|awk -F':' '{print $2}'|awk '$1=$1')
-  cat manifests/cma-trigger-authentication.yaml|sed 's/TOKEN/'$TOKEN'/'|sed 's/PROJECT/project1/' | oc create -f -
-  oc adm policy add-cluster-role-to-user cluster-monitoring-view -z thanos -n project1
+  oc create -f manifests/sa-thanos-secret.yaml -n $PROJECT
+  ```
+
+- Create [TriggerAuthentication](manifests/cma-trigger-authentication.yaml) and assign cluster role to query thanos
+  
+  <!-- TOKEN=$(oc create -n project1 token thanos --duration=$((365*24))h) -->
+
+  ```bash
+  cat manifests/cma-trigger-authentication.yaml|sed 's/PROJECT/'$PROJECT'/' | oc create -f -
+  oc adm policy add-cluster-role-to-user cluster-monitoring-view -z thanos -n $PROJECT
   ```
 
 - Create [ScaledObject](manifests/backend-scaled-object.yaml ) to scale backend pod by conncurrent request.
   
   ```bash
-  oc apply -f manifests/backend-scaled-object.yaml -n project1
-  oc get scaledobject/backend -o yaml -n project1 | grep -A4 " conditions:"
+  cat manifests/backend-scaled-object.yaml|sed 's/PROJECT/'$PROJECT'/' | oc create -f -
+  oc get scaledobject/backend -o yaml -n $PROJECT | grep -A4 " conditions:"
+  oc get scaledobject/backend -n $PROJECT
+  oc get hpa -n $PROJECT
+  oc get po -l app=backend -n $PROJECT
   ```
 
   Number of replicas and triggers configuration
@@ -290,7 +321,7 @@ If you don't have siege, run k6 as pod on OpenShift -->
           namespace: project1
           query: sum(rate(http_server_requests_seconds_count{method="GET", uri="root", outcome="SUCCESS"}[1m])) by (pod)
           serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
-          threshold: "15"
+          threshold: "10"
           authModes: "bearer"
   ```
 
@@ -305,21 +336,43 @@ If you don't have siege, run k6 as pod on OpenShift -->
      type: Ready
    ```
 
+  ScaledObject Status
+
+  ```bash
+  NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   PAUSED    AGE
+  backend   apps/v1.Deployment   backend-v1        1     15    prometheus   keda-trigger-auth-prometheus   True    False    Unknown    Unknown   2s
+  ```
+
+  HPA is created
+
+  ```bash
+  NAME               REFERENCE               TARGETS      MINPODS   MAXPODS   REPLICAS   AGE
+  keda-hpa-backend   Deployment/backend-v1   0/10 (avg)   2         15        2          54s
+  ```
+  
+  Check pod
+
+  ```bash
+  NAME                          READY   STATUS    RESTARTS   AGE
+  backend-v1-687db7677c-4mn6t   1/1     Running   0          112s
+  backend-v1-687db7677c-qbkjb   1/1     Running   0          13h
+  ```
+
 ### Test
 - Run Load Test with K6
   
   ```bash
-    URL=http://$(oc get route backend -n project1 -o jsonpath='{.spec.host}')
-    oc run load-test -n project1 -i \
-    --image=loadimpact/k6 --rm=true --restart=Never \
-    --  run -  < manifests/load-test-k6.js \
-    -e URL=$URL -e THREADS=20 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
+  URL=http://backend:8080
+  oc run load-test -n project1 -i \
+  --image=loadimpact/k6 --rm=true --restart=Never \
+  --  run -  < manifests/load-test-k6.js \
+  -e URL=$URL -e THREADS=200 -e DURATION=3m -e RAMPUP=30s -e RAMPDOWN=30s
   ```
 - Check that ScaledObject is active
   
   ```bash
-  NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   AGE
-  backend   apps/v1.Deployment   backend-v1        1     5     prometheus   keda-trigger-auth-prometheus   True    True     False      77m
+  NAME      SCALETARGETKIND      SCALETARGETNAME   MIN   MAX   TRIGGERS     AUTHENTICATION                 READY   ACTIVE   FALLBACK   PAUSED    AGE
+  backend   apps/v1.Deployment   backend-v1        1     15    prometheus   keda-trigger-auth-prometheus   True    True     False      Unknown   2m
   ```
 
 - Check that backend is scaled out

@@ -1,18 +1,32 @@
+# ---
+# apiVersion: keda.sh/v1alpha1
+# kind: TriggerAuthentication
+# metadata:
+#   name: keda-trigger-auth-prometheus
+#   namespace: PROJECT
+# spec:
+#   secretTargetRef:
+#     - key: token
+#       name: TOKEN
+#       parameter: bearerToken
+#     - key: ca.crt
+#       name: TOKEN
+#       parameter: ca  
 ---
 apiVersion: keda.sh/v1alpha1
-kind: TriggerAuthentication
+kind: TriggerAuthentication 
 metadata:
   name: keda-trigger-auth-prometheus
   namespace: PROJECT
 spec:
-  secretTargetRef:
-    - key: token
-      name: TOKEN
-      parameter: bearerToken
-    - key: ca.crt
-      name: TOKEN
-      parameter: ca    
---- 
+  secretTargetRef: 
+  - parameter: bearerToken 
+    name: thanos-token 
+    key: token 
+  - parameter: ca
+    name: thanos-token
+    key: ca.crt  
+---           
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -38,7 +52,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: thanos-metrics-reader 
-  namespace: PROJECT
+  namespace: PROJECT 
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -47,4 +61,19 @@ subjects:
 - kind: ServiceAccount
   name: thanos 
   namespace: PROJECT
---- 
+---
+# ---
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: RoleBinding
+# metadata:
+#   name: thanos-metrics-reader 
+#   namespace: PROJECT
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: Role
+#   name: thanos-metrics-reader
+# subjects:
+# - kind: ServiceAccount
+#   name: thanos 
+#   namespace: PROJECT
+# --- 
