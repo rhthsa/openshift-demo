@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    type: prod 
+  name: backend
+spec:
+  #subdomain: prod
+  host: backend-demo.prod.apps.cluster-mnmg2.dynamic.redhatworkshops.io
+  port:
+    targetPort: 8080-tcp
+  to:
+    kind: Service
+    name: backend
+  wildcardPolicy: None

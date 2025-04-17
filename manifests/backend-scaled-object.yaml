@@ -1,0 +1,34 @@
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: backend
+  namespace: PROJECT
+spec:
+  # advanced:
+  #   restoreToOriginalReplicaCount: true
+  fallback:
+    replicas: 1
+    failureThreshold: 3
+  scaleTargetRef:
+    name: backend-v1
+    kind: Deployment
+    apiVersion: apps/v1
+  maxReplicaCount: 15
+  minReplicaCount: 2
+  pollingInterval: 10
+  cooldownPeriod: 30 # Demo only 
+  triggers:
+    - authenticationRef:
+        kind: TriggerAuthentication
+        name: keda-trigger-auth-prometheus
+      metadata:
+        metricName: http_server_requests_seconds_count
+        namespace: PROJECT
+        #query: rate(http_server_requests_seconds_count{method="GET",uri="root",outcome="SUCCESS"}[1m])
+        query:  sum(rate(http_server_requests_seconds_count{method="GET", uri="root", outcome="SUCCESS"}[1m])) / scalar(count(kube_pod_info{namespace="PROJECT", pod=~"backend-v1-.*"}))
+        #query: sum(rate(http_server_requests_seconds_count{method="GET", uri="root", outcome="SUCCESS"}[1m])) by (pod)
+        serverAddress: https://thanos-querier.openshift-monitoring.svc.cluster.local:9092
+        threshold: "10"
+        authModes: "bearer"
+      type: prometheus

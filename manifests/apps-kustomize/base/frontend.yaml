@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: demo
+  annotations:
+    app.openshift.io/vcs-ref: master
+    app.openshift.io/vcs-uri: 'https://gitlab.com/ocp-demo/frontend-js'
+    app.openshift.io/connects-to: >-
+      [{"apiVersion":"apps/v1","kind":"Deployment","name":"backend"}]
+  labels:
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/instance: frontend
+    app.kubernetes.io/name: nodejs
+    app.kubernetes.io/part-of: App-X
+    app.openshift.io/runtime: nodejs
+    app.openshift.io/runtime-version: '10'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: frontend
+        version: v1
+        maistra.io/expose-route: "true"
+    spec:
+      containers:
+      - name: frontend
+        image: quay.io/voravitl/frontend-js:v1
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: BACKEND_URL
+            value: http://localhost:8080/version
+        resources:
+          requests:
+            cpu: "0.1"
+            memory: 60Mi
+          limits:
+            cpu: "0.2"
+            memory: 100Mi
+        ports:
+        - containerPort: 8080

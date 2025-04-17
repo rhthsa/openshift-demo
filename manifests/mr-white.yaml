@@ -1,0 +1,64 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mr-white-secret
+data:
+  password: MTIzNDU2Nzg5MA==
+type: Opaque
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mr-white
+  labels:
+    app.kubernetes.io/component: mr-white
+    app.kubernetes.io/name: java
+    app.kubernetes.io/part-of: Heisenberg
+    app.openshift.io/runtime: quarkus
+    app.openshift.io/runtime-version: '17'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mr-white
+  template:
+    metadata:
+      labels:
+        app: mr-white
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: mr-white
+        image: quay.io/voravitl/mr-white:latest
+        imagePullPolicy: Always
+        env:
+          - name: APP_BACKEND
+            value: https://mockbin.org/status/200/transaction-is-completed
+          - name: APP_VERSION
+            value: v2
+          - name: quarkus.log.console.color
+            value: 'false'
+          - name: SECRET 
+            value: 'This is clumsy secret'
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mr-white-secret
+                key: password
+        ports:
+        - containerPort: 8080
+        # securityContext:
+        #   seccompProfile: #"RuntimeDefault" or "Localhost"
+        #     type: RuntimeDefault
+        #   allowPrivilegeEscalation: false
+        #   runAsNonRoot: true
+        #   capabilities:
+        #     drop: ["ALL"]
+        #   readOnlyRootFilesystem: false
+      tolerations:
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 60
+      terminationGracePeriodSeconds: 10
