@@ -22,7 +22,7 @@ metadata:
     name: loki-operator
     namespace: openshift-operators-redhat
 spec:
-    channel: stable
+    channel: stable-6.2
     installPlanApproval: Automatic
     name: loki-operator
     source: redhat-operators
