@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: backend-monitor
+  name: backend-monitor
+spec:
+  # namespaceSelector:
+  #   matchNames:
+  #     - demo
+  endpoints:
+  - interval: 30s
+    port: http
+    path: /q/metrics
+    scheme: http
+  - interval: 30s
+    port: http
+    path: /q/metrics/application
+    scheme: http
+  selector:
+    matchLabels:
+      app: backend
