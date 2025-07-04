@@ -24,13 +24,11 @@ spec:
     namespaceSelector:
       matchLabels:
         openshift.io/cluster-monitoring: "true" # Only consider rules in namespaces matching these labels
-  size: 1x.extra-small #1x.small
+  size: 1x.pico # 1x.extra-small #1x.small
   storage:
     schemas:
-    # - version: v12
-    #   effectiveDate: "2022-06-01"
-    - version: v11
-      effectiveDate: "2020-10-11"    
+    - effectiveDate: "2020-10-11"
+      version: v13
     secret:
       name: logging-loki-s3
       type: s3
@@ -39,17 +37,48 @@ spec:
   storageClassName: DEFAULT_STORAGE_CLASS
   tenants:
     mode: openshift-logging
+# ---
+# apiVersion: logging.openshift.io/v1
+# kind: ClusterLogging
+# metadata:
+#   name: instance
+#   namespace: openshift-logging
+# spec:
+#   managementState: Managed
+#   logStore:
+#     type: lokistack
+#     lokistack:
+#       name: logging-loki
+#   collection:
+#     type: vector
 ---
-apiVersion: logging.openshift.io/v1
-kind: ClusterLogging
+apiVersion: observability.openshift.io/v1
+kind: ClusterLogForwarder
 metadata:
-  name: instance
+  name: collector
   namespace: openshift-logging
 spec:
-  managementState: Managed
-  logStore:
-    type: lokistack
-    lokistack:
-      name: logging-loki
-  collection:
-    type: vector
+  serviceAccount:
+    name: collector
+  outputs:
+  - name: default-lokistack
+    type: lokiStack
+    lokiStack:
+      authentication:
+        token:
+          from: serviceAccount
+      target:
+        name: logging-loki
+        namespace: openshift-logging
+      tls:
+        ca:
+          key: service-ca.crt
+          configMapName: openshift-service-ca.crt
+  pipelines:
+  - name: default-logstore
+    inputRefs:
+    - application # This specifies that application logs will be collected [42, 44, 48]
+    - infrastructure # Optionally include infrastructure logs [42, 44]
+    - audit # Optionally include audit logs, if permissions are granted [26, 29, 31, 41]
+    outputRefs:
+    - default-lokistack
