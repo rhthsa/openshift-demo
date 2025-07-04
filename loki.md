@@ -10,24 +10,63 @@
 - Install [Logging Operator](manifests/logging-operator.yaml) and [Loki Operator](manifests/loki-operator.yaml)
   
   ```bash
+  oc create -f manifests/openshift-logging-ns.yaml
   oc create -f manifests/logging-operator.yaml
   oc create -f manifests/loki-operator.yaml
   sleep 60
   oc wait --for condition=established --timeout=180s \
-  crd/lokistacks.loki.grafana.com \
-  crd/clusterloggings.logging.openshift.io
+  crd/clusterlogforwarders.observability.openshift.io \
+  crd/lokistacks.loki.grafana.com
   oc get csv -n openshift-logging
   ```
 
   Output
 
   ```bash
-  NAME                            DISPLAY                     VERSION   REPLACES                             PHASE
-  cluster-logging.v5.9.0          Red Hat OpenShift Logging   5.9.0                                          Succeeded
-  loki-operator.v5.9.0            Loki Operator               5.9.0                                          Succeeded
+  namespace/openshift-logging created
+  operatorgroup.operators.coreos.com/cluster-logging created
+  subscription.operators.coreos.com/cluster-logging created
+  namespace/openshift-operators-redhat created
+  operatorgroup.operators.coreos.com/openshift-operators-redhat created
+  subscription.operators.coreos.com/loki-operator created
+  customresourcedefinition.apiextensions.k8s.io/clusterlogforwarders.observability.openshift.io condition met
+  customresourcedefinition.apiextensions.k8s.io/lokistacks.loki.grafana.com condition met
+  NAME                     DISPLAY                     VERSION   REPLACES                 PHASE
+  cluster-logging.v6.2.3   Red Hat OpenShift Logging   6.2.3     cluster-logging.v6.2.2   Succeeded
+  loki-operator.v6.2.3     Loki Operator               6.2.3     loki-operator.v6.2.2     Succeeded
   ```
 
+
+<!-- oc create sa collector -n openshift-logging
+oc adm policy add-cluster-role-to-user logging-collector-logs-writer -z collector -n openshift-logging
+oc adm policy add-cluster-role-to-user collect-application-logs -z collector -n openshift-logging
+oc adm policy add-cluster-role-to-user collect-audit-logs -z collector -n openshift-logging
+oc adm policy add-cluster-role-to-user collect-infrastructure-logs -z collector -n openshift-logging -->
 - Create Logging Instance
+  - Create Service Account and assign cluster roles to service account.
+    
+    Use CLI
+    
+    ```bash
+    oc create sa collector -n openshift-logging
+    oc adm policy add-cluster-role-to-user logging-collector-logs-writer -z collector -n openshift-logging
+    oc adm policy add-cluster-role-to-user collect-application-logs -z collector -n openshift-logging
+    oc adm policy add-cluster-role-to-user collect-audit-logs -z collector -n openshift-logging
+    oc adm policy add-cluster-role-to-user collect-infrastructure-logs -z collector -n openshift-logging
+    ```  
+
+    Use [YAML files](anifests/cluster-logging-operator-role-binding.yaml)
+
+    ```bash
+    oc create -f manifests/cluster-logging-operator-role-binding.yaml
+    ```        
+
+  - Create [ClusterLogForwarder](manifests/cluster-log-forwarder.yaml) instance
+    
+    ```bash
+    oc create -f manifests/cluster-log-forwarder.yaml
+    ```
+
   - Prepare Object Storage configuration including S3 access Key ID, access Key Secret, Bucket Name, endpoint and Region
     - In case of using ODF
         - Create Bucket
@@ -87,49 +126,74 @@
     lokistack.loki.grafana.com/logging-loki created
     clusterlogging.logging.openshift.io/instance created
     
-    NAME                                           READY   STATUS    RESTARTS   AGE
-    cluster-logging-operator-67d4f44f5c-6pn5l      1/1     Running   0          7m18s
-    collector-8zfb7                                1/1     Running   0          75s
-    collector-gpn8c                                1/1     Running   0          76s
-    collector-j5gx7                                1/1     Running   0          74s
-    collector-ktssl                                1/1     Running   0          75s
-    collector-kw9wv                                1/1     Running   0          74s
-    collector-q4lsr                                1/1     Running   0          73s
-    logging-loki-compactor-0                       1/1     Running   0          89s
-    logging-loki-distributor-75d9b9fc8c-gn8d8      1/1     Running   0          89s
-    logging-loki-distributor-75d9b9fc8c-qxttl      1/1     Running   0          89s
-    logging-loki-gateway-946cf94d7-ttddj           2/2     Running   0          88s
-    logging-loki-gateway-946cf94d7-vbx74           2/2     Running   0          88s
-    logging-loki-index-gateway-0                   1/1     Running   0          89s
-    logging-loki-index-gateway-1                   1/1     Running   0          61s
-    logging-loki-ingester-0                        1/1     Running   0          89s
-    logging-loki-ingester-1                        0/1     Pending   0          25s
-    logging-loki-querier-5888b4fdf7-cvdst          1/1     Running   0          89s
-    logging-loki-querier-5888b4fdf7-wx577          1/1     Running   0          89s
-    logging-loki-query-frontend-66c7ffd5d4-4vpgm   1/1     Running   0          89s
-    logging-loki-query-frontend-66c7ffd5d4-flbpv   1/1     Running   0          89s
-    logging-loki-ruler-0                           1/1     Running   0          88s
-    logging-loki-ruler-1                           1/1     Running   0          88s
-    logging-view-plugin-65d59cb67b-hmb2b           1/1     Running   0          91s
+    NAME                                          READY   STATUS    RESTARTS   AGE
+    cluster-logging-operator-55c4c68fbf-79nkz     1/1     Running   0          10m
+    collector-42nzt                               1/1     Running   0          4m32s
+    collector-pd9mx                               1/1     Running   0          4m32s
+    collector-snjm5                               1/1     Running   0          4m32s
+    collector-trtz8                               1/1     Running   0          4m32s
+    logging-loki-compactor-0                      1/1     Running   0          4m43s
+    logging-loki-distributor-84b75dd686-n2d88     1/1     Running   0          4m43s
+    logging-loki-distributor-84b75dd686-v48z2     1/1     Running   0          4m43s
+    logging-loki-gateway-856d5d4cc8-g72wq         2/2     Running   0          4m42s
+    logging-loki-gateway-856d5d4cc8-nsfpt         2/2     Running   0          4m42s
+    logging-loki-index-gateway-0                  1/1     Running   0          4m43s
+    logging-loki-index-gateway-1                  1/1     Running   0          4m12s
+    logging-loki-ingester-0                       1/1     Running   0          4m43s
+    logging-loki-ingester-1                       1/1     Running   0          3m28s
+    logging-loki-ingester-2                       1/1     Running   0          2m14s
+    logging-loki-querier-559bcc946b-p78bc         1/1     Running   0          4m43s
+    logging-loki-querier-559bcc946b-ws7m2         1/1     Running   0          4m43s
+    logging-loki-query-frontend-5fb4984f5-9cxg8   1/1     Running   0          4m43s
+    logging-loki-query-frontend-5fb4984f5-r4fdr   1/1     Running   0          4m43s
+    logging-loki-ruler-0                          1/1     Running   0          4m42s
+    logging-loki-ruler-1                          1/1     Running   0          4m42s
     ```
-- PVC storage (RWO) used by Loki
+- PVC storage (RWO) used by Loki (910 GiB)
 
   ```bash
-  NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS                           AGE
-  storage-logging-loki-compactor-0       Bound    pvc-a405a61d-2361-44a6-9b9a-a79a5a3a4d48   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  storage-logging-loki-index-gateway-0   Bound    pvc-688a34a3-562a-4e27-aa09-4d81baca5c5b   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  storage-logging-loki-index-gateway-1   Bound    pvc-5ede4b00-ad62-4505-bd69-1931f79e52b2   50Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m19s
-  storage-logging-loki-ingester-0        Bound    pvc-065cc5de-e506-45ca-925f-c1f3ba61803e   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  storage-logging-loki-ingester-1        Bound    pvc-a21adf64-b93c-47fc-a454-20b0e9af220b   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   2m48s
-  storage-logging-loki-ruler-0           Bound    pvc-fa925ae5-34dd-4497-90b5-37d5ec99b925   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  storage-logging-loki-ruler-1           Bound    pvc-fb19290d-eaf2-4684-8721-3bc8aa4066f9   10Gi       RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  wal-logging-loki-ingester-0            Bound    pvc-fed10b0d-19a5-49be-ae90-c1b2f5ed6108   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  wal-logging-loki-ingester-1            Bound    pvc-89c5591b-8fb0-4229-84c3-9d0a28c721c5   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   2m48s
-  wal-logging-loki-ruler-0               Bound    pvc-b431cae4-de01-4202-9ed3-97710e549722   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
-  wal-logging-loki-ruler-1               Bound    pvc-50b62352-0e38-4109-98b5-db17df013030   150Gi      RWO            ocs-external-storagecluster-ceph-rbd   3m51s
+  NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+  storage-logging-loki-compactor-0       Bound    pvc-20bf11d6-4c2f-4bd5-afad-7ce2114ae5de   10Gi       RWO            gp3-csi        <unset>                 5m30s
+  storage-logging-loki-index-gateway-0   Bound    pvc-c1ae8654-3470-4d9a-88e4-280847b5c9ee   50Gi       RWO            gp3-csi        <unset>                 5m30s
+  storage-logging-loki-index-gateway-1   Bound    pvc-41c42ec0-99f2-4fc1-bb97-4e785b249357   50Gi       RWO            gp3-csi        <unset>                 4m59s
+  storage-logging-loki-ingester-0        Bound    pvc-458815dd-0021-4292-be24-b788a0643481   10Gi       RWO            gp3-csi        <unset>                 5m30s
+  storage-logging-loki-ingester-1        Bound    pvc-175cfcc9-79f5-493a-a68b-fe2b67afd852   10Gi       RWO            gp3-csi        <unset>                 4m15s
+  storage-logging-loki-ingester-2        Bound    pvc-663fe50c-e33b-470e-a546-5435deb741ee   10Gi       RWO            gp3-csi        <unset>                 3m1s
+  storage-logging-loki-ruler-0           Bound    pvc-97cb2b54-e869-487e-bb48-eb423898d9a2   10Gi       RWO            gp3-csi        <unset>                 5m29s
+  storage-logging-loki-ruler-1           Bound    pvc-34204cd1-70e9-4baf-8deb-b08ffbda95d7   10Gi       RWO            gp3-csi        <unset>                 5m29s
+  wal-logging-loki-ingester-0            Bound    pvc-ffbd00d7-2773-4c90-aadb-13e8dff99458   150Gi      RWO            gp3-csi        <unset>                 5m30s
+  wal-logging-loki-ingester-1            Bound    pvc-82597a12-c380-442d-90e3-fa7c3a107fdf   150Gi      RWO            gp3-csi        <unset>                 4m15s
+  wal-logging-loki-ingester-2            Bound    pvc-03847758-6180-4d1d-be52-a5ac613dbf03   150Gi      RWO            gp3-csi        <unset>                 3m1s
+  wal-logging-loki-ruler-0               Bound    pvc-662cb6e9-5087-4d44-95c0-fe7f11232804   150Gi      RWO            gp3-csi        <unset>                 5m29s
+  wal-logging-loki-ruler-1               Bound    pvc-61b91b65-308f-4dca-913f-4001155d9193   150Gi      RWO            gp3-csi        <unset>                 5m29s
   ```
 
-- Enable Console Plugin Operator
+- Install Cluster Observability Operator
+  
+  ```bash
+  oc create -f manifests/cluster-observability-operator.yaml
+  oc get csv -n openshift-operators
+  ```
+
+  Output
+  
+  ```bash
+  namespace/openshift-cluster-observability-operator created
+  operatorgroup.operators.coreos.com/openshift-cluster-observability-operator-4q99p created
+  subscription.operators.coreos.com/cluster-observability-operator created
+  NAME                                    DISPLAY                          VERSION   REPLACES                                PHASE
+  cluster-logging.v6.2.3                  Red Hat OpenShift Logging        6.2.3     cluster-logging.v6.2.2                  Succeeded
+  cluster-observability-operator.v1.2.0   Cluster Observability Operator   1.2.0     cluster-observability-operator.v1.1.1   Succeeded
+  loki-operator.v6.2.3                    Loki Operator                    6.2.3     loki-operator.v6.2.2                    Succeeded
+  ```
+
+- Create [UI Plugin](manifests/ui-plugin-logging.yaml) for Logging
+  
+  ```bash
+  oc create -f manifests/ui-plugin-logging.yaml 
+  ```
+  
+<!-- - Enable Console Plugin Operator
   
   - Navigate to Administrator->Operators->Installed Opertors->Red Hat OpenShift Logging then Enable Console Plugin on the right menu
   
@@ -145,7 +209,7 @@
     --type json -p '[{"op": "add", "path": "/spec/plugins", "value": []}]'
     oc patch console.operator cluster \
     --type json -p '[{"op": "add", "path": "/spec/plugins/-", "value": "logging-view-plugin"}]'
-    ```
+    ``` -->
 
 <!-- - Restart console pod
          
@@ -174,9 +238,9 @@
   oc set env deployment/frontend-v1 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
   oc set env deployment/frontend-v2 BACKEND_URL=http://backend-v1.api.svc:8080 -n ui
   oc set env deployment/backend-v1 APP_BACKEND=https://httpbin.org/status/201 -n api
-  oc scale deployment/frontend-v1 --replicas=3 -n ui
-  oc scale deployment/frontend-v2 --replicas=3 -n ui
-  oc scale deployment/backend-v1 --replicas=6 -n api
+  oc scale deployment/frontend-v1 --replicas=2 -n ui
+  oc scale deployment/frontend-v2 --replicas=2 -n ui
+  oc scale deployment/backend-v1 --replicas=3 -n api
   ```
 
   Application Flow

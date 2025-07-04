@@ -14,7 +14,7 @@ spec:
       rules:
         - alert: BackendServiceError
           expr: |
-            count_over_time({log_type="application", kubernetes_namespace_name="api"} |~ "Return Code: 5.*" |level=~"error|err|eror" [1m]) > 0
+            count_over_time({log_type="application", kubernetes_namespace_name="api"}|~ "Return Code: 5.*" |~ {level="error"} [1m]) > 0
           for: 10s
           labels:
             severity: critical 
