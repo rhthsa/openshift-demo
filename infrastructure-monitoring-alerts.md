@@ -208,7 +208,7 @@ Procedure
       smtp_hello: localhost
       smtp_require_tls: false
       slack_api_url: >-
-        https://hooks.slack.com/services/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
+        https://hooks.slack.com/services/T01BA5Z1QG3/B0XXXXXXXXXXXAeF
     inhibit_rules:
       - equal:
           - namespace
