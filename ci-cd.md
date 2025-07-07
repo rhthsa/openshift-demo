@@ -2,14 +2,19 @@
 
 <!-- TOC -->
 
-- [CI/CD](#ci/cd)
+- [CI/CD with Azure DevOps](#cicd-with-azure-devops)
   - [Prerequisites](#prerequisites)
   - [Azure DevOps](#azure-devops)
   - [Deploy Back App](#deploy-back-app)
   - [Deploy Front App](#deploy-front-app)
-  - [Prepare Harbor On Kubernetes/OpenShift](#prepare-harbor-on-kubernetes/openshift)
+  - [Canary Deployment](#canary-deployment)
+  - [Prepare Harbor On Kubernetes/OpenShift](#prepare-harbor-on-kubernetesopenshift)
   - [Prepare Azure DevOps Service Connection](#prepare-azure-devops-service-connection)
   - [Azure pipelines](#azure-pipelines)
+  - [Canary Deployment](#canary-deployment-1)
+  - [Use Openshift Internal Registry](#use-openshift-internal-registry)
+  - [Step Demo](#step-demo)
+  - [openshift internal registry](#openshift-internal-registry)
 
 <!-- /TOC -->
 
@@ -192,7 +197,7 @@ select new service connection, select type Openshift
 - Authentication method: Token Based Authentication
 - Server URL: such as https://api.cluster-b3e9.b3e9.example.opentlc.com:6443
 - accept untrusted SSL: checked
-- api token: such as sha256~fF0TCW0az6FMJ6232dJAxdhX4lqZo-bkYdbfFKwv_Zw
+- api token: such as sha256~f*******Zw
 - service connection name: openshift
 - grant access permission to all pipelines: checked
 
