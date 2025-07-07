@@ -65,10 +65,10 @@ items:
       type: Source
     triggers:
     - github:
-        secret: zLBK3OwWM_dZI50su7Fw
+        secret: zLBK3*****7Fw
       type: GitHub
     - generic:
-        secret: KgWIBAJ7k_8ugkP_N1pX
+        secret: KgWI*****pX
       type: Generic
     - type: ConfigChange
     - imageChange: {}

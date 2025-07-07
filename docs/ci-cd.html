@@ -704,14 +704,19 @@
                                 <h1 id="cicd-with-azure-devops">CI/CD with Azure DevOps</h1>
 <!-- TOC -->
 <ul>
-<li><a href="#ci/cd">CI/CD</a><ul>
+<li><a href="#cicd-with-azure-devops">CI/CD with Azure DevOps</a><ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#azure-devops">Azure DevOps</a></li>
 <li><a href="#deploy-back-app">Deploy Back App</a></li>
 <li><a href="#deploy-front-app">Deploy Front App</a></li>
-<li><a href="#prepare-harbor-on-kubernetes/openshift">Prepare Harbor On Kubernetes/OpenShift</a></li>
+<li><a href="#canary-deployment">Canary Deployment</a></li>
+<li><a href="#prepare-harbor-on-kubernetesopenshift">Prepare Harbor On Kubernetes/OpenShift</a></li>
 <li><a href="#prepare-azure-devops-service-connection">Prepare Azure DevOps Service Connection</a></li>
 <li><a href="#azure-pipelines">Azure pipelines</a></li>
+<li><a href="#canary-deployment-1">Canary Deployment</a></li>
+<li><a href="#use-openshift-internal-registry">Use Openshift Internal Registry</a></li>
+<li><a href="#step-demo">Step Demo</a></li>
+<li><a href="#openshift-internal-registry">openshift internal registry</a></li>
 </ul>
 </li>
 </ul>
@@ -827,7 +832,7 @@ oc adm policy add-scc-to-group anyuid system:authenticated
 <li>Authentication method: Token Based Authentication</li>
 <li>Server URL: such as <a href="https://api.cluster-b3e9.b3e9.example.opentlc.com:6443" target="_blank">https://api.cluster-b3e9.b3e9.example.opentlc.com:6443</a></li>
 <li>accept untrusted SSL: checked</li>
-<li>api token: such as sha256~fF0TCW0az6FMJ6232dJAxdhX4lqZo-bkYdbfFKwv_Zw</li>
+<li>api token: such as sha256~f<strong><em>*</em></strong>Zw</li>
 <li>service connection name: openshift</li>
 <li>grant access permission to all pipelines: checked</li>
 </ul>
@@ -1014,7 +1019,7 @@ docker pull default-route-openshift-image-registry.apps.cluster-852b.852b.exampl
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CI/CD with Azure DevOps","level":"1.5.15","depth":2,"next":{"title":"EAP on OpenShift","level":"1.5.16","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"previous":{"title":"CI/CD with Jenkins","level":"1.5.14","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd.md","mtime":"2025-07-04T11:30:16.009Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2025-07-04T11:30:51.566Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"CI/CD with Azure DevOps","level":"1.5.15","depth":2,"next":{"title":"EAP on OpenShift","level":"1.5.16","depth":2,"path":"eap-on-ocp.md","ref":"eap-on-ocp.md","articles":[]},"previous":{"title":"CI/CD with Jenkins","level":"1.5.14","depth":2,"path":"ci-cd-with-jenkins.md","ref":"ci-cd-with-jenkins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-lunr","-search","-highlight","-livereload","search-plus","copy-code-button","mermaid-gb3"],"root":"./","styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"pluginsConfig":{"mermaid-newface":{"theme":"neutral"},"search-plus":{},"copy-code-button":{},"mermaid-gb3":{},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css","website":"styles/website.css"},"showLevel":false}},"theme":"default","author":"Red Hat Thailand SA","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"OpenShift Demo","gitbook":"3.2.3"},"file":{"path":"ci-cd.md","mtime":"2025-07-07T08:59:42.002Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2025-07-07T09:00:20.301Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

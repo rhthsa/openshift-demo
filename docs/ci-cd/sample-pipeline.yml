@@ -63,7 +63,7 @@ steps:
 #   inputs:
 #     FortifyProjects: '$(Build.SourcesDirectory)'
 #     ReleaseId: 129901
-#     BSIToken: 'eyJ0ZW5hbnRJZCI6MTY5MTQsInRlbmFudENvZGUiOiJyZWRfaGF0XzEyX0ZNQV8xMDQ3MzEwNzkiLCJyZWxlYXNlSWQiOjEyOTkwMSwicGF5bG9hZFR5cGUiOiJBTkFMWVNJU19QQVlMT0FEIiwiYXNzZXNzbWVudFR5cGVJZCI6MTQsInRlY2hub2xvZ3lUeXBlIjoiLk5FVCIsInRlY2hub2xvZ3lUeXBlSWQiOjEsInRlY2hub2xvZ3lWZXJzaW9uIjoiMi4wIiwidGVjaG5vbG9neVZlcnNpb25JZCI6MiwiYXVkaXRQcmVmZXJlbmNlIjoiQXV0b21hdGVkIiwiYXVkaXRQcmVmZXJlbmNlSWQiOjIsImluY2x1ZGVUaGlyZFBhcnR5IjpmYWxzZSwiaW5jbHVkZU9wZW5Tb3VyY2VBbmFseXNpcyI6ZmFsc2UsInBvcnRhbFVyaSI6Imh0dHBzOi8vdHJpYWwuZm9ydGlmeS5jb20vIiwiYXBpVXJpIjoiaHR0cHM6Ly9hcGkudHJpYWwuZm9ydGlmeS5jb20iLCJzY2FuUHJlZmVyZW5jZSI6IlN0YW5kYXJkIiwic2NhblByZWZlcmVuY2VJZCI6MX0='
+#     BSIToken: 'token_here'
 #     FodConnection: 'fortify'
 #     EntitlementPreference: '0'
 #     PolicyFailAction: '0'
