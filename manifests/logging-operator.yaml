@@ -1,0 +1,25 @@
+
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: cluster-logging
+  namespace: openshift-logging
+spec:
+  upgradeStrategy: Default
+  # targetNamespaces:
+  # - openshift-logging
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  labels:
+    operators.coreos.com/cluster-logging.openshift-logging: ""
+  name: cluster-logging
+  namespace: openshift-logging
+spec:
+  channel: stable-6.2
+  installPlanApproval: Automatic
+  name: cluster-logging
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+  #startingCSV: cluster-logging.v6.1.1
