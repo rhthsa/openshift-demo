@@ -3,7 +3,7 @@
 ![](images/OpenShiftContainerPlatform.png)
 
 ## Gitbook
-Chick here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
+Check here for [Gitbook](https://rhthsa.github.io/openshift-demo/)
 
 ## Table of Contents
 ### Infrastructure
